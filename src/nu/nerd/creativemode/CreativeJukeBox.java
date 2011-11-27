@@ -1,14 +1,12 @@
-package nu.nerd.shit.stopdrops;
+package nu.nerd.creativemode;
 
-import java.util.logging.Logger;
 import net.minecraft.server.BlockJukeBox;
 import net.minecraft.server.EntityHuman;
 import net.minecraft.server.TileEntityRecordPlayer;
 import net.minecraft.server.World;
-import org.bukkit.Material;
 
-public class DropsJukeBox extends BlockJukeBox {
-    public DropsJukeBox(int param1, int param2) {
+public class CreativeJukeBox extends BlockJukeBox {
+    public CreativeJukeBox(int param1, int param2) {
         super(param1, param2);
     }
 

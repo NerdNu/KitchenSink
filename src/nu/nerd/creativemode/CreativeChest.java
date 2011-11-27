@@ -1,10 +1,10 @@
-package nu.nerd.shit.stopdrops;
+package nu.nerd.creativemode;
 
 import net.minecraft.server.BlockChest;
 import net.minecraft.server.World;
 
-public class DropsChest extends BlockChest {
-    protected DropsChest(int paramInt) {
+public class CreativeChest extends BlockChest {
+    protected CreativeChest(int paramInt) {
         super(paramInt);
     }
 

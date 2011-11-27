@@ -1,5 +1,5 @@
-name: StopDrops
-version: 0.1
-author: yetanotherx
-main: nu.nerd.shit.stopdrops.StopDrops
+name: CreativeMode
+version: 0.2
+author: Travis Watkins
+main: nu.nerd.creativemode.CreativeMode
 description: 

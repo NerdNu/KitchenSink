@@ -1,17 +1,14 @@
-package nu.nerd.shit.stopdrops;
+package nu.nerd.creativemode;
 
 import org.bukkit.Material;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerListener;
+import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.inventory.ItemStack;
 
-class DropsPlayerListener extends PlayerListener {
-
-    public DropsPlayerListener() {
-    }
-
+class CreativePlayerListener extends PlayerListener {
     @Override
     public void onPlayerDropItem(PlayerDropItemEvent event) {
         event.setCancelled(true);
