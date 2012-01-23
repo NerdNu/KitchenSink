@@ -1,0 +1,5 @@
+disable-drops: false
+disabled-items:
+    left-click:
+    right-click:
+
