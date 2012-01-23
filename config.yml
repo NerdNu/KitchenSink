@@ -1,4 +1,5 @@
 disable-drops: false
+block-caps: false
 disabled-items:
     left-click:
     right-click:
