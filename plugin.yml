@@ -1,5 +1,5 @@
-name: CreativeMode
-version: 0.2
+name: KitchenSink
+version: 0.1
 author: Travis Watkins
-main: nu.nerd.creativemode.CreativeMode
+main: nu.nerd.kitchensink.KitchenSink
 description: 

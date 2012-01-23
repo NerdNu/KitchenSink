@@ -1,11 +1,11 @@
-package nu.nerd.creativemode;
+package nu.nerd.kitchensink.blocks;
 
 import net.minecraft.server.BlockJukeBox;
 import net.minecraft.server.TileEntityRecordPlayer;
 import net.minecraft.server.World;
 
-public class CreativeJukeBox extends BlockJukeBox {
-    public CreativeJukeBox(int param1, int param2) {
+public class NoDropsJukeBox extends BlockJukeBox {
+    public NoDropsJukeBox(int param1, int param2) {
         super(param1, param2);
     }
 

@@ -1,10 +1,10 @@
-package nu.nerd.creativemode;
+package nu.nerd.kitchensink.blocks;
 
 import net.minecraft.server.BlockChest;
 import net.minecraft.server.World;
 
-public class CreativeChest extends BlockChest {
-    protected CreativeChest(int paramInt) {
+public class NoDropsChest extends BlockChest {
+    public NoDropsChest(int paramInt) {
         super(paramInt);
     }
 
