@@ -3,3 +3,7 @@ version: 0.1
 author: Travis Watkins
 main: nu.nerd.kitchensink.KitchenSink
 description: 
+
+commands:
+    lag:
+        description: Get current TPS and memory stats

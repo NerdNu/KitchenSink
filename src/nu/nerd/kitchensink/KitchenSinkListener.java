@@ -1,11 +1,11 @@
 package nu.nerd.kitchensink;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -17,7 +17,6 @@ class KitchenSinkListener implements Listener {
 
     KitchenSinkListener(KitchenSink instance) {
         plugin = instance;
-        Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -30,10 +29,16 @@ class KitchenSinkListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPlayerInteract(PlayerInteractEvent event) {
+    public void onItemSpawn(ItemSpawnEvent event) {
         if (event.isCancelled())
             return;
 
+        if (plugin.config.DISABLE_DROPS)
+            event.setCancelled(true);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerInteract(PlayerInteractEvent event) {
         if (!event.hasItem())
             return;
 
