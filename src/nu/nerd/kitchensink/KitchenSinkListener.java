@@ -1,7 +1,11 @@
 package nu.nerd.kitchensink;
 
-import org.bukkit.ChatColor;
-import org.bukkit.Chunk;
+import org.bukkit.*;
+import org.bukkit.block.Block;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.entity.Boat;
+import org.bukkit.entity.Minecart;
+import org.bukkit.entity.Vehicle;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -11,6 +15,7 @@ import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.inventory.ItemStack;
 
 
@@ -54,6 +59,38 @@ class KitchenSinkListener implements Listener {
             if (plugin.config.DISABLED_LEFT_ITEMS.contains(stack.getTypeId()))
                 event.setCancelled(true);
         }
+
+        if (plugin.config.SAFE_VEHICLES && event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            Block block = event.getClickedBlock();
+            Location loc = block.getLocation();
+
+            if (stack.getType() == Material.BOAT) {
+                loc.setX(loc.getX() + 0.5);
+                loc.setY(loc.getY() + 1);
+                loc.setZ(loc.getZ() + 0.5);
+ 
+                if (block.getType() == Material.SNOW)
+                    loc.setY(loc.getY() - 1);
+                Boat boat = loc.getWorld().spawn(loc, Boat.class);
+                boat.setPassenger(event.getPlayer());
+                event.setCancelled(true);
+                if (event.getPlayer().getGameMode() == GameMode.SURVIVAL)
+                    --((CraftItemStack)stack).getHandle().count;
+            }
+
+            if (stack.getType() == Material.MINECART) {
+                if (block.getType() == Material.RAILS || block.getType() == Material.POWERED_RAIL || block.getType() == Material.DETECTOR_RAIL) {
+                    loc.setX(loc.getX() + 0.5);
+                    loc.setY(loc.getY() + 0.5);
+                    loc.setZ(loc.getZ() + 0.5);
+                    Minecart minecart = loc.getWorld().spawn(loc, Minecart.class);
+                    minecart.setPassenger(event.getPlayer());
+                    event.setCancelled(true);
+                    if (event.getPlayer().getGameMode() == GameMode.SURVIVAL)
+                        --((CraftItemStack)stack).getHandle().count;
+                }
+            }
+        }
     }
 
     @EventHandler
@@ -87,5 +124,24 @@ class KitchenSinkListener implements Listener {
 
         Chunk chunk = event.getPlayer().getWorld().getChunkAt(event.getTo());
         event.getPlayer().getWorld().refreshChunk(chunk.getX(), chunk.getZ());
+    }
+
+    @EventHandler
+    public void onVehicleExit(VehicleExitEvent event) {
+        if (event.isCancelled())
+            return;
+
+        if (plugin.config.SAFE_VEHICLES) {
+            Vehicle vehicle = event.getVehicle();
+            vehicle.remove();
+
+            Location loc = vehicle.getLocation();
+            if (vehicle instanceof Boat) {
+                loc.getWorld().dropItem(loc, new ItemStack(Material.BOAT, 1));
+            }
+            if (vehicle instanceof Minecart) {
+                loc.getWorld().dropItem(loc, new ItemStack(Material.MINECART, 1));
+            }
+        }
     }
 }
