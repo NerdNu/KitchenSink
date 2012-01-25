@@ -27,15 +27,6 @@ class KitchenSinkListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPlayerDropItem(PlayerDropItemEvent event) {
-        if (event.isCancelled())
-            return;
-
-        if (plugin.config.DISABLE_DROPS)
-            event.setCancelled(true);
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
     public void onItemSpawn(ItemSpawnEvent event) {
         if (event.isCancelled())
             return;
