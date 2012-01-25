@@ -1,6 +1,13 @@
-disable-drops: false
-block-caps: false
+disable-drops: true
+block-caps: true
+safe-vehicles: true
 disabled-items:
     left-click:
     right-click:
+    - 261
+    - 332
+    - 344
+    - 346
+    - 381
+    - 383
 
