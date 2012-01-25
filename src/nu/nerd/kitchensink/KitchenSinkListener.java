@@ -59,19 +59,22 @@ class KitchenSinkListener implements Listener {
         if (event.isCancelled())
             return;
 
-        if (!plugin.config.BLOCK_CAPS)
-            return;
-
-        int upperCount = 0;
         String message = event.getMessage();
-        for (int i = 0; i < message.length(); i++) {
-            if (Character.isUpperCase(message.charAt(i)))
-                upperCount++;
-        }
+        message = ChatColor.stripColor(message);
+        message = message.replaceAll("[ \\s\\u000a\\u000d\\u2028\\u2029\\u0009\\u000b\\u000c\\u000d\\u0020\\u00a0\\u1680\\u180e\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200a\\u202f\\u205f\\u3000]{2,}", " ");
+        event.setMessage(message);
 
-        if ((upperCount > message.length() / 2) && message.length() > 8) {
-            event.getPlayer().sendMessage(ChatColor.DARK_GREEN + "Please don't type in all caps.");
-            event.setCancelled(true);
+        if (plugin.config.BLOCK_CAPS) {
+            int upperCount = 0;
+            for (int i = 0; i < message.length(); i++) {
+                if (Character.isUpperCase(message.charAt(i)))
+                    upperCount++;
+            }
+
+            if ((upperCount > message.length() / 2) && message.length() > 8) {
+                event.getPlayer().sendMessage(ChatColor.DARK_GREEN + "Please don't type in all caps.");
+                event.setCancelled(true);
+            }
         }
     }
 }
