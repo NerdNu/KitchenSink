@@ -1,6 +1,7 @@
 package nu.nerd.kitchensink;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -9,6 +10,7 @@ import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 
 
@@ -76,5 +78,14 @@ class KitchenSinkListener implements Listener {
                 event.setCancelled(true);
             }
         }
+    }
+
+    @EventHandler
+    public void onPlayerTeleport(PlayerTeleportEvent event) {
+        if (event.isCancelled())
+            return;
+
+        Chunk chunk = event.getPlayer().getWorld().getChunkAt(event.getTo());
+        event.getPlayer().getWorld().refreshChunk(chunk.getX(), chunk.getZ());
     }
 }
