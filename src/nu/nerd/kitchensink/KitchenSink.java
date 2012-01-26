@@ -3,8 +3,11 @@ package nu.nerd.kitchensink;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Boat;
+import org.bukkit.entity.Minecart;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class KitchenSink extends JavaPlugin {
@@ -28,6 +31,32 @@ public class KitchenSink extends JavaPlugin {
         }
 
         config.load();
+
+        if (config.SAFE_BOATS) {
+            getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
+                public void run() {
+                    for (World world : getServer().getWorlds()) {
+                        for (Boat boat : world.getEntitiesByClass(Boat.class)) {
+                            if (boat.isEmpty())
+                                boat.remove();
+                        }
+                    }
+                }
+            }, 1200, 6000);
+        }
+
+        if (config.SAFE_MINECARTS) {
+            getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
+                public void run() {
+                    for (World world : getServer().getWorlds()) {
+                        for (Minecart minecart : world.getEntitiesByClass(Minecart.class)) {
+                            if (minecart.isEmpty())
+                                minecart.remove();
+                        }
+                    }
+                }
+            }, 1200, 6000);
+        }
 
         getServer().getScheduler().scheduleSyncRepeatingTask(this, lagCheck, 20, 20);
         getServer().getPluginManager().registerEvents(listener, this);

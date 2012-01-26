@@ -1,6 +1,7 @@
 disable-drops: true
 block-caps: true
-safe-vehicles: true
+safe-boats: true
+safe-minecarts: true
 disabled-items:
     left-click:
     right-click:

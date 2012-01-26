@@ -2,6 +2,7 @@ name: KitchenSink
 version: 0.1
 author: Travis Watkins
 main: nu.nerd.kitchensink.KitchenSink
+softdepend: [WorldGuard]
 description: 
 
 commands:

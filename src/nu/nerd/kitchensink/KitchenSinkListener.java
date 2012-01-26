@@ -12,9 +12,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerChatEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -51,17 +51,26 @@ class KitchenSinkListener implements Listener {
                 event.setCancelled(true);
         }
 
-        if (plugin.config.SAFE_VEHICLES && event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            if (event.isCancelled())
+                return;
+
             Block block = event.getClickedBlock();
             Location loc = block.getLocation();
 
-            if (stack.getType() == Material.BOAT) {
+            if (stack.getType() == Material.BOAT && plugin.config.SAFE_BOATS) {
                 loc.setX(loc.getX() + 0.5);
                 loc.setY(loc.getY() + 1);
                 loc.setZ(loc.getZ() + 0.5);
  
                 if (block.getType() == Material.SNOW)
                     loc.setY(loc.getY() - 1);
+
+                if (event.getPlayer().getVehicle() != null) {
+                    VehicleExitEvent e = new VehicleExitEvent(event.getPlayer().getVehicle(), event.getPlayer());
+                    onVehicleExit(e);
+                }
+
                 Boat boat = loc.getWorld().spawn(loc, Boat.class);
                 boat.setPassenger(event.getPlayer());
                 event.setCancelled(true);
@@ -69,11 +78,17 @@ class KitchenSinkListener implements Listener {
                     --((CraftItemStack)stack).getHandle().count;
             }
 
-            if (stack.getType() == Material.MINECART) {
+            if (stack.getType() == Material.MINECART && plugin.config.SAFE_MINECARTS) {
                 if (block.getType() == Material.RAILS || block.getType() == Material.POWERED_RAIL || block.getType() == Material.DETECTOR_RAIL) {
                     loc.setX(loc.getX() + 0.5);
                     loc.setY(loc.getY() + 0.5);
                     loc.setZ(loc.getZ() + 0.5);
+
+                    if (event.getPlayer().getVehicle() != null) {
+                        VehicleExitEvent e = new VehicleExitEvent(event.getPlayer().getVehicle(), event.getPlayer());
+                        onVehicleExit(e);
+                    }
+
                     Minecart minecart = loc.getWorld().spawn(loc, Minecart.class);
                     minecart.setPassenger(event.getPlayer());
                     event.setCancelled(true);
@@ -115,6 +130,14 @@ class KitchenSinkListener implements Listener {
 
         Chunk chunk = event.getPlayer().getWorld().getChunkAt(event.getTo());
         event.getPlayer().getWorld().refreshChunk(chunk.getX(), chunk.getZ());
+
+        if (event.getCause() != TeleportCause.UNKNOWN) {
+            Vehicle vehicle = event.getPlayer().getVehicle();
+            if (vehicle instanceof Boat && plugin.config.SAFE_BOATS)
+                vehicle.remove();
+            if (vehicle instanceof Minecart && plugin.config.SAFE_MINECARTS)
+                vehicle.remove();
+        }
     }
 
     @EventHandler
@@ -122,17 +145,16 @@ class KitchenSinkListener implements Listener {
         if (event.isCancelled())
             return;
 
-        if (plugin.config.SAFE_VEHICLES) {
-            Vehicle vehicle = event.getVehicle();
-            vehicle.remove();
+        Vehicle vehicle = event.getVehicle();
+        Location loc = vehicle.getLocation();
 
-            Location loc = vehicle.getLocation();
-            if (vehicle instanceof Boat) {
-                loc.getWorld().dropItem(loc, new ItemStack(Material.BOAT, 1));
-            }
-            if (vehicle instanceof Minecart) {
-                loc.getWorld().dropItem(loc, new ItemStack(Material.MINECART, 1));
-            }
+        if (vehicle instanceof Boat && plugin.config.SAFE_BOATS) {
+            loc.getWorld().dropItem(loc, new ItemStack(Material.BOAT, 1));
+            vehicle.remove();
+        }
+        if (vehicle instanceof Minecart && plugin.config.SAFE_MINECARTS) {
+            loc.getWorld().dropItem(loc, new ItemStack(Material.MINECART, 1));
+            vehicle.remove();
         }
     }
 }
