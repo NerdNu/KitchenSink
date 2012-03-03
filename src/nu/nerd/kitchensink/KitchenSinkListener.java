@@ -1,9 +1,11 @@
 package nu.nerd.kitchensink;
 
+import java.util.ArrayList;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.Boat;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Vehicle;
 import org.bukkit.event.EventHandler;
@@ -15,12 +17,14 @@ import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import org.bukkit.event.vehicle.VehicleDestroyEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.inventory.ItemStack;
 
 
 class KitchenSinkListener implements Listener {
     private final KitchenSink plugin;
+    private final ArrayList<Integer> destroyed = new ArrayList<Integer>();
 
     KitchenSinkListener(KitchenSink instance) {
         plugin = instance;
@@ -67,7 +71,7 @@ class KitchenSinkListener implements Listener {
                     loc.setY(loc.getY() - 1);
 
                 if (event.getPlayer().getVehicle() != null) {
-                    VehicleExitEvent e = new VehicleExitEvent(event.getPlayer().getVehicle(), event.getPlayer());
+                    VehicleExitEvent e = new VehicleExitEvent((Vehicle) event.getPlayer().getVehicle(), event.getPlayer());
                     onVehicleExit(e);
                 }
 
@@ -85,7 +89,7 @@ class KitchenSinkListener implements Listener {
                     loc.setZ(loc.getZ() + 0.5);
 
                     if (event.getPlayer().getVehicle() != null) {
-                        VehicleExitEvent e = new VehicleExitEvent(event.getPlayer().getVehicle(), event.getPlayer());
+                        VehicleExitEvent e = new VehicleExitEvent((Vehicle) event.getPlayer().getVehicle(), event.getPlayer());
                         onVehicleExit(e);
                     }
 
@@ -132,11 +136,26 @@ class KitchenSinkListener implements Listener {
         event.getPlayer().getWorld().refreshChunk(chunk.getX(), chunk.getZ());
 
         if (event.getCause() != TeleportCause.UNKNOWN) {
-            Vehicle vehicle = event.getPlayer().getVehicle();
+            Entity vehicle = event.getPlayer().getVehicle();
             if (vehicle instanceof Boat && plugin.config.SAFE_BOATS)
                 vehicle.remove();
             if (vehicle instanceof Minecart && plugin.config.SAFE_MINECARTS)
                 vehicle.remove();
+        }
+    }
+
+    @EventHandler
+    public void onVehicleDestroy(VehicleDestroyEvent event) {
+        if (event.isCancelled())
+            return;
+
+        Vehicle vehicle = event.getVehicle();
+        if (vehicle instanceof Boat && plugin.config.SAFE_BOATS) {
+            destroyed.add(vehicle.getEntityId());
+        }
+
+        if (vehicle instanceof Minecart && plugin.config.SAFE_MINECARTS) {
+            destroyed.add(vehicle.getEntityId());
         }
     }
 
@@ -146,7 +165,17 @@ class KitchenSinkListener implements Listener {
             return;
 
         Vehicle vehicle = event.getVehicle();
+        // if we already removed it don't do it again
+        if (vehicle.isDead())
+            return;
+
         Location loc = vehicle.getLocation();
+
+        // don't give them a boat/minecart if they broke it
+        if (destroyed.contains(vehicle.getEntityId())) {
+            destroyed.remove((Integer)vehicle.getEntityId());
+            return;
+        }
 
         if (vehicle instanceof Boat && plugin.config.SAFE_BOATS) {
             loc.getWorld().dropItem(loc, new ItemStack(Material.BOAT, 1));
