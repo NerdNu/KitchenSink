@@ -25,6 +25,7 @@ import org.bukkit.inventory.ItemStack;
 class KitchenSinkListener implements Listener {
     private final KitchenSink plugin;
     private final ArrayList<Integer> destroyed = new ArrayList<Integer>();
+    private final ArrayList<Integer> exit = new ArrayList<Integer>();
 
     KitchenSinkListener(KitchenSink instance) {
         plugin = instance;
@@ -150,6 +151,14 @@ class KitchenSinkListener implements Listener {
             return;
 
         Vehicle vehicle = event.getVehicle();
+        
+        if(exit.contains(vehicle.getEntityId()))
+        {
+        	event.setCancelled(true);
+        	exit.remove((Integer)vehicle.getEntityId());
+        	return;
+        }
+        
         if (vehicle instanceof Boat && plugin.config.SAFE_BOATS) {
             destroyed.add(vehicle.getEntityId());
         }
@@ -176,6 +185,7 @@ class KitchenSinkListener implements Listener {
             destroyed.remove((Integer)vehicle.getEntityId());
             return;
         }
+        
 
         if (vehicle instanceof Boat && plugin.config.SAFE_BOATS) {
             loc.getWorld().dropItem(loc, new ItemStack(Material.BOAT, 1));
@@ -183,6 +193,7 @@ class KitchenSinkListener implements Listener {
         }
         if (vehicle instanceof Minecart && plugin.config.SAFE_MINECARTS) {
             loc.getWorld().dropItem(loc, new ItemStack(Material.MINECART, 1));
+            exit.add(vehicle.getEntityId());
             vehicle.remove();
         }
     }
