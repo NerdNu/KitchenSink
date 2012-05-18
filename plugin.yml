@@ -1,8 +1,12 @@
 name: KitchenSink
-version: 0.1
+version: 0.2
 author: Travis Watkins
 main: nu.nerd.kitchensink.KitchenSink
 softdepend: [WorldGuard]
+permissions:
+    kitchensink.list:
+        description: List online players
+        default: true
 description: 
 
 commands:
@@ -10,3 +14,6 @@ commands:
         description: Get current TPS and memory stats
     list:
         description: List currently online players
+        permission: kitchensink.list
+        usage: |
+           /list: Show online players
