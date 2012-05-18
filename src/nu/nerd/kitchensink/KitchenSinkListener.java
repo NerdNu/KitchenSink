@@ -63,7 +63,7 @@ class KitchenSinkListener implements Listener {
             Block block = event.getClickedBlock();
             Location loc = block.getLocation();
 
-            if (stack.getType() == Material.BOAT && plugin.config.SAFE_BOATS) {
+            /*if (stack.getType() == Material.BOAT && plugin.config.SAFE_BOATS) {
                 loc.setX(loc.getX() + 0.5);
                 loc.setY(loc.getY() + 1);
                 loc.setZ(loc.getZ() + 0.5);
@@ -81,7 +81,7 @@ class KitchenSinkListener implements Listener {
                 event.setCancelled(true);
                 if (event.getPlayer().getGameMode() == GameMode.SURVIVAL)
                     --((CraftItemStack)stack).getHandle().count;
-            }
+            }*/
 
             if (stack.getType() == Material.MINECART && plugin.config.SAFE_MINECARTS) {
                 if (block.getType() == Material.RAILS || block.getType() == Material.POWERED_RAIL || block.getType() == Material.DETECTOR_RAIL) {
@@ -138,8 +138,8 @@ class KitchenSinkListener implements Listener {
 
         if (event.getCause() != TeleportCause.UNKNOWN) {
             Entity vehicle = event.getPlayer().getVehicle();
-            if (vehicle instanceof Boat && plugin.config.SAFE_BOATS)
-                vehicle.remove();
+            /*if (vehicle instanceof Boat && plugin.config.SAFE_BOATS)
+                vehicle.remove();*/
             if (vehicle instanceof Minecart && plugin.config.SAFE_MINECARTS)
                 vehicle.remove();
         }
@@ -159,9 +159,9 @@ class KitchenSinkListener implements Listener {
         	return;
         }
         
-        if (vehicle instanceof Boat && plugin.config.SAFE_BOATS) {
+        /*if (vehicle instanceof Boat && plugin.config.SAFE_BOATS) {
             destroyed.add(vehicle.getEntityId());
-        }
+        }*/
 
         if (vehicle instanceof Minecart && plugin.config.SAFE_MINECARTS) {
             destroyed.add(vehicle.getEntityId());
@@ -187,10 +187,10 @@ class KitchenSinkListener implements Listener {
         }
         
 
-        if (vehicle instanceof Boat && plugin.config.SAFE_BOATS) {
+        /*if (vehicle instanceof Boat && plugin.config.SAFE_BOATS) {
             loc.getWorld().dropItem(loc, new ItemStack(Material.BOAT, 1));
             vehicle.remove();
-        }
+        }*/
         if (vehicle instanceof Minecart && plugin.config.SAFE_MINECARTS) {
             loc.getWorld().dropItem(loc, new ItemStack(Material.MINECART, 1));
             exit.add(vehicle.getEntityId());
