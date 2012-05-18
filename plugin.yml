@@ -8,3 +8,5 @@ description:
 commands:
     lag:
         description: Get current TPS and memory stats
+    list:
+        description: List currently online players

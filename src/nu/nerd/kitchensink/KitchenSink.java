@@ -1,13 +1,18 @@
 package nu.nerd.kitchensink;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.Minecart;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class KitchenSink extends JavaPlugin {
@@ -74,7 +79,12 @@ public class KitchenSink extends JavaPlugin {
                 success = true;
             }
         }
-
+        if (command.getName().equalsIgnoreCase("list")) {
+            if (sender.hasPermission("kitchensink.list")) {
+            	sendList(sender);
+                success = true;
+            }
+        }
         return success;
     }
 
@@ -90,6 +100,24 @@ public class KitchenSink extends JavaPlugin {
         long memMax = Runtime.getRuntime().maxMemory() / 1048576;
 
         sender.sendMessage("TPS: " + tps + " Mem: " + memUsed + "M/" + memMax + "M");
+    }
+    
+    public void sendList(CommandSender sender) {
+    	ArrayList<String> list = new ArrayList<String>();
+    	for (Player player : getServer().getOnlinePlayers()) {
+    		list.add(player.getName());
+    	}
+    	Collections.sort(list, String.CASE_INSENSITIVE_ORDER);
+    	sender.sendMessage("Players Online: " + list.size());
+    	if(list.size() == 0) { return; }
+    	String onlinelist = "Players:";
+    	int index = 0;
+    	for (String p:list) {
+    		ChatColor color = ChatColor.GRAY;
+    		if (index++ % 2 == 0) { color = ChatColor.WHITE; }
+    		onlinelist += " " + color + p;
+    	}
+    	sender.sendMessage(onlinelist);
     }
 
     public void sendToLog(Level level, String message) {

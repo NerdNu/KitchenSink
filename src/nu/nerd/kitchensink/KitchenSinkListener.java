@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.entity.Boat;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Vehicle;
