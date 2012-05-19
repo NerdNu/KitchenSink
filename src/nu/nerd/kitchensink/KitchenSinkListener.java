@@ -14,6 +14,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.event.vehicle.VehicleDestroyEvent;
@@ -37,6 +38,14 @@ class KitchenSinkListener implements Listener {
 
         if (plugin.config.DISABLE_DROPS)
             event.setCancelled(true);
+    }
+    
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerLogin(PlayerLoginEvent event) {
+    	if(event.getPlayer().hasPermission("kitchensink.admin")) {
+    		event.allow();
+    		return;
+    	}
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
