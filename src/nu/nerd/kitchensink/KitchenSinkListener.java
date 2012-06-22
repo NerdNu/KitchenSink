@@ -3,6 +3,7 @@ package nu.nerd.kitchensink;
 import java.util.ArrayList;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Minecart;
@@ -11,6 +12,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -204,5 +206,14 @@ class KitchenSinkListener implements Listener {
             exit.add(vehicle.getEntityId());
             vehicle.remove();
         }
+    }
+    
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onEntityBlockForm(EntityBlockFormEvent event) {
+    	if(plugin.config.DISABLE_SNOW) {
+    		if(event.getBlock().getRelative(BlockFace.DOWN).getType() != Material.GRAVEL){
+    			event.setCancelled(true);
+    		}
+    	}
     }
 }

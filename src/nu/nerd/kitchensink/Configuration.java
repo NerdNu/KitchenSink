@@ -7,6 +7,7 @@ public class Configuration
 {
     private final KitchenSink plugin;
 
+    public boolean DISABLE_SNOW;
     public boolean DISABLE_DROPS;
     public boolean BLOCK_CAPS;
     public boolean SAFE_BOATS;
@@ -29,6 +30,7 @@ public class Configuration
     {
         plugin.reloadConfig();
 
+        DISABLE_SNOW = plugin.getConfig().getBoolean("disable-snowgrow");
         DISABLE_DROPS = plugin.getConfig().getBoolean("disable-drops");
         BLOCK_CAPS = plugin.getConfig().getBoolean("block-caps");
         SAFE_BOATS = plugin.getConfig().getBoolean("safe-boats");

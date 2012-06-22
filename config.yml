@@ -1,3 +1,4 @@
+disable-snowgrow: false
 disable-drops: true
 block-caps: true
 safe-boats: true
