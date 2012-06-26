@@ -1,18 +1,25 @@
 package nu.nerd.kitchensink;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
+
+import net.minecraft.server.EntityLiving;
+
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.Chest;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Minecart;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Vehicle;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.EntityBlockFormEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -51,7 +58,9 @@ class KitchenSinkListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPlayerInteract(PlayerInteractEvent event) {
+    public void onPlayerInteract(PlayerInteractEvent event) {   	
+    	
+    	//Begin old KS stuff
         if (!event.hasItem())
             return;
 
@@ -196,7 +205,6 @@ class KitchenSinkListener implements Listener {
             return;
         }
         
-
         /*if (vehicle instanceof Boat && plugin.config.SAFE_BOATS) {
             loc.getWorld().dropItem(loc, new ItemStack(Material.BOAT, 1));
             vehicle.remove();
@@ -213,6 +221,18 @@ class KitchenSinkListener implements Listener {
     	if(plugin.config.DISABLE_SNOW) {
     		if(event.getBlock().getRelative(BlockFace.DOWN).getType() != Material.GRAVEL){
     			event.setCancelled(true);
+    		}
+    	}
+    }
+    
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onEntityDeath(EntityDeathEvent event) {
+    	if(plugin.config.LOG_ANIMAL_DEATH) {
+    		if(!(event.getEntity() instanceof Player) && (event.getEntity() instanceof EntityLiving)){
+    			if (event.getEntity().getKiller() instanceof Player) {
+    				String player = event.getEntity().getKiller().getName();
+    				plugin.sendToLog(Level.INFO, player + " killed " + event.getEntityType().name() + " at " + event.getEntity().getLocation().toString());
+    			}
     		}
     	}
     }
