@@ -3,13 +3,11 @@ package nu.nerd.kitchensink;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
-import net.minecraft.server.EntityLiving;
-
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.Chest;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.entity.Animals;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
@@ -227,13 +225,11 @@ class KitchenSinkListener implements Listener {
     
     @EventHandler(priority = EventPriority.MONITOR)
     public void onEntityDeath(EntityDeathEvent event) {
-    	if(plugin.config.LOG_ANIMAL_DEATH) {
-    		if(!(event.getEntity() instanceof Player) && (event.getEntity() instanceof EntityLiving)){
+    	if(plugin.config.LOG_ANIMAL_DEATH && event.getEntity() instanceof Animals) {
     			if (event.getEntity().getKiller() instanceof Player) {
     				String player = event.getEntity().getKiller().getName();
     				plugin.sendToLog(Level.INFO, player + " killed " + event.getEntityType().name() + " at " + event.getEntity().getLocation().toString());
     			}
-    		}
     	}
     }
 }

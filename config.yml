@@ -1,5 +1,6 @@
 disable-snowgrow: false
 disable-drops: true
+log-animals: false
 block-caps: true
 safe-boats: true
 safe-minecarts: true
