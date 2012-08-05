@@ -1,9 +1,11 @@
 disable-snowgrow: false
-disable-drops: true
+disable-drops: false
 log-animals: false
 block-caps: true
 safe-boats: true
+safe-boats-drop: true
 safe-minecarts: true
+safe-minecarts-drop: true
 disabled-items:
     left-click:
     right-click:
