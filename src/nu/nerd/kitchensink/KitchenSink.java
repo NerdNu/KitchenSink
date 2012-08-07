@@ -53,7 +53,7 @@ public class KitchenSink extends JavaPlugin {
 						}
 					}
 				}
-			}, 1200, 6000);
+			}, config.SAFE_BOATS_DELAY, config.SAFE_BOATS_DELAY);
 		}
 
 		if (config.SAFE_MINECARTS) {
@@ -70,7 +70,7 @@ public class KitchenSink extends JavaPlugin {
 						}
 					}
 				}
-			}, 1200, 6000);
+			}, config.SAFE_MINECARTS_DELAY, config.SAFE_MINECARTS_DELAY);
 		}
 
 		getServer().getScheduler().scheduleSyncRepeatingTask(this, lagCheck, 20, 20);
