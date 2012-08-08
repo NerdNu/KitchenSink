@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>KitchenSink</groupId>
+	<groupId>nu.nerd</groupId>
 	<artifactId>KitchenSink</artifactId>
 	<version>0.1</version>
 	<packaging>jar</packaging>
@@ -9,6 +9,20 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
+
+    <distributionManagement>
+        <repository>
+            <id>thezomg-rel</id>
+            <name>maven.thezomg.com Releases</name>
+            <url>http://maven.thezomg.com/content/repositories/releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>thezomg-snap</id>
+            <name>maven.thezomg.com Snapshots</name>
+            <url>http://maven.thezomg.com/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
 	<pluginRepositories>
 		<pluginRepository>
 			<id>bukkit-plugins</id>
