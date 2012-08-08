@@ -2,6 +2,7 @@ disable-snowgrow: false
 disable-drops: false
 log-animals: false
 block-caps: true
+remove-on-exit: false
 safe-boats: true
 safe-boats-delay: 6000
 safe-boats-drop: true
