@@ -18,6 +18,7 @@ public class Configuration
     public int SAFE_MINECARTS_DELAY;
     public boolean SAFE_MINECARTS_DROP;
     public boolean REMOVE_ON_EXIT;
+    public boolean SAFE_SPECIAL_CARTS;
 
     public List<Integer> DISABLED_LEFT_ITEMS;
     public List<Integer> DISABLED_RIGHT_ITEMS;
@@ -49,5 +50,6 @@ public class Configuration
         DISABLED_LEFT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.left-click");
         DISABLED_RIGHT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.right-click");
         REMOVE_ON_EXIT = plugin.getConfig().getBoolean("remove-on-exit");
+        SAFE_SPECIAL_CARTS = plugin.getConfig().getBoolean("safe-special-carts");
     }
 }

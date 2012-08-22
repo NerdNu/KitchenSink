@@ -9,8 +9,9 @@ safe-boats-drop: true
 safe-minecarts: true
 safe-minecarts-delay: 6000
 safe-minecarts-drop: true
+safe-special-carts: true
 disabled-items:
-    left-click:
+    left-click: []
     right-click:
     - 261
     - 332
