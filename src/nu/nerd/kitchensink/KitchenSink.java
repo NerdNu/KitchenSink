@@ -11,9 +11,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Boat;
-import org.bukkit.entity.Minecart;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -61,7 +59,7 @@ public class KitchenSink extends JavaPlugin {
 				public void run() {
 					for (World world : getServer().getWorlds()) {
 						for (Minecart minecart : world.getEntitiesByClass(Minecart.class)) {
-							if (minecart.isEmpty()) {
+							if (minecart.isEmpty() && !(minecart instanceof StorageMinecart || minecart instanceof PoweredMinecart)) {
 								minecart.remove();
 								if (config.SAFE_MINECARTS_DROP) {
 									world.dropItem(minecart.getLocation(), new ItemStack(Material.MINECART, 1));
