@@ -111,7 +111,9 @@ class KitchenSinkListener implements Listener {
             if (event.getEntity().getKiller() instanceof Player) {
                 if (plugin.config.LOG_ANIMAL_DEATH) {
                     String player = event.getEntity().getKiller().getName();
-                    plugin.sendToLog(Level.INFO, player + " killed " + event.getEntityType().name() + " at " + event.getEntity().getLocation().toString());
+                    Location l = event.getEntity().getLocation();
+                    Chunk c = l.getChunk();
+                    plugin.sendToLog(Level.INFO, "[MobKill] " + player + "|" + event.getEntityType().name() + "|" + l.getWorld().getName() + "|" + l.getX() + "|" + l.getY() + "|" + l.getZ() + "| C[" + c.getX() + "," + c.getZ() + "]");
                 }
                 if (plugin.config.BUFF_DROPS != 0) {
                     List<ItemStack> items = event.getDrops();
