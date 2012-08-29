@@ -8,6 +8,7 @@ public class Configuration
     private final KitchenSink plugin;
 
     public boolean LOG_ANIMAL_DEATH;
+    public int BUFF_DROPS;
     public boolean DISABLE_SNOW;
     public boolean DISABLE_DROPS;
     public boolean BLOCK_CAPS;
@@ -38,6 +39,7 @@ public class Configuration
         plugin.reloadConfig();
 
         LOG_ANIMAL_DEATH = plugin.getConfig().getBoolean("log-animals");
+        BUFF_DROPS = plugin.getConfig().getInt("buff-drops");
         DISABLE_SNOW = plugin.getConfig().getBoolean("disable-snowgrow");
         DISABLE_DROPS = plugin.getConfig().getBoolean("disable-drops");
         BLOCK_CAPS = plugin.getConfig().getBoolean("block-caps");

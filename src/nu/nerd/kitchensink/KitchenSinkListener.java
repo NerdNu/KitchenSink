@@ -1,5 +1,6 @@
 package nu.nerd.kitchensink;
 
+import java.util.List;
 import java.util.logging.Level;
 
 import org.bukkit.*;
@@ -106,11 +107,22 @@ class KitchenSinkListener implements Listener {
     
     @EventHandler(priority = EventPriority.MONITOR)
     public void onEntityDeath(EntityDeathEvent event) {
-    	if(plugin.config.LOG_ANIMAL_DEATH && event.getEntity() instanceof Animals) {
-    			if (event.getEntity().getKiller() instanceof Player) {
-    				String player = event.getEntity().getKiller().getName();
-    				plugin.sendToLog(Level.INFO, player + " killed " + event.getEntityType().name() + " at " + event.getEntity().getLocation().toString());
-    			}
-    	}
+        if (event.getEntity() instanceof Animals) {
+            if (event.getEntity().getKiller() instanceof Player) {
+                if (plugin.config.LOG_ANIMAL_DEATH) {
+                    String player = event.getEntity().getKiller().getName();
+                    plugin.sendToLog(Level.INFO, player + " killed " + event.getEntityType().name() + " at " + event.getEntity().getLocation().toString());
+                }
+                if (plugin.config.BUFF_DROPS != 0) {
+                    List<ItemStack> items = event.getDrops();
+                    Location l = event.getEntity().getLocation();
+                    for (int i = 0; i < plugin.config.BUFF_DROPS; i++) {
+                        for (ItemStack a : items) {
+                            l.getWorld().dropItemNaturally(l, a);
+                        }
+                    }
+                }
+            }
+        }
     }
 }

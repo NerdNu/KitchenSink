@@ -1,6 +1,7 @@
 disable-snowgrow: false
 disable-drops: false
 log-animals: false
+buff-drops: 0
 block-caps: true
 remove-on-exit: false
 safe-boats: true
