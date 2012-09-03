@@ -5,7 +5,7 @@ import java.util.logging.Level;
 
 import org.bukkit.*;
 import org.bukkit.block.BlockFace;
-import org.bukkit.entity.Animals;
+import org.bukkit.entity.Ageable;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Vehicle;
 import org.bukkit.event.EventHandler;
@@ -107,7 +107,7 @@ class KitchenSinkListener implements Listener {
     
     @EventHandler(priority = EventPriority.MONITOR)
     public void onEntityDeath(EntityDeathEvent event) {
-        if (event.getEntity() instanceof Animals) {
+        if (event.getEntity() instanceof Ageable) {
             if (event.getEntity().getKiller() instanceof Player) {
                 if (plugin.config.LOG_ANIMAL_DEATH) {
                     String player = event.getEntity().getKiller().getName();
