@@ -132,10 +132,10 @@ class KitchenSinkListener implements Listener {
     
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerShearEntity(PlayerShearEntityEvent event) {
-        if (plugin.config.BUFF_DROPS != 0 && event.getEntity() instanceof Sheep) {
+        if (plugin.config.BUFF_SHEAR_DROPS != 0 && event.getEntity() instanceof Sheep) {
             Sheep entity = (Sheep) event.getEntity();
-            ItemStack drops = new ItemStack(Material.WOOL, plugin.config.BUFF_DROPS, (byte)entity.getColor().ordinal());
-            Location l = event.getEntity().getLocation();
+            ItemStack drops = new ItemStack(Material.WOOL, plugin.config.BUFF_SHEAR_DROPS, (byte)entity.getColor().ordinal());
+            Location l = entity.getLocation();
             l.getWorld().dropItemNaturally(l, drops);
         }
     }
