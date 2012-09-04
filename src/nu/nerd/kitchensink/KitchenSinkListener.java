@@ -7,6 +7,7 @@ import org.bukkit.*;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Ageable;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Sheep;
 import org.bukkit.entity.Vehicle;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -18,6 +19,7 @@ import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -125,6 +127,16 @@ class KitchenSinkListener implements Listener {
                     }
                 }
             }
+        }
+    }
+    
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerShearEntity(PlayerShearEntityEvent event) {
+        if (plugin.config.BUFF_DROPS != 0 && event.getEntity() instanceof Sheep) {
+            Sheep entity = (Sheep) event.getEntity();
+            ItemStack drops = new ItemStack(Material.WOOL, plugin.config.BUFF_DROPS, (byte)entity.getColor().ordinal());
+            Location l = event.getEntity().getLocation();
+            l.getWorld().dropItemNaturally(l, drops);
         }
     }
 }
