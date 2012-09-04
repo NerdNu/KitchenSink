@@ -3,10 +3,12 @@ package nu.nerd.kitchensink;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.bukkit.ChatColor;
+
+import org.bukkit.entity.Ageable;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -75,6 +77,22 @@ public class KitchenSink extends JavaPlugin {
 				}
 			}, config.SAFE_MINECARTS_DELAY, config.SAFE_MINECARTS_DELAY);
 		}
+                if (config.ANIMAL_COUNT) {
+                    getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
+                        public void run() {
+                            System.out.println("-!- Starting Mob count");
+                            HashMap<String, Integer> a = new HashMap<String, Integer>();
+                            for (Ageable animal : getServer().getWorlds().get(0).getEntitiesByClass(Ageable.class)) {
+                                if (a.containsKey(animal.getType().name())) {
+                                    a.put(animal.getType().name(), a.get(animal.getType().name()) + 1);
+                                } else {
+                                    a.put(animal.getType().name(), 1);
+                                } 
+                            }
+                            System.out.println("-!- " + a);
+                        }
+                    }, 1200, 12000); // 10 Minutes
+                }
 
 		getServer().getScheduler().scheduleSyncRepeatingTask(this, lagCheck, 20, 20);
 		getServer().getPluginManager().registerEvents(listener, this);
