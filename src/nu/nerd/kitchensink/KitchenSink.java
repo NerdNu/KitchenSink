@@ -78,11 +78,11 @@ public class KitchenSink extends JavaPlugin {
 			}, config.SAFE_MINECARTS_DELAY, config.SAFE_MINECARTS_DELAY);
 		}
                 if (config.ANIMAL_COUNT) {
-                    getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
+                    getServer().getScheduler().scheduleAsyncRepeatingTask(this, new Runnable() {
                         public void run() {
                             System.out.println("-!- Starting Mob count");
                             HashMap<String, Integer> a = new HashMap<String, Integer>();
-                            for (Ageable animal : getServer().getWorlds().get(0).getEntitiesByClass(Ageable.class)) {
+                            for (LivingEntity animal : getServer().getWorlds().get(0).getEntitiesByClass(LivingEntity.class)) {
                                 if (a.containsKey(animal.getType().name())) {
                                     a.put(animal.getType().name(), a.get(animal.getType().name()) + 1);
                                 } else {

@@ -7,6 +7,9 @@ permissions:
     kitchensink.list:
         description: List online players
         default: true
+    kitchensink.lag:
+        description: Show lag stats
+        default: false
 description: 
 
 commands:
