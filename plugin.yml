@@ -9,7 +9,7 @@ permissions:
         default: true
     kitchensink.lag:
         description: Show lag stats
-        default: false
+        default: op
 description: 
 
 commands:
