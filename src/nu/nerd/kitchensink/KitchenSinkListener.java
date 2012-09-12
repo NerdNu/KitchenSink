@@ -56,11 +56,16 @@ class KitchenSinkListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPlayerInteract(PlayerInteractEvent event) {   	
-    	
+    public void onPlayerInteract(PlayerInteractEvent event) {  
     	//Begin old KS stuff
-        if (!event.hasItem())
+        if (!event.hasItem()) {
             return;
+        }
+        if (plugin.config.PEARL_DAMAGE > 0){
+            if (event.getAction() == Action.RIGHT_CLICK_AIR && event.getItem().getType() == Material.ENDER_PEARL ) {
+                event.getPlayer().damage(plugin.config.PEARL_DAMAGE);
+            }
+        }
 
         ItemStack stack = event.getItem();
         if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {

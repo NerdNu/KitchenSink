@@ -3,6 +3,7 @@ disable-drops: false
 log-animals: false
 buff-drops: 0
 buff-shear-drops: 0
+pearl-damage: 0
 block-caps: true
 remove-on-exit: false
 animal-count: false

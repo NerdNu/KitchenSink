@@ -22,6 +22,7 @@ public class Configuration
     public boolean REMOVE_ON_EXIT;
     public boolean SAFE_SPECIAL_CARTS;
     public boolean ANIMAL_COUNT;
+    public int PEARL_DAMAGE;
 
     public List<Integer> DISABLED_LEFT_ITEMS;
     public List<Integer> DISABLED_RIGHT_ITEMS;
@@ -57,5 +58,6 @@ public class Configuration
         REMOVE_ON_EXIT = plugin.getConfig().getBoolean("remove-on-exit");
         SAFE_SPECIAL_CARTS = plugin.getConfig().getBoolean("safe-special-carts");
         ANIMAL_COUNT = plugin.getConfig().getBoolean("animal-count");
+        PEARL_DAMAGE = plugin.getConfig().getInt("pearl-damage");
     }
 }

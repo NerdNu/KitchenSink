@@ -8,11 +8,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.ChatColor;
 
-import org.bukkit.entity.Ageable;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -103,7 +103,17 @@ public class KitchenSink extends JavaPlugin {
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String name, String[] args) {
 		boolean success = false;
-
+                if (command.getName().equalsIgnoreCase("unenchant") && sender instanceof Player) {
+                    Player player = (Player) sender;
+                    try {
+                        for (Enchantment e : player.getItemInHand().getEnchantments().keySet()) {
+                            player.getItemInHand().removeEnchantment(e);
+                        }
+                        player.sendMessage("Enchantments removed.");
+                    } catch (Exception e) {
+                        player.sendMessage("No enchantments removed.");
+                    }
+                }
 		if (command.getName().equalsIgnoreCase("lag")) {
 			if (sender.hasPermission("kitchensink.lag")) {
 				sendLagStats(sender);

@@ -10,9 +10,15 @@ permissions:
     kitchensink.lag:
         description: Show lag stats
         default: op
+    kitchensink.unenchant:
+        description: Remove enchants from current item
+        default: op
 description: 
 
 commands:
+    unenchant:
+        description: Remove enchants from current item
+        permission: kitchensink.unenchant
     lag:
         description: Get current TPS and memory stats
     list:
