@@ -13,6 +13,7 @@ public class Configuration
     public boolean DISABLE_SNOW;
     public boolean DISABLE_DROPS;
     public boolean BLOCK_CAPS;
+    public boolean SAFE_DISPENSERS;
     public boolean SAFE_BOATS;
     public int SAFE_BOATS_DELAY;
     public boolean SAFE_BOATS_DROP;
@@ -24,6 +25,7 @@ public class Configuration
     public boolean ANIMAL_COUNT;
     public int PEARL_DAMAGE;
 
+    public List<Integer> DISABLE_DISPENSED;
     public List<Integer> DISABLED_LEFT_ITEMS;
     public List<Integer> DISABLED_RIGHT_ITEMS;
 
@@ -47,6 +49,7 @@ public class Configuration
         DISABLE_SNOW = plugin.getConfig().getBoolean("disable-snowgrow");
         DISABLE_DROPS = plugin.getConfig().getBoolean("disable-drops");
         BLOCK_CAPS = plugin.getConfig().getBoolean("block-caps");
+        SAFE_DISPENSERS = plugin.getConfig().getBoolean("safe-dispensers");
         SAFE_BOATS = plugin.getConfig().getBoolean("safe-boats");
         SAFE_BOATS_DELAY = plugin.getConfig().getInt("safe-boats-delay");
         SAFE_BOATS_DROP = plugin.getConfig().getBoolean("safe-boats-drop");
@@ -55,6 +58,7 @@ public class Configuration
         SAFE_MINECARTS_DROP = plugin.getConfig().getBoolean("safe-minecarts-drop");
         DISABLED_LEFT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.left-click");
         DISABLED_RIGHT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.right-click");
+        DISABLE_DISPENSED = plugin.getConfig().getIntegerList("disable-dispensed");
         REMOVE_ON_EXIT = plugin.getConfig().getBoolean("remove-on-exit");
         SAFE_SPECIAL_CARTS = plugin.getConfig().getBoolean("safe-special-carts");
         ANIMAL_COUNT = plugin.getConfig().getBoolean("animal-count");

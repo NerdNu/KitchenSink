@@ -14,6 +14,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.EntityBlockFormEvent;
+import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
@@ -107,6 +108,15 @@ class KitchenSinkListener implements Listener {
     public void onEntityBlockForm(EntityBlockFormEvent event) {
     	if(plugin.config.DISABLE_SNOW) {
     		if(event.getBlock().getRelative(BlockFace.DOWN).getType() != Material.OBSIDIAN){
+    			event.setCancelled(true);
+    		}
+    	}
+    }
+    
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onBlockDispense(BlockDispenseEvent event) {
+    	if(plugin.config.SAFE_DISPENSERS) {
+    		if(plugin.config.DISABLE_DISPENSED.contains(event.getItem().getTypeId())) {
     			event.setCancelled(true);
     		}
     	}
