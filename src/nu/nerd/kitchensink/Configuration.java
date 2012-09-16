@@ -24,6 +24,7 @@ public class Configuration
     public boolean SAFE_SPECIAL_CARTS;
     public boolean ANIMAL_COUNT;
     public int PEARL_DAMAGE;
+    public boolean SAFE_ICE;
 
     public List<Integer> DISABLE_DISPENSED;
     public List<Integer> DISABLED_LEFT_ITEMS;
@@ -63,5 +64,6 @@ public class Configuration
         SAFE_SPECIAL_CARTS = plugin.getConfig().getBoolean("safe-special-carts");
         ANIMAL_COUNT = plugin.getConfig().getBoolean("animal-count");
         PEARL_DAMAGE = plugin.getConfig().getInt("pearl-damage");
+        SAFE_ICE = plugin.getConfig().getBoolean("safe-ice",false);
     }
 }

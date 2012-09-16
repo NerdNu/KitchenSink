@@ -14,6 +14,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
@@ -154,6 +155,18 @@ class KitchenSinkListener implements Listener {
             ItemStack drops = new ItemStack(Material.WOOL, plugin.config.BUFF_SHEAR_DROPS, (byte)entity.getColor().ordinal());
             Location l = entity.getLocation();
             l.getWorld().dropItemNaturally(l, drops);
+        }
+    }
+    
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onBlockBreak(BlockBreakEvent event) {
+        if(event.isCancelled()) {
+            return;
+        }
+        if(plugin.config.SAFE_ICE) {
+            if( event.getBlock().getType() == Material.ICE && !event.getPlayer().getGameMode().equals(GameMode.CREATIVE)) {
+                event.getBlock().setType(Material.AIR);
+            }
         }
     }
 }
