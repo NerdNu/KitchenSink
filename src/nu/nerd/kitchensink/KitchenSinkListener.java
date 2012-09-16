@@ -1,5 +1,6 @@
 package nu.nerd.kitchensink;
 
+import java.text.Normalizer;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -87,6 +88,7 @@ class KitchenSinkListener implements Listener {
         String message = event.getMessage();
         message = ChatColor.stripColor(message);
         message = message.replaceAll("[ \\s\\u000a\\u000d\\u2028\\u2029\\u0009\\u000b\\u000c\\u000d\\u0020\\u00a0\\u1680\\u180e\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200a\\u202f\\u205f\\u3000]{2,}", " ");
+        message = Normalizer.normalize(message, Normalizer.Form.NFD);
         event.setMessage(message);
 
         if (plugin.config.BLOCK_CAPS) {
