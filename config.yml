@@ -8,6 +8,7 @@ block-caps: true
 remove-on-exit: false
 animal-count: false
 safe-dispensers: false
+safe-portals: false
 safe-boats: true
 safe-boats-delay: 6000
 safe-boats-drop: true

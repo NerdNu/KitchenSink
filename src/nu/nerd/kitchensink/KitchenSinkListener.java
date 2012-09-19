@@ -24,6 +24,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
+import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.ItemStack;
 
 class KitchenSinkListener implements Listener {
@@ -158,6 +159,15 @@ class KitchenSinkListener implements Listener {
         }
     }
     
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPortalCreate(PortalCreateEvent event) {
+        if (event.isCancelled())
+            return;
+        
+        if (plugin.config.SAFE_PORTALS)
+            event.setCancelled(true);
+    }
+
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBreak(BlockBreakEvent event) {
         if(event.isCancelled()) {
