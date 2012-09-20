@@ -25,6 +25,7 @@ public class Configuration
     public boolean ANIMAL_COUNT;
     public int PEARL_DAMAGE;
     public boolean SAFE_ICE;
+    public boolean SAFE_PORTALS;
 
     public List<Integer> DISABLE_DISPENSED;
     public List<Integer> DISABLED_LEFT_ITEMS;
@@ -57,6 +58,7 @@ public class Configuration
         SAFE_MINECARTS = plugin.getConfig().getBoolean("safe-minecarts");
         SAFE_MINECARTS_DELAY = plugin.getConfig().getInt("safe-minecarts-delay");
         SAFE_MINECARTS_DROP = plugin.getConfig().getBoolean("safe-minecarts-drop");
+        SAFE_PORTALS = plugin.getConfig().getBoolean("safe-portals");
         DISABLED_LEFT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.left-click");
         DISABLED_RIGHT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.right-click");
         DISABLE_DISPENSED = plugin.getConfig().getIntegerList("disable-dispensed");
