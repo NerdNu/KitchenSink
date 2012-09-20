@@ -1,14 +1,12 @@
-disable-snowgrow: false
-disable-drops: false
+animal-count: false
 log-animals: false
 buff-drops: 0
 buff-shear-drops: 0
-pearl-damage: 0
+disable-snowgrow: false
+disable-drops: false
 block-caps: true
-remove-on-exit: false
-animal-count: false
+safe-ice: false
 safe-dispensers: false
-safe-portals: false
 safe-boats: true
 safe-boats-delay: 6000
 safe-boats-drop: true
@@ -16,6 +14,9 @@ safe-minecarts: true
 safe-minecarts-delay: 6000
 safe-minecarts-drop: true
 safe-special-carts: true
+remove-on-exit: false
+safe-portals: false
+pearl-damage: 0
 disabled-items:
     left-click: []
     right-click:
@@ -25,5 +26,7 @@ disabled-items:
     - 346
     - 381
     - 383
-disable-dispensed: []
+    dispensed:
+    - 326
+    - 327
 
