@@ -13,7 +13,8 @@ public class Configuration
     public int BUFF_SHEAR_DROPS;
     public boolean DISABLE_SNOW;
     public boolean DISABLE_DROPS;
-    public boolean BLOCK_CAPS;    
+    public boolean BLOCK_CAPS;  
+    public boolean BLOCK_VILLAGERS;
     public boolean SAFE_ICE;
     public boolean SAFE_DISPENSERS;
     public boolean SAFE_BOATS;
@@ -26,7 +27,8 @@ public class Configuration
     public boolean REMOVE_ON_EXIT;
     public boolean SAFE_PORTALS;
     public int PEARL_DAMAGE;
-
+    
+    public List<Integer> ALLOW_ENCH_ITEMS;
     public List<Integer> DISABLED_LEFT_ITEMS;
     public List<Integer> DISABLED_RIGHT_ITEMS;
     public List<Integer> DISABLE_DISPENSED;
@@ -52,6 +54,7 @@ public class Configuration
         DISABLE_SNOW = plugin.getConfig().getBoolean("disable-snowgrow");
         DISABLE_DROPS = plugin.getConfig().getBoolean("disable-drops");
         BLOCK_CAPS = plugin.getConfig().getBoolean("block-caps");
+        BLOCK_VILLAGERS = plugin.getConfig().getBoolean("block-villagers");
         SAFE_ICE = plugin.getConfig().getBoolean("safe-ice");
         SAFE_DISPENSERS = plugin.getConfig().getBoolean("safe-dispensers");
         SAFE_BOATS = plugin.getConfig().getBoolean("safe-boats");
@@ -64,6 +67,7 @@ public class Configuration
         REMOVE_ON_EXIT = plugin.getConfig().getBoolean("remove-on-exit");
         SAFE_PORTALS = plugin.getConfig().getBoolean("safe-portals");
         PEARL_DAMAGE = plugin.getConfig().getInt("pearl-damage");
+        ALLOW_ENCH_ITEMS = plugin.getConfig().getIntegerList("allow-enchant-items");
         DISABLED_LEFT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.left-click");
         DISABLED_RIGHT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.right-click");
         DISABLE_DISPENSED = plugin.getConfig().getIntegerList("disabled-items.dispensed");

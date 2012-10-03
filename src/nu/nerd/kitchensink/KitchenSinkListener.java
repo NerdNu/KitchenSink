@@ -5,11 +5,15 @@ import java.util.List;
 import java.util.logging.Level;
 
 import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Ageable;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
 import org.bukkit.entity.Vehicle;
+import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -17,15 +21,19 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.block.BlockDispenseEvent;
+import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.ItemStack;
+
+// Potions
 
 class KitchenSinkListener implements Listener {
     private final KitchenSink plugin;
@@ -66,7 +74,7 @@ class KitchenSinkListener implements Listener {
             return;
         }
         if (plugin.config.PEARL_DAMAGE > 0){
-            if (event.getAction() == Action.RIGHT_CLICK_AIR && event.getItem().getType() == Material.ENDER_PEARL ) {
+            if ((event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.RIGHT_CLICK_AIR) && event.getItem().getType() == Material.ENDER_PEARL ) {
                 event.getPlayer().damage(plugin.config.PEARL_DAMAGE);
             }
         }
@@ -80,6 +88,22 @@ class KitchenSinkListener implements Listener {
         if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK) {
             if (plugin.config.DISABLED_LEFT_ITEMS.contains(stack.getTypeId()))
                 event.setCancelled(true);
+        }
+    }
+    
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
+        if(!plugin.config.BLOCK_VILLAGERS){
+            return;
+        }
+        Entity e = event.getRightClicked();
+        if(e != null) {
+            if(e instanceof Villager) {
+                Villager v = (Villager) e;
+                v.setTarget(event.getPlayer());
+                event.getPlayer().damage(1, v);
+                event.setCancelled(true);
+            }
         }
     }
 
@@ -164,8 +188,12 @@ class KitchenSinkListener implements Listener {
         if (event.isCancelled())
             return;
         
-        if (plugin.config.SAFE_PORTALS)
+        if (plugin.config.SAFE_PORTALS) {
             event.setCancelled(true);
+            for(Block b : event.getBlocks()) {
+                b.setTypeId(0);
+            }
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -176,6 +204,15 @@ class KitchenSinkListener implements Listener {
         if(plugin.config.SAFE_ICE) {
             if( event.getBlock().getType() == Material.ICE && !event.getPlayer().getGameMode().equals(GameMode.CREATIVE)) {
                 event.getBlock().setType(Material.AIR);
+            }
+        }
+    }
+    
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onEnchantItem(PrepareItemEnchantEvent event) {
+        if(!plugin.config.ALLOW_ENCH_ITEMS.isEmpty()) {
+            if(!plugin.config.ALLOW_ENCH_ITEMS.contains(event.getItem().getTypeId())) {
+                event.setCancelled(true);
             }
         }
     }

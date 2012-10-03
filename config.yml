@@ -5,6 +5,7 @@ buff-shear-drops: 0
 disable-snowgrow: false
 disable-drops: false
 block-caps: true
+block-villagers: false
 safe-ice: false
 safe-dispensers: false
 safe-boats: true
@@ -29,4 +30,5 @@ disabled-items:
     dispensed:
     - 326
     - 327
+allow-enchant-items: []
 
