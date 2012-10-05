@@ -220,7 +220,7 @@ class KitchenSinkListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBrew(BrewEvent event) {
         if(!plugin.config.BLOCK_BREW.isEmpty()) {
-            if(!plugin.config.BLOCK_BREW.contains(event.getContents().getIngredient().getTypeId())) {
+            if(plugin.config.BLOCK_BREW.contains(event.getContents().getIngredient().getTypeId())) {
                 event.setCancelled(true);
             }
         }
