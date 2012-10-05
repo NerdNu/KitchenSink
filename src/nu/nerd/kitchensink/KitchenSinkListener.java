@@ -9,7 +9,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Ageable;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
 import org.bukkit.entity.Vehicle;
@@ -24,6 +23,7 @@ import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
+import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -212,6 +212,15 @@ class KitchenSinkListener implements Listener {
     public void onEnchantItem(PrepareItemEnchantEvent event) {
         if(!plugin.config.ALLOW_ENCH_ITEMS.isEmpty()) {
             if(!plugin.config.ALLOW_ENCH_ITEMS.contains(event.getItem().getTypeId())) {
+                event.setCancelled(true);
+            }
+        }
+    }
+    
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onBrew(BrewEvent event) {
+        if(!plugin.config.BLOCK_BREW.isEmpty()) {
+            if(!plugin.config.BLOCK_BREW.contains(event.getContents().getIngredient().getTypeId())) {
                 event.setCancelled(true);
             }
         }

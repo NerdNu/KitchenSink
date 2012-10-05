@@ -29,6 +29,7 @@ public class Configuration
     public int PEARL_DAMAGE;
     
     public List<Integer> ALLOW_ENCH_ITEMS;
+    public List<Integer> BLOCK_BREW;
     public List<Integer> DISABLED_LEFT_ITEMS;
     public List<Integer> DISABLED_RIGHT_ITEMS;
     public List<Integer> DISABLE_DISPENSED;
@@ -68,6 +69,7 @@ public class Configuration
         SAFE_PORTALS = plugin.getConfig().getBoolean("safe-portals");
         PEARL_DAMAGE = plugin.getConfig().getInt("pearl-damage");
         ALLOW_ENCH_ITEMS = plugin.getConfig().getIntegerList("allow-enchant-items");
+        BLOCK_BREW = plugin.getConfig().getIntegerList("block-brew");
         DISABLED_LEFT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.left-click");
         DISABLED_RIGHT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.right-click");
         DISABLE_DISPENSED = plugin.getConfig().getIntegerList("disabled-items.dispensed");
