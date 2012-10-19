@@ -1,6 +1,7 @@
 package nu.nerd.kitchensink;
 
 import java.text.Normalizer;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -75,7 +76,10 @@ class KitchenSinkListener implements Listener {
         }
         if (plugin.config.PEARL_DAMAGE > 0){
             if ((event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.RIGHT_CLICK_AIR) && event.getItem().getType() == Material.ENDER_PEARL ) {
-                event.getPlayer().damage(plugin.config.PEARL_DAMAGE);
+            	List<Integer> ids = Arrays.asList(23, 25, 26, 54, 58, 61, 62, 64, 69, 71, 77, 92, 93, 94, 95, 96, 107, 116, 117, 130);
+            	if (!ids.contains(event.getClickedBlock().getTypeId())) {
+            	event.getPlayer().damage(plugin.config.PEARL_DAMAGE);
+            	}
             }
         }
 
