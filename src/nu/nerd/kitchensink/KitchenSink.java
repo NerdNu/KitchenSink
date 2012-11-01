@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 import org.bukkit.ChatColor;
 
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -126,6 +127,23 @@ public class KitchenSink extends JavaPlugin {
 				success = true;
 			}
 		}
+                if (command.getName().equalsIgnoreCase("delinventory")) {
+                    if (args.length == 1) {
+                        OfflinePlayer mutee = (OfflinePlayer) getServer().getPlayer(args[0]);
+                        if (mutee == null) {
+                            for (OfflinePlayer p : getServer().getOfflinePlayers()) {
+                                if (args[0].toLowerCase().equals(p.getName().toLowerCase())) {
+                                    mutee = p;
+                                }
+                            }
+                        }
+                        if (mutee != null) {
+                            mutee.getPlayer().getInventory().clear();
+                            mutee.getPlayer().saveData();
+                        }
+                        return true;
+                }
+            }
 		return success;
 	}
 

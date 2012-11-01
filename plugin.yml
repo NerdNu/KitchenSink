@@ -13,6 +13,9 @@ permissions:
     kitchensink.unenchant:
         description: Remove enchants from current item
         default: op
+    kitchensink.delinventory:
+        description: Remove a players inventory
+        default: op
 description: 
 
 commands:
@@ -26,3 +29,8 @@ commands:
         permission: kitchensink.list
         usage: |
            /list: Show online players
+    delinventory:
+        description: Remove a players inventory
+        permission: kitchensink.delinventory
+        usage: |
+           /delinventory <player>: Delete players inventory
