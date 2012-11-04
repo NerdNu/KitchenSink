@@ -127,19 +127,19 @@ public class KitchenSink extends JavaPlugin {
 				success = true;
 			}
 		}
-                if (command.getName().equalsIgnoreCase("delinventory")) {
-                    if (args.length == 1) {
-                        OfflinePlayer mutee = (OfflinePlayer) getServer().getPlayer(args[0]);
-                        if (mutee == null) {
-                            for (OfflinePlayer p : getServer().getOfflinePlayers()) {
-                                if (args[0].toLowerCase().equals(p.getName().toLowerCase())) {
-                                    mutee = p;
-                                }
+                if (command.getName().equalsIgnoreCase("ksinventory")) {
+                    if (args.length >= 1) {
+                        Player mutee = getServer().getPlayer(args[0]);
+                        if (args.length == 2) {
+                            if (args[1].equals("clear")) {	
+                                mutee.getInventory().clear();
+                                mutee.saveData();
+                                sender.sendMessage("Inventory Cleared.");
+                                return true;
                             }
                         }
-                        if (mutee != null) {
-                            mutee.getPlayer().getInventory().clear();
-                            mutee.getPlayer().saveData();
+                        if (mutee != null && sender instanceof Player) {
+                            ((Player)sender).openInventory(mutee.getPlayer().getInventory());	
                         }
                         return true;
                 }
