@@ -133,6 +133,10 @@ public class KitchenSink extends JavaPlugin {
                         if (args.length == 2) {
                             if (args[1].equals("clear")) {	
                                 mutee.getInventory().clear();
+                                ItemStack[] armorcontents = mutee.getInventory().getArmorContents();
+                                for(ItemStack i : armorcontents) {
+                                    i.setType(Material.AIR);
+                                }
                                 mutee.saveData();
                                 sender.sendMessage("Inventory Cleared.");
                                 return true;
