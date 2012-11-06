@@ -33,6 +33,7 @@ public class Configuration
     public List<Integer> DISABLED_LEFT_ITEMS;
     public List<Integer> DISABLED_RIGHT_ITEMS;
     public List<Integer> DISABLE_DISPENSED;
+    public List<Integer> DISABLE_BUFF;
 
     public Configuration(KitchenSink instance)
     {
@@ -73,5 +74,6 @@ public class Configuration
         DISABLED_LEFT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.left-click");
         DISABLED_RIGHT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.right-click");
         DISABLE_DISPENSED = plugin.getConfig().getIntegerList("disabled-items.dispensed");
+        DISABLE_BUFF = plugin.getConfig.getIntegerList("disable-buff");
     }
 }

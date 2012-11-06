@@ -165,7 +165,9 @@ class KitchenSinkListener implements Listener {
                     Location l = event.getEntity().getLocation();
                     for (int i = 0; i < plugin.config.BUFF_DROPS; i++) {
                         for (ItemStack a : items) {
-                            l.getWorld().dropItemNaturally(l, a);
+                        	if (!plugin.config.DISABLE_BUFF.contains(a.getTypeId())){
+                        		l.getWorld().dropItemNaturally(l, a);
+                        	}
                         }
                     }
                 }
