@@ -3,14 +3,30 @@ KitchenSink
 
 Configuration:
 
+* *animal-count* Print number of each mob every 10 minutes
+* *log-animals* Log passive animal kills to console
+* *buff-drops* Increase items dropped by animals by factor
+* *buff-shear-drops* Increase wool dropped by sheared sheep by factor
 * *disable-snowgrow* Disable snow being generated
 * *disable-drops* Disable items, great for creative servers
-* *log-animals* Log passive animal kills to console
 * *block-caps* Block people typing in caps too much
-* *safe-boats* Schedule a task to clear empty boats every *n* seconds
-* *safe-boats-delay* The *n* seconds to delay clearing of empty boats
-* *safe-boats-drop* Enable a boat item to drop when it is removed
-* *safe-minecarts* Schedule a task to clear empty minecarts every *n* seconds
-* *safe-minecarts-delay* The *n* seconds to delay clearing of empty minecarts
-* *safe-minecarts-drop* Enable a minecart item to drop when it is removed
-* *disabled-items* A list of item id's that are not allowed to be used, sort into *left-click* and *right-click* groups
+* *block-villagers* Prevent players from trading with villagers
+* *safe-ice* Prevent ice from turning into water when broken
+* *safe-dispensers* Prevent dispensers from dispensing items listed in *disabled-items.dispensed*
+* *safe-boats* Schedule a task to clear empty boats every *safe-boats-delay* seconds
+* *safe-boats-delay* The time between clearing empty boats
+* *safe-boats-drop* Drop a boat item when a boat is removed due to *safe-boats*
+* *safe-minecarts* Schedule a task to clear empty minecarts every *safe-minecarts-delay* seconds
+* *safe-minecarts-delay* The time between clearing empty minecarts
+* *safe-minecarts-drop* Drop a minecart item when a minecart is removed due to *safe-minecarts*
+* *safe-special-carts* Prevent storage and powered minecarts from being affected by *safe-minecarts*
+* *remove-on-exit* Remove a vehicle when a player exits it
+* *safe-portals* Prevent players from creating nether portals
+* *pearl-damage* Damage players when throwing an ender pearl
+* *disabled-items*
+	- *left-click* Prevent players from left clicking with specified items
+	- *right-click* Prevent players from right clicking with specified items
+	- *dispensed* Prevent dispensers from dispensing specified items if *safe-dispensers* is true
+* *allow-enchant-items* If list is not empty, allow only specified items to be enchanted
+* *block-brew* Block specified brewing ingredients
+* *disable-buff* Disable specified item drops from being affected by *buff-drops*

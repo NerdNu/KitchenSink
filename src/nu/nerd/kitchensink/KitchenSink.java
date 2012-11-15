@@ -63,15 +63,15 @@ public class KitchenSink extends JavaPlugin {
 					for (World world : getServer().getWorlds()) {
 						for (Minecart minecart : world.getEntitiesByClass(Minecart.class)) {
 							if (minecart.isEmpty()) {
-                                                            if (config.SAFE_SPECIAL_CARTS) {
-                                                                if (minecart instanceof StorageMinecart || minecart instanceof PoweredMinecart) {
-                                                                    continue;
-                                                                }
-                                                            } 
-                                                            minecart.remove();
-                                                            if (config.SAFE_MINECARTS_DROP) {
-								world.dropItem(minecart.getLocation(), new ItemStack(Material.MINECART, 1));
-                                                            }
+								if (config.SAFE_SPECIAL_CARTS) {
+									if (minecart instanceof StorageMinecart || minecart instanceof PoweredMinecart) {
+										continue;
+									}
+								} 
+								minecart.remove();
+								if (config.SAFE_MINECARTS_DROP) {
+									world.dropItem(minecart.getLocation(), new ItemStack(Material.MINECART, 1));
+								}
 							}
 						}
 					}
