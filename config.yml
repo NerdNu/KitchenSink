@@ -1,5 +1,6 @@
 animal-count: false
 log-animals: false
+log-player-drops: false
 buff-drops: 0
 buff-shear-drops: 0
 disable-snowgrow: false

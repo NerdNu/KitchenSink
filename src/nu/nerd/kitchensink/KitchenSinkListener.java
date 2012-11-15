@@ -23,6 +23,7 @@ import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -171,6 +172,18 @@ class KitchenSinkListener implements Listener {
                 }
             }
         }
+    }
+    
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerDeath(PlayerDeathEvent event) {
+	Player player = (Player)event.getEntity();
+   	if(plugin.config.LOG_PLAYER_DROPS) {
+            String loot = "[drops]" + player.getName();
+            for(ItemStack is : event.getDrops()) {
+                loot += " ," + is.getTypeId() + ":" + is.getAmount();
+            }
+            plugin.getLogger().info(loot);
+	}
     }
     
     @EventHandler(priority = EventPriority.MONITOR)
