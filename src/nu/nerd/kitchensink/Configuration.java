@@ -51,7 +51,7 @@ public class Configuration
         
         ANIMAL_COUNT = plugin.getConfig().getBoolean("animal-count");
         LOG_ANIMAL_DEATH = plugin.getConfig().getBoolean("log-animals");
-        LOG_ANIMAL_DEATH = plugin.getConfig().getBoolean("log-player-drops");
+        LOG_PLAYER_DROPS = plugin.getConfig().getBoolean("log-player-drops");
         BUFF_DROPS = plugin.getConfig().getInt("buff-drops");
         BUFF_SHEAR_DROPS = plugin.getConfig().getInt("buff-shear-drops");
         DISABLE_SNOW = plugin.getConfig().getBoolean("disable-snowgrow");
