@@ -28,6 +28,7 @@ public class Configuration
     public boolean REMOVE_ON_EXIT;
     public boolean SAFE_PORTALS;
     public int PEARL_DAMAGE;
+    public boolean END_INVISIBILITY_ON_INITIATE_COMBAT;
     
     public List<Integer> ALLOW_ENCH_ITEMS;
     public List<Integer> BLOCK_BREW;
@@ -75,5 +76,6 @@ public class Configuration
         DISABLED_LEFT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.left-click");
         DISABLED_RIGHT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.right-click");
         DISABLE_DISPENSED = plugin.getConfig().getIntegerList("disabled-items.dispensed");
+        END_INVISIBILITY_ON_INITIATE_COMBAT = plugin.getConfig().getBoolean("end-invisibility-on-initiation-of-combat");
     }
 }
