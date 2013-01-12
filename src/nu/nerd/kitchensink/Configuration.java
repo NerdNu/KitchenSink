@@ -28,6 +28,7 @@ public class Configuration
     public boolean REMOVE_ON_EXIT;
     public boolean SAFE_PORTALS;
     public int PEARL_DAMAGE;
+    public boolean LEATHERLESS_BOOKS;
     
     public List<Integer> ALLOW_ENCH_ITEMS;
     public List<Integer> BLOCK_BREW;
@@ -75,5 +76,6 @@ public class Configuration
         DISABLED_LEFT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.left-click");
         DISABLED_RIGHT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.right-click");
         DISABLE_DISPENSED = plugin.getConfig().getIntegerList("disabled-items.dispensed");
+        LEATHERLESS_BOOKS = plugin.getConfig().getBoolean("leatherless-books");
     }
 }

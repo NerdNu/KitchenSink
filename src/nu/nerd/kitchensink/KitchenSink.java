@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.ChatColor;
@@ -16,6 +18,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class KitchenSink extends JavaPlugin {
@@ -23,11 +27,21 @@ public class KitchenSink extends JavaPlugin {
 	private LagCheck lagCheck = new LagCheck();
 	public final Configuration config = new Configuration(this);
 	public final static Logger log = Logger.getLogger("Minecraft");
+        public final List<Recipe> recipeList = new ArrayList<Recipe>();
 
 	@Override
 	public void onDisable() {
 		getServer().getScheduler().cancelTasks(this);
 		sendToLog(Level.INFO, getDescription().getVersion() + " disabled.");
+                
+                Iterator<Recipe> recipeIterator = getServer().recipeIterator();
+                while(recipeIterator.hasNext()){
+                    Recipe r = recipeIterator.next();
+                    if(recipeList.contains(r)){
+                        recipeIterator.remove();
+                        recipeList.remove(r);
+                    }
+                }
 	}
 
 	@Override
@@ -93,6 +107,13 @@ public class KitchenSink extends JavaPlugin {
                             System.out.println("-!- " + a);
                         }
                     }, 1200, 12000); // 10 Minutes
+                }
+                
+                if (config.LEATHERLESS_BOOKS){
+                    ShapelessRecipe cheapBook = new ShapelessRecipe(new ItemStack(Material.BOOK));
+                    cheapBook.addIngredient(3, Material.PAPER);
+                    getServer().addRecipe(cheapBook);
+                    recipeList.add(cheapBook);
                 }
 
 		getServer().getScheduler().scheduleSyncRepeatingTask(this, lagCheck, 20, 20);
