@@ -128,9 +128,13 @@ public class KitchenSink extends JavaPlugin {
                 if (command.getName().equalsIgnoreCase("unenchant") && sender instanceof Player) {
                     Player player = (Player) sender;
                     try {
-                        for (Enchantment e : player.getItemInHand().getEnchantments().keySet()) {
-                            player.getItemInHand().removeEnchantment(e);
-                        }
+                        if (player.getItemInHand().getType().equals(Material.ENCHANTED_BOOK)){
+                            player.getInventory().remove(player.getItemInHand());
+                            player.getInventory().addItem(new ItemStack(Material.BOOK));
+                        } else
+                            for (Enchantment e : player.getItemInHand().getEnchantments().keySet()) {
+                                player.getItemInHand().removeEnchantment(e);
+                            }
                         player.sendMessage("Enchantments removed.");
                     } catch (Exception e) {
                         player.sendMessage("No enchantments removed.");
