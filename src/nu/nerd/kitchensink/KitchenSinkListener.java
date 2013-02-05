@@ -8,6 +8,7 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Ageable;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
@@ -21,6 +22,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -33,6 +35,7 @@ import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffectType;
 
 // Potions
 
@@ -235,6 +238,28 @@ class KitchenSinkListener implements Listener {
         if(!plugin.config.BLOCK_BREW.isEmpty()) {
             if(plugin.config.BLOCK_BREW.contains(event.getContents().getIngredient().getTypeId())) {
                 event.setCancelled(true);
+            }
+        }
+    }
+    
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent event){
+        if(plugin.config.DISABLE_INVISIBILITY_ON_COMBAT && event.getEntity() instanceof Player){
+            if(event.getDamager() instanceof Player){
+                Player damagerPlayer = (Player)event.getDamager();
+                if(damagerPlayer.hasPotionEffect(PotionEffectType.INVISIBILITY)){
+                    damagerPlayer.removePotionEffect(PotionEffectType.INVISIBILITY);
+                }
+            }
+            else if(event.getDamager() instanceof Arrow){
+                Arrow damageArrow = (Arrow)event.getDamager();
+                
+                if(damageArrow.getShooter() instanceof Player){
+                    Player damagerPlayer = (Player)damageArrow.getShooter();
+                    if(damagerPlayer.hasPotionEffect(PotionEffectType.INVISIBILITY)){
+                        damagerPlayer.removePotionEffect(PotionEffectType.INVISIBILITY);
+                    }
+                }
             }
         }
     }
