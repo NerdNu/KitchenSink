@@ -8,7 +8,7 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Ageable;
-import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
@@ -251,11 +251,11 @@ class KitchenSinkListener implements Listener {
                     damagerPlayer.removePotionEffect(PotionEffectType.INVISIBILITY);
                 }
             }
-            else if(event.getDamager() instanceof Arrow){
-                Arrow damageArrow = (Arrow)event.getDamager();
+            else if(event.getDamager() instanceof Projectile){
+                Projectile damageProjectile = (Projectile)event.getDamager();
                 
-                if(damageArrow.getShooter() instanceof Player){
-                    Player damagerPlayer = (Player)damageArrow.getShooter();
+                if(damageProjectile.getShooter() instanceof Player){
+                    Player damagerPlayer = (Player)damageProjectile.getShooter();
                     if(damagerPlayer.hasPotionEffect(PotionEffectType.INVISIBILITY)){
                         damagerPlayer.removePotionEffect(PotionEffectType.INVISIBILITY);
                     }
