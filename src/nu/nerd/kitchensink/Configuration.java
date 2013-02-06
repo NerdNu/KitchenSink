@@ -14,6 +14,7 @@ public class Configuration
     public int BUFF_SHEAR_DROPS;
     public boolean DISABLE_SNOW;
     public boolean DISABLE_DROPS;
+    public boolean DISABLE_INVISIBILITY_ON_COMBAT;
     public boolean BLOCK_CAPS;  
     public boolean BLOCK_VILLAGERS;
     public boolean SAFE_ICE;
@@ -57,6 +58,7 @@ public class Configuration
         BUFF_SHEAR_DROPS = plugin.getConfig().getInt("buff-shear-drops");
         DISABLE_SNOW = plugin.getConfig().getBoolean("disable-snowgrow");
         DISABLE_DROPS = plugin.getConfig().getBoolean("disable-drops");
+        DISABLE_INVISIBILITY_ON_COMBAT = plugin.getConfig().getBoolean("disable-invisibility-on-combat");
         BLOCK_CAPS = plugin.getConfig().getBoolean("block-caps");
         BLOCK_VILLAGERS = plugin.getConfig().getBoolean("block-villagers");
         SAFE_ICE = plugin.getConfig().getBoolean("safe-ice");

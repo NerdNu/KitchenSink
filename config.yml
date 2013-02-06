@@ -5,6 +5,7 @@ buff-drops: 0
 buff-shear-drops: 0
 disable-snowgrow: false
 disable-drops: false
+disable-invisibility-on-combat: false
 block-caps: true
 block-villagers: false
 safe-ice: false
