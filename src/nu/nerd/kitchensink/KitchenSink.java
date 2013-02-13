@@ -129,8 +129,7 @@ public class KitchenSink extends JavaPlugin {
                     Player player = (Player) sender;
                     try {
                         if (player.getItemInHand().getType().equals(Material.ENCHANTED_BOOK)){
-                            player.getInventory().remove(player.getItemInHand());
-                            player.getInventory().addItem(new ItemStack(Material.BOOK));
+                            player.setItemInHand(new ItemStack(Material.BOOK));
                         } else
                             for (Enchantment e : player.getItemInHand().getEnchantments().keySet()) {
                                 player.getItemInHand().removeEnchantment(e);
