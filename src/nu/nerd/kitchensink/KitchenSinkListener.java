@@ -251,6 +251,7 @@ class KitchenSinkListener implements Listener {
                     damagerPlayer.removePotionEffect(PotionEffectType.INVISIBILITY);
                 }
             }
+            
             else if(event.getDamager() instanceof Projectile){
                 Projectile damageProjectile = (Projectile)event.getDamager();
                 
@@ -261,6 +262,12 @@ class KitchenSinkListener implements Listener {
                     }
                 }
             }
+            
+            if(((Player)event.getEntity()).hasPotionEffect(PotionEffectType.INVISIBILITY)){
+                    ((Player)event.getEntity()).removePotionEffect(PotionEffectType.INVISIBILITY);
+            }
         }
+        
     }
 }
+
