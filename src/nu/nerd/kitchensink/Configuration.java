@@ -56,7 +56,6 @@ public class Configuration
         LOG_ANIMAL_DEATH = plugin.getConfig().getBoolean("log-animals");
         LOG_PLAYER_DROPS = plugin.getConfig().getBoolean("log-player-drops");
         BUFF_DROPS = plugin.getConfig().getInt("buff-drops");
-        DISABLE_BUFF = plugin.getConfig().getIntegerList("disable-buff");
         BUFF_SHEAR_DROPS = plugin.getConfig().getInt("buff-shear-drops");
         DISABLE_SNOW = plugin.getConfig().getBoolean("disable-snowgrow");
         DISABLE_DROPS = plugin.getConfig().getBoolean("disable-drops");
@@ -75,11 +74,12 @@ public class Configuration
         REMOVE_ON_EXIT = plugin.getConfig().getBoolean("remove-on-exit");
         SAFE_PORTALS = plugin.getConfig().getBoolean("safe-portals");
         PEARL_DAMAGE = plugin.getConfig().getInt("pearl-damage");
+        LEATHERLESS_BOOKS = plugin.getConfig().getBoolean("leatherless-books");
         ALLOW_ENCH_ITEMS = plugin.getConfig().getIntegerList("allow-enchant-items");
         BLOCK_BREW = plugin.getConfig().getIntegerList("block-brew");
         DISABLED_LEFT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.left-click");
         DISABLED_RIGHT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.right-click");
         DISABLE_DISPENSED = plugin.getConfig().getIntegerList("disabled-items.dispensed");
-        LEATHERLESS_BOOKS = plugin.getConfig().getBoolean("leatherless-books");
+        DISABLE_BUFF = plugin.getConfig().getIntegerList("disable-buff");
     }
 }
