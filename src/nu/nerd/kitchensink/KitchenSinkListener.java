@@ -1,6 +1,8 @@
 package nu.nerd.kitchensink;
 
 import java.text.Normalizer;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -38,6 +40,15 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 
 class KitchenSinkListener implements Listener {
+	private static final String REPLACED_CHARS = "[ \\s\\u000a\\u000d\\u2028\\u2029\\u0009\\u000b\\u000c\\u000d\\u0020\\u00a0\\u1680\\u180e\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200a\\u202f\\u205f\\u3000]{2,}";
+
+	/**
+	 * Material types of blocks that can be interacted with on right click.
+	 */
+	private static final HashSet<Integer> INTERACTABLE_TYPES;
+	static {
+		INTERACTABLE_TYPES = new HashSet<Integer>(Arrays.asList(23, 25, 26, 54, 58, 61, 62, 64, 69, 71, 77, 84, 92, 93, 94, 95, 96, 107, 116, 117, 122, 130, 138, 143, 145, 146, 149, 150, 154, 158));
+	}
 	private final KitchenSink plugin;
 
 	KitchenSinkListener(KitchenSink instance) {
@@ -77,7 +88,9 @@ class KitchenSinkListener implements Listener {
 		if (plugin.config.PEARL_DAMAGE > 0) {
 			if ((event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.RIGHT_CLICK_AIR)
 							&& event.getItem().getType() == Material.ENDER_PEARL) {
-				event.getPlayer().damage(plugin.config.PEARL_DAMAGE);
+				if (event.getClickedBlock() == null || !INTERACTABLE_TYPES.contains(event.getClickedBlock().getTypeId())) {
+					event.getPlayer().damage(plugin.config.PEARL_DAMAGE);
+				}
 			}
 		}
 
@@ -116,8 +129,7 @@ class KitchenSinkListener implements Listener {
 
 		String message = event.getMessage();
 		message = ChatColor.stripColor(message);
-		message = message.replaceAll("[ \\s\\u000a\\u000d\\u2028\\u2029\\u0009\\u000b\\u000c\\u000d\\u0020\\u00a0\\u1680\\u180e\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200a\\u202f\\u205f\\u3000]{2,}",
-										" ");
+		message = message.replaceAll(REPLACED_CHARS, " ");
 		message = Normalizer.normalize(message, Normalizer.Form.NFD);
 		event.setMessage(message);
 
