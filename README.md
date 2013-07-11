@@ -7,6 +7,7 @@ Configuration:
 * *log-animals* Log passive animal kills to console
 * *log-player-drops* Log player drop sums to console
 * *buff-drops* Increase items dropped by animals by factor
+* *disable-buff* Disable specified item drops from being affected by *buff-drops*
 * *buff-shear-drops* Increase wool dropped by sheared sheep by factor
 * *disable-snowgrow* Disable snow being generated
 * *disable-drops* Disable items, great for creative servers
@@ -24,11 +25,11 @@ Configuration:
 * *remove-on-exit* Remove a vehicle when a player exits it
 * *safe-portals* Prevent players from creating nether portals
 * *pearl-damage* Damage players when throwing an ender pearl
+* *leatherless-books* Allow books to be crafted using only sugar cane.
 * *disabled-items*
 	- *left-click* Prevent players from left clicking with specified items
 	- *right-click* Prevent players from right clicking with specified items
 	- *dispensed* Prevent dispensers from dispensing specified items if *safe-dispensers* is true
 * *allow-enchant-items* If list is not empty, allow only specified items to be enchanted
 * *block-brew* Block specified brewing ingredients
-* *disable-buff* Disable specified item drops from being affected by *buff-drops*
 
