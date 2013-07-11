@@ -20,6 +20,7 @@ safe-special-carts: true
 remove-on-exit: false
 safe-portals: false
 pearl-damage: 0
+leatherless-books: false
 disabled-items:
     left-click: []
     right-click:
