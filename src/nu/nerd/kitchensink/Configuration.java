@@ -36,6 +36,7 @@ public class Configuration
     public List<Integer> DISABLED_LEFT_ITEMS;
     public List<Integer> DISABLED_RIGHT_ITEMS;
     public List<Integer> DISABLE_DISPENSED;
+    public List<Integer> DISABLE_BUFF;
 
     public Configuration(KitchenSink instance)
     {
@@ -55,6 +56,7 @@ public class Configuration
         LOG_ANIMAL_DEATH = plugin.getConfig().getBoolean("log-animals");
         LOG_PLAYER_DROPS = plugin.getConfig().getBoolean("log-player-drops");
         BUFF_DROPS = plugin.getConfig().getInt("buff-drops");
+        DISABLE_BUFF = plugin.getConfig().getIntegerList("disable-buff");
         BUFF_SHEAR_DROPS = plugin.getConfig().getInt("buff-shear-drops");
         DISABLE_SNOW = plugin.getConfig().getBoolean("disable-snowgrow");
         DISABLE_DROPS = plugin.getConfig().getBoolean("disable-drops");

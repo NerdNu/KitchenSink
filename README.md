@@ -30,3 +30,5 @@ Configuration:
 	- *dispensed* Prevent dispensers from dispensing specified items if *safe-dispensers* is true
 * *allow-enchant-items* If list is not empty, allow only specified items to be enchanted
 * *block-brew* Block specified brewing ingredients
+* *disable-buff* Disable specified item drops from being affected by *buff-drops*
+
