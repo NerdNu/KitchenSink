@@ -2,46 +2,55 @@ package nu.nerd.kitchensink;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.bukkit.ChatColor;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Boat;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Minecart;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.minecart.PoweredMinecart;
+import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitScheduler;
 
 public class KitchenSink extends JavaPlugin {
+	private static final int ONE_MINUTE = 60 * 20;
 	private KitchenSinkListener listener = new KitchenSinkListener(this);
 	private LagCheck lagCheck = new LagCheck();
 	public final Configuration config = new Configuration(this);
 	public final static Logger log = Logger.getLogger("Minecraft");
-        public final List<Recipe> recipeList = new ArrayList<Recipe>();
+	public final List<Recipe> recipeList = new ArrayList<Recipe>();
 
 	@Override
 	public void onDisable() {
 		getServer().getScheduler().cancelTasks(this);
 		sendToLog(Level.INFO, getDescription().getVersion() + " disabled.");
-                
-                Iterator<Recipe> recipeIterator = getServer().recipeIterator();
-                while(recipeIterator.hasNext()){
-                    Recipe r = recipeIterator.next();
-                    if(recipeList.contains(r)){
-                        recipeIterator.remove();
-                        recipeList.remove(r);
-                    }
-                }
+
+		Iterator<Recipe> recipeIterator = getServer().recipeIterator();
+		while (recipeIterator.hasNext()) {
+			Recipe r = recipeIterator.next();
+			if (recipeList.contains(r)) {
+				recipeIterator.remove();
+				recipeList.remove(r);
+			}
+		}
 	}
 
 	@Override
@@ -77,44 +86,60 @@ public class KitchenSink extends JavaPlugin {
 					for (World world : getServer().getWorlds()) {
 						for (Minecart minecart : world.getEntitiesByClass(Minecart.class)) {
 							if (minecart.isEmpty()) {
-                                                            if (config.SAFE_SPECIAL_CARTS) {
-                                                                if (minecart instanceof StorageMinecart || minecart instanceof PoweredMinecart) {
-                                                                    continue;
-                                                                }
-                                                            } 
-                                                            minecart.remove();
-                                                            if (config.SAFE_MINECARTS_DROP) {
-								world.dropItem(minecart.getLocation(), new ItemStack(Material.MINECART, 1));
-                                                            }
+								if (config.SAFE_SPECIAL_CARTS) {
+									if (minecart instanceof StorageMinecart || minecart instanceof PoweredMinecart) {
+										continue;
+									}
+								}
+								minecart.remove();
+								if (config.SAFE_MINECARTS_DROP) {
+									world.dropItem(minecart.getLocation(), new ItemStack(Material.MINECART, 1));
+								}
 							}
 						}
 					}
 				}
 			}, config.SAFE_MINECARTS_DELAY, config.SAFE_MINECARTS_DELAY);
 		}
-                if (config.ANIMAL_COUNT) {
-                    getServer().getScheduler().scheduleAsyncRepeatingTask(this, new Runnable() {
-                        public void run() {
-                            System.out.println("-!- Starting Mob count");
-                            HashMap<String, Integer> a = new HashMap<String, Integer>();
-                            for (LivingEntity animal : getServer().getWorlds().get(0).getEntitiesByClass(LivingEntity.class)) {
-                                if (a.containsKey(animal.getType().name())) {
-                                    a.put(animal.getType().name(), a.get(animal.getType().name()) + 1);
-                                } else {
-                                    a.put(animal.getType().name(), 1);
-                                } 
-                            }
-                            System.out.println("-!- " + a);
-                        }
-                    }, 1200, 12000); // 10 Minutes
-                }
-                
-                if (config.LEATHERLESS_BOOKS){
-                    ShapelessRecipe cheapBook = new ShapelessRecipe(new ItemStack(Material.BOOK));
-                    cheapBook.addIngredient(3, Material.PAPER);
-                    getServer().addRecipe(cheapBook);
-                    recipeList.add(cheapBook);
-                }
+		if (config.ANIMAL_COUNT) {
+			final BukkitScheduler sched = getServer().getScheduler();
+			Runnable task = new Runnable() {
+				@Override
+				public void run() {
+					Future<Collection<LivingEntity>> future = sched.callSyncMethod(KitchenSink.this, new Callable<Collection<LivingEntity>>(){
+						@Override
+						public Collection<LivingEntity> call() throws Exception {
+							return getServer().getWorlds().get(0).getEntitiesByClass(LivingEntity.class);
+						}}
+					
+					);
+
+					Collection<LivingEntity> livingEntities;
+					try {
+						livingEntities = future.get();
+						System.out.println("-!- Starting Mob count");
+						HashMap<String, Integer> a = new HashMap<String, Integer>();
+						for (LivingEntity animal : livingEntities) {
+							if (a.containsKey(animal.getType().name())) {
+								a.put(animal.getType().name(), a.get(animal.getType().name()) + 1);
+							} else {
+								a.put(animal.getType().name(), 1);
+							}
+						}
+						System.out.println("-!- " + a);
+					} catch (Exception ex) {
+					}  
+				}
+			}; 
+			sched.runTaskTimerAsynchronously(this, task, ONE_MINUTE, 10 * ONE_MINUTE);
+		}
+
+		if (config.LEATHERLESS_BOOKS) {
+			ShapelessRecipe cheapBook = new ShapelessRecipe(new ItemStack(Material.BOOK));
+			cheapBook.addIngredient(3, Material.PAPER);
+			getServer().addRecipe(cheapBook);
+			recipeList.add(cheapBook);
+		}
 
 		getServer().getScheduler().scheduleSyncRepeatingTask(this, lagCheck, 20, 20);
 		getServer().getPluginManager().registerEvents(listener, this);
@@ -125,21 +150,21 @@ public class KitchenSink extends JavaPlugin {
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String name, String[] args) {
 		boolean success = false;
-                if (command.getName().equalsIgnoreCase("unenchant") && sender instanceof Player) {
-                    Player player = (Player) sender;
-                    try {
-                        if (player.getItemInHand().getType().equals(Material.ENCHANTED_BOOK)){
-                            player.setItemInHand(new ItemStack(Material.BOOK));
-                        } else {
-                            for (Enchantment e : player.getItemInHand().getEnchantments().keySet()) {
-                                player.getItemInHand().removeEnchantment(e);
-                            }
-                        }
-                        player.sendMessage("Enchantments removed.");
-                    } catch (Exception e) {
-                        player.sendMessage("No enchantments removed.");
-                    }
-                }
+		if (command.getName().equalsIgnoreCase("unenchant") && sender instanceof Player) {
+			Player player = (Player) sender;
+			try {
+				if (player.getItemInHand().getType().equals(Material.ENCHANTED_BOOK)) {
+					player.setItemInHand(new ItemStack(Material.BOOK));
+				} else {
+					for (Enchantment e : player.getItemInHand().getEnchantments().keySet()) {
+						player.getItemInHand().removeEnchantment(e);
+					}
+				}
+				player.sendMessage("Enchantments removed.");
+			} catch (Exception e) {
+				player.sendMessage("No enchantments removed.");
+			}
+		}
 		if (command.getName().equalsIgnoreCase("lag")) {
 			if (sender.hasPermission("kitchensink.lag")) {
 				sendLagStats(sender);
@@ -152,24 +177,24 @@ public class KitchenSink extends JavaPlugin {
 				success = true;
 			}
 		}
-                if (command.getName().equalsIgnoreCase("ksinventory")) {
-                    if (args.length >= 1) {
-                        Player mutee = getServer().getPlayer(args[0]);
-                        if (args.length == 2) {
-                            if (args[1].equals("clear")) {	
-                                mutee.getInventory().clear();
-                                mutee.getInventory().setArmorContents(new ItemStack[ mutee.getInventory().getArmorContents().length]);
-                                mutee.saveData();
-                                sender.sendMessage("Inventory Cleared.");
-                                return true;
-                            }
-                        }
-                        if (mutee != null && sender instanceof Player) {
-                            ((Player)sender).openInventory(mutee.getPlayer().getInventory());	
-                        }
-                        return true;
-                }
-            }
+		if (command.getName().equalsIgnoreCase("ksinventory")) {
+			if (args.length >= 1) {
+				Player mutee = getServer().getPlayer(args[0]);
+				if (args.length == 2) {
+					if (args[1].equals("clear")) {
+						mutee.getInventory().clear();
+						mutee.getInventory().setArmorContents(new ItemStack[mutee.getInventory().getArmorContents().length]);
+						mutee.saveData();
+						sender.sendMessage("Inventory Cleared.");
+						return true;
+					}
+				}
+				if (mutee != null && sender instanceof Player) {
+					((Player) sender).openInventory(mutee.getPlayer().getInventory());
+				}
+				return true;
+			}
+		}
 		return success;
 	}
 
@@ -194,12 +219,16 @@ public class KitchenSink extends JavaPlugin {
 		}
 		Collections.sort(list, String.CASE_INSENSITIVE_ORDER);
 		sender.sendMessage("Players Online: " + list.size());
-		if(list.size() == 0) { return; }
+		if (list.size() == 0) {
+			return;
+		}
 		String onlinelist = "Players:";
 		int index = 0;
-		for (String p:list) {
+		for (String p : list) {
 			ChatColor color = ChatColor.GRAY;
-			if (index++ % 2 == 0) { color = ChatColor.WHITE; }
+			if (index++ % 2 == 0) {
+				color = ChatColor.WHITE;
+			}
 			onlinelist += " " + color + p;
 		}
 		sender.sendMessage(onlinelist);

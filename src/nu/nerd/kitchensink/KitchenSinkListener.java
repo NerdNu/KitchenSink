@@ -37,8 +37,6 @@ import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 
-// Potions
-
 class KitchenSinkListener implements Listener {
     private final KitchenSink plugin;
 
@@ -73,7 +71,6 @@ class KitchenSinkListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerInteract(PlayerInteractEvent event) {  
-    	//Begin old KS stuff
         if (!event.hasItem()) {
             return;
         }
@@ -157,20 +154,19 @@ class KitchenSinkListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onEntityDeath(EntityDeathEvent event) {
         if (event.getEntity() instanceof Ageable) {
-            if (event.getEntity().getKiller() instanceof Player) {
-                if (plugin.config.LOG_ANIMAL_DEATH) {
-                    String player = event.getEntity().getKiller().getName();
-                    Location l = event.getEntity().getLocation();
-                    Chunk c = l.getChunk();
-                    plugin.sendToLog(Level.INFO, "[MobKill] " + player + "|" + event.getEntityType().name() + "|" + l.getWorld().getName() + "|" + l.getX() + "|" + l.getY() + "|" + l.getZ() + "| C[" + c.getX() + "," + c.getZ() + "]");
-                }
-                if (plugin.config.BUFF_DROPS != 0) {
-                    List<ItemStack> items = event.getDrops();
-                    Location l = event.getEntity().getLocation();
-                    for (int i = 0; i < plugin.config.BUFF_DROPS; i++) {
-                        for (ItemStack a : items) {
-                            l.getWorld().dropItemNaturally(l, a);
-                        }
+            Player killer = event.getEntity().getKiller();           
+            if (plugin.config.LOG_ANIMAL_DEATH) {
+                Location l = event.getEntity().getLocation();
+                Chunk c = l.getChunk();
+                plugin.sendToLog(Level.INFO, "[MobKill] " + killer.getName() + "|" + event.getEntityType().name() + "|" + 
+                    l.getWorld().getName() + "|" + l.getX() + "|" + l.getY() + "|" + l.getZ() + "| C[" + c.getX() + "," + c.getZ() + "]");
+            }
+            if (plugin.config.BUFF_DROPS != 0) {
+                List<ItemStack> items = event.getDrops();
+                Location l = event.getEntity().getLocation();
+                for (int i = 0; i < plugin.config.BUFF_DROPS; i++) {
+                    for (ItemStack a : items) {
+                        l.getWorld().dropItemNaturally(l, a);
                     }
                 }
             }
@@ -179,7 +175,7 @@ class KitchenSinkListener implements Listener {
     
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerDeath(PlayerDeathEvent event) {
-	Player player = (Player)event.getEntity();
+	Player player = event.getEntity();
    	if(plugin.config.LOG_PLAYER_DROPS) {
             String loot = "[drops]" + player.getName();
             for(ItemStack is : event.getDrops()) {
@@ -269,10 +265,7 @@ class KitchenSinkListener implements Listener {
             	    }
                 }
             }
-            
-            
         }
-        
     }
 }
 
