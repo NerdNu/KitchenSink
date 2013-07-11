@@ -106,13 +106,12 @@ public class KitchenSink extends JavaPlugin {
 			Runnable task = new Runnable() {
 				@Override
 				public void run() {
-					Future<Collection<LivingEntity>> future = sched.callSyncMethod(KitchenSink.this, new Callable<Collection<LivingEntity>>(){
+					Future<Collection<LivingEntity>> future = sched.callSyncMethod(KitchenSink.this, new Callable<Collection<LivingEntity>>() {
 						@Override
 						public Collection<LivingEntity> call() throws Exception {
 							return getServer().getWorlds().get(0).getEntitiesByClass(LivingEntity.class);
-						}}
-					
-					);
+						}
+					});
 
 					Collection<LivingEntity> livingEntities;
 					try {
@@ -128,9 +127,9 @@ public class KitchenSink extends JavaPlugin {
 						}
 						System.out.println("-!- " + a);
 					} catch (Exception ex) {
-					}  
+					}
 				}
-			}; 
+			};
 			sched.runTaskTimerAsynchronously(this, task, ONE_MINUTE, 10 * ONE_MINUTE);
 		}
 
@@ -202,14 +201,16 @@ public class KitchenSink extends JavaPlugin {
 		float tps = 0;
 		for (Long l : lagCheck.history) {
 			if (l != null)
-				tps += 20 / (l / 1000);
+				tps += 20 / (l / (float) 1000);
 		}
 		tps = tps / lagCheck.history.size();
-
+		if (tps > 20) {
+			tps = 20;
+		}
 		long memUsed = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576;
 		long memMax = Runtime.getRuntime().maxMemory() / 1048576;
 
-		sender.sendMessage("TPS: " + tps + " Mem: " + memUsed + "M/" + memMax + "M");
+		sender.sendMessage(String.format("TPS: %5.2f Mem: %dM/%dM", tps, memUsed, memMax));
 	}
 
 	public void sendList(CommandSender sender) {
