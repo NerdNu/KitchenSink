@@ -12,6 +12,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.bukkit.Art;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -27,6 +28,7 @@ import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapelessRecipe;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
@@ -37,7 +39,12 @@ public class KitchenSink extends JavaPlugin {
 	public final Configuration config = new Configuration(this);
 	public final static Logger log = Logger.getLogger("Minecraft");
 	public final List<Recipe> recipeList = new ArrayList<Recipe>();
-
+	
+	/**
+	 * Key of Player metadata used to record most recently selected painting.
+	 */
+	public static final String PAINTING_META_KEY = "KitchenSink.painting";
+	
 	@Override
 	public void onDisable() {
 		getServer().getScheduler().cancelTasks(this);
@@ -148,7 +155,6 @@ public class KitchenSink extends JavaPlugin {
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String name, String[] args) {
-		boolean success = false;
 		if (command.getName().equalsIgnoreCase("unenchant") && sender instanceof Player) {
 			Player player = (Player) sender;
 			try {
@@ -163,17 +169,18 @@ public class KitchenSink extends JavaPlugin {
 			} catch (Exception e) {
 				player.sendMessage("No enchantments removed.");
 			}
+			return true;
 		}
 		if (command.getName().equalsIgnoreCase("lag")) {
 			if (sender.hasPermission("kitchensink.lag")) {
 				sendLagStats(sender);
-				success = true;
+				return true;
 			}
 		}
 		if (command.getName().equalsIgnoreCase("list")) {
 			if (sender.hasPermission("kitchensink.list")) {
 				sendList(sender);
-				success = true;
+				return true;
 			}
 		}
 		if (command.getName().equalsIgnoreCase("ksinventory")) {
@@ -194,7 +201,47 @@ public class KitchenSink extends JavaPlugin {
 				return true;
 			}
 		}
-		return success;
+		if (command.getName().equalsIgnoreCase("painting")) {
+			// No arguments ==> list all painting types.
+			if (args.length == 0) {
+				StringBuilder message = new StringBuilder();
+				message.append(ChatColor.GOLD);
+				message.append("Available paintings: ");
+				for (int i = 0; i < Art.values().length; ++i)
+				{
+					Art art = Art.values()[i];
+					message.append(ChatColor.YELLOW);
+					message.append(art.name().toLowerCase());
+					message.append(ChatColor.GRAY);
+					message.append(" (");
+					message.append(art.getBlockWidth());
+					message.append('x');
+					message.append(art.getBlockHeight());
+					message.append(")");
+					if (i < Art.values().length - 1) {
+						message.append(", ");
+					}
+				}
+				sender.sendMessage(message.toString());
+				return true;
+			} else if (args.length == 1) {
+				if (sender instanceof Player) {
+					try {
+						Player player = (Player) sender;
+						Art art = Art.getByName(args[0]);
+						player.setMetadata("KitchenSink.painting", new FixedMetadataValue(this, art));
+						sender.sendMessage(ChatColor.GOLD + "The next painting you place will be: " + 
+							ChatColor.YELLOW + art.name().toLowerCase());
+					} catch (Exception ex) {
+						sender.sendMessage(ChatColor.RED + "Unknown painting: " + args[0]);
+					}
+				} else {
+					sender.sendMessage("You need to be in-game to place paintings.");
+				}
+				return true;
+			}			
+		}
+		return false;
 	}
 
 	public void sendLagStats(CommandSender sender) {

@@ -34,3 +34,8 @@ commands:
         permission: kitchensink.ksinventory
         usage: |
            /ksinventory <player> [clear]: Edit a players inventory
+    painting:
+        description: Allows selection of the next painting placed.
+        usage: |
+            /painting [<name>]: Choose the painting you will place next.
+

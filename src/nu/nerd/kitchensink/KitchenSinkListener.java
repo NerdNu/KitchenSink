@@ -10,6 +10,7 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Ageable;
+import org.bukkit.entity.Painting;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -28,6 +29,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -37,6 +39,7 @@ import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionEffectType;
 
 class KitchenSinkListener implements Listener {
@@ -285,6 +288,23 @@ class KitchenSinkListener implements Listener {
 						((Player) event.getEntity()).removePotionEffect(PotionEffectType.INVISIBILITY);
 					}
 				}
+			}
+		}
+	}
+	
+	@EventHandler(ignoreCancelled=true)
+	public void onHangingPlaceEvent(HangingPlaceEvent event) {
+		if (event.getEntity() instanceof Painting) {
+			List<MetadataValue> metaList = event.getPlayer().getMetadata(KitchenSink.PAINTING_META_KEY);
+			if (metaList.size() == 1) {
+				MetadataValue meta = metaList.get(0);
+				if (meta.getOwningPlugin() == plugin && meta.value() instanceof Art) {
+					Painting painting = (Painting) event.getEntity();
+					painting.setArt((Art) meta.value());
+				}
+				
+				// After placing a painting, clear the metadata so the next painting is random again.
+				event.getPlayer().removeMetadata(KitchenSink.PAINTING_META_KEY, plugin);
 			}
 		}
 	}
