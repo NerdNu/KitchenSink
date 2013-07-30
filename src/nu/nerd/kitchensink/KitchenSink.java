@@ -150,6 +150,9 @@ public class KitchenSink extends JavaPlugin {
 		getServer().getScheduler().scheduleSyncRepeatingTask(this, lagCheck, 20, 20);
 		getServer().getPluginManager().registerEvents(listener, this);
 
+		//For /nextrestart
+		config.NEXT_RESTART = (System.currentTimeMillis() / 1000L) + (long) config.RESTART_TIME;
+
 		sendToLog(Level.INFO, getDescription().getVersion() + " enabled.");
 	}
 
@@ -240,6 +243,16 @@ public class KitchenSink extends JavaPlugin {
 				}
 				return true;
 			}			
+		}
+		if (command.getName().equalsIgnoreCase("nextrestart")){
+			int time = (int)(config.NEXT_RESTART - (System.currentTimeMillis() / 1000L));
+			if (time < 120) {
+				sender.sendMessage("The server will restart in " + time + " second" + ((time == 1)? "" : "s"));
+			} else {
+				sender.sendMessage("The server will restart in " + time/60 + " minute" + ((time == 1) ? "" : "s"));
+			}
+
+			return true;
 		}
 		return false;
 	}
