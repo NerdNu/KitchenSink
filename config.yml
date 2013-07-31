@@ -40,4 +40,4 @@ block-brew:
 - 375
 disable-buff:
 - 329
-
+restart-time: 7200
