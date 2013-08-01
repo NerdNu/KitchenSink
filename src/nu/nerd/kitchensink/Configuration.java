@@ -30,6 +30,7 @@ public class Configuration
     public boolean SAFE_PORTALS;
     public int PEARL_DAMAGE;
     public boolean LEATHERLESS_BOOKS;
+    public boolean LOCK_HORSES;
     
     public List<Integer> ALLOW_ENCH_ITEMS;
     public List<Integer> BLOCK_BREW;
@@ -75,6 +76,7 @@ public class Configuration
         SAFE_PORTALS = plugin.getConfig().getBoolean("safe-portals");
         PEARL_DAMAGE = plugin.getConfig().getInt("pearl-damage");
         LEATHERLESS_BOOKS = plugin.getConfig().getBoolean("leatherless-books");
+        LOCK_HORSES = plugin.getConfig().getBoolean("lock-horses");
         ALLOW_ENCH_ITEMS = plugin.getConfig().getIntegerList("allow-enchant-items");
         BLOCK_BREW = plugin.getConfig().getIntegerList("block-brew");
         DISABLED_LEFT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.left-click");

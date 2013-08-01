@@ -26,6 +26,7 @@ Configuration:
 * *safe-portals* Prevent players from creating nether portals
 * *pearl-damage* Damage players when throwing an ender pearl
 * *leatherless-books* Allow books to be crafted using only sugar cane.
+* *lock-horses* Allow players to prevent other players from riding horses they own using /lock-horse.  To unlock: /unlock-horse.
 * *disabled-items*
 	- *left-click* Prevent players from left clicking with specified items
 	- *right-click* Prevent players from right clicking with specified items

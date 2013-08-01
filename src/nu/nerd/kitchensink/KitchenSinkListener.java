@@ -10,6 +10,7 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Ageable;
+import org.bukkit.entity.Horse;
 import org.bukkit.entity.Painting;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Entity;
@@ -39,6 +40,7 @@ import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionEffectType;
 
@@ -99,29 +101,57 @@ class KitchenSinkListener implements Listener {
 
 		ItemStack stack = event.getItem();
 		if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-			if (plugin.config.DISABLED_RIGHT_ITEMS.contains(stack.getTypeId()))
+			if (plugin.config.DISABLED_RIGHT_ITEMS.contains(stack.getTypeId())) {
 				event.setCancelled(true);
+			}
 		}
 
 		if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK) {
-			if (plugin.config.DISABLED_LEFT_ITEMS.contains(stack.getTypeId()))
+			if (plugin.config.DISABLED_LEFT_ITEMS.contains(stack.getTypeId())) {
 				event.setCancelled(true);
+			}
 		}
 	}
 
 	@EventHandler(priority = EventPriority.NORMAL)
 	public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
-		if (!plugin.config.BLOCK_VILLAGERS) {
-			return;
-		}
-		Entity e = event.getRightClicked();
-		if (e != null) {
-			if (e instanceof Villager) {
-				Villager v = (Villager) e;
-				v.setTarget(event.getPlayer());
-				event.getPlayer().damage(1, v);
-				event.setCancelled(true);
-			}
+        Entity entity = event.getRightClicked();
+        if (plugin.config.BLOCK_VILLAGERS && entity instanceof Villager) {
+            Villager v = (Villager) entity;
+            v.setTarget(event.getPlayer());
+            event.getPlayer().damage(1, v);
+            event.setCancelled(true);
+        } else if (plugin.config.LOCK_HORSES && entity instanceof Horse) {
+            Player player = event.getPlayer();
+            Horse horse = (Horse) entity;
+            Location oldLocation = player.getLocation();
+		    if (plugin.doHorseLock) {
+		        plugin.doHorseLock = false;
+		        if (horse.isTamed() && horse.getOwner() == player) {
+		            // By default, horses are locked and lack "unlocked" metadata.		        
+		            if (plugin.newHorseLockState) {
+		                entity.removeMetadata("unlocked", plugin);
+	                    player.sendMessage(ChatColor.GOLD + "Horse locked.");
+    		        } else {
+                        entity.setMetadata("unlocked", new FixedMetadataValue(plugin, null));
+                        player.sendMessage(ChatColor.GOLD + "Horse unlocked.");
+    		        }
+		        } else {
+                    player.sendMessage(ChatColor.RED + "You do not own that horse.");
+		        }
+                event.setCancelled(true);
+		    } else {
+		        // Handle an attempt to mount the horse or attach a lead.
+                if (horse.isTamed() && horse.getOwner() != player && !horse.hasMetadata("unlocked"))
+	            {
+                    event.setCancelled(true);
+                    player.sendMessage(ChatColor.RED + "That horse is locked by its owner.");	                    
+		        }
+		    }
+		    if (event.isCancelled()) {
+                // Try to restore the player's old look angle.
+                player.teleport(oldLocation);
+		    }
 		}
 	}
 

@@ -38,4 +38,12 @@ commands:
         description: Allows selection of the next painting placed.
         usage: |
             /painting [<name>]: Choose the painting you will place next.
-
+    lock-horse:
+        description: Lock a horse so that only the owner can ride it.
+        usage: |
+            /lock-horse: Lock the next horse owned by you that you right click on.
+    unlock-horse:
+        description: Unlock a horse so that players other than the owner can ride it.
+        usage: |
+            /unlock-horse: Unlock the next horse owned by you that you right click on.
+    

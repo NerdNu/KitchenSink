@@ -16,6 +16,7 @@ import org.bukkit.Art;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
@@ -25,6 +26,7 @@ import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.minecart.PoweredMinecart;
 import org.bukkit.entity.minecart.StorageMinecart;
+import org.bukkit.event.player.PlayerVelocityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapelessRecipe;
@@ -39,6 +41,18 @@ public class KitchenSink extends JavaPlugin {
 	public final Configuration config = new Configuration(this);
 	public final static Logger log = Logger.getLogger("Minecraft");
 	public final List<Recipe> recipeList = new ArrayList<Recipe>();
+	
+	/**
+	 * This flag is set to true when the player runs /lock-horse or 
+	 * /unlock-horse to record that the next right click on an entity should
+	 * lock or unlock a horse. 
+	 */
+	public boolean doHorseLock;
+	
+	/**
+	 * The new lock state of the next horse to be right-clicked on.
+	 */
+	public boolean newHorseLockState;
 	
 	/**
 	 * Key of Player metadata used to record most recently selected painting.
@@ -241,6 +255,15 @@ public class KitchenSink extends JavaPlugin {
 				return true;
 			}			
 		}
+		
+        if (command.getName().equalsIgnoreCase("lock-horse")) {
+            setHorseLockState(sender, true);
+            return true;
+        } else if (command.getName().equalsIgnoreCase("unlock-horse")) {
+            setHorseLockState(sender, false);
+            return true;
+        }
+		    
 		return false;
 	}
 
@@ -284,5 +307,26 @@ public class KitchenSink extends JavaPlugin {
 
 	public void sendToLog(Level level, String message) {
 		log.log(level, "[" + getDescription().getName() + "] " + message);
+	}
+
+	/**
+	 * Handle the /lock-horse and /unlock-horse commands.
+	 * 
+	 * The player must subsequently right click on the horse. 
+	 * 
+	 * @param sender the sender of the command.
+	 * @param locked true if the request is to lock the horse; false for unlock.
+	 */
+	protected void setHorseLockState(CommandSender sender, boolean locked) {
+        if (config.LOCK_HORSES) {
+            if (sender instanceof Player) {
+                doHorseLock = true;
+                newHorseLockState = locked;
+            } else {
+                sender.sendMessage("You need to be in-game to lock horses.");
+            }
+        } else {
+            sender.sendMessage(ChatColor.RED + "That command is disabled.");
+        }
 	}
 }
