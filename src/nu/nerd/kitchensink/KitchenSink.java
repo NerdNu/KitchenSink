@@ -41,24 +41,24 @@ public class KitchenSink extends JavaPlugin {
 	public final Configuration config = new Configuration(this);
 	public final static Logger log = Logger.getLogger("Minecraft");
 	public final List<Recipe> recipeList = new ArrayList<Recipe>();
-	
+
 	/**
-	 * This flag is set to true when the player runs /lock-horse or 
+	 * This flag is set to true when the player runs /lock-horse or
 	 * /unlock-horse to record that the next right click on an entity should
-	 * lock or unlock a horse. 
+	 * lock or unlock a horse.
 	 */
 	public boolean doHorseLock;
-	
+
 	/**
 	 * The new lock state of the next horse to be right-clicked on.
 	 */
 	public boolean newHorseLockState;
-	
+
 	/**
 	 * Key of Player metadata used to record most recently selected painting.
 	 */
 	public static final String PAINTING_META_KEY = "KitchenSink.painting";
-	
+
 	@Override
 	public void onDisable() {
 		getServer().getScheduler().cancelTasks(this);
@@ -164,6 +164,9 @@ public class KitchenSink extends JavaPlugin {
 		getServer().getScheduler().scheduleSyncRepeatingTask(this, lagCheck, 20, 20);
 		getServer().getPluginManager().registerEvents(listener, this);
 
+		// For /nextrestart
+		config.NEXT_RESTART = (System.currentTimeMillis() / 1000L) + (long) config.RESTART_TIME;
+
 		sendToLog(Level.INFO, getDescription().getVersion() + " enabled.");
 	}
 
@@ -221,8 +224,7 @@ public class KitchenSink extends JavaPlugin {
 				StringBuilder message = new StringBuilder();
 				message.append(ChatColor.GOLD);
 				message.append("Available paintings: ");
-				for (int i = 0; i < Art.values().length; ++i)
-				{
+				for (int i = 0; i < Art.values().length; ++i) {
 					Art art = Art.values()[i];
 					message.append(ChatColor.YELLOW);
 					message.append(art.name().toLowerCase());
@@ -244,8 +246,8 @@ public class KitchenSink extends JavaPlugin {
 						Player player = (Player) sender;
 						Art art = Art.getByName(args[0]);
 						player.setMetadata("KitchenSink.painting", new FixedMetadataValue(this, art));
-						sender.sendMessage(ChatColor.GOLD + "The next painting you place will be: " + 
-							ChatColor.YELLOW + art.name().toLowerCase());
+						sender.sendMessage(ChatColor.GOLD + "The next painting you place will be: " +
+											ChatColor.YELLOW + art.name().toLowerCase());
 					} catch (Exception ex) {
 						sender.sendMessage(ChatColor.RED + "Unknown painting: " + args[0]);
 					}
@@ -253,17 +255,28 @@ public class KitchenSink extends JavaPlugin {
 					sender.sendMessage("You need to be in-game to place paintings.");
 				}
 				return true;
-			}			
+			}
 		}
-		
-        if (command.getName().equalsIgnoreCase("lock-horse")) {
-            setHorseLockState(sender, true);
-            return true;
-        } else if (command.getName().equalsIgnoreCase("unlock-horse")) {
-            setHorseLockState(sender, false);
-            return true;
-        }
-		    
+
+		if (command.getName().equalsIgnoreCase("nextrestart")) {
+			int time = (int) (config.NEXT_RESTART - (System.currentTimeMillis() / 1000L));
+			if (time < 120) {
+				sender.sendMessage("The server will restart in " + time + " second" + ((time == 1) ? "" : "s"));
+			} else {
+				sender.sendMessage("The server will restart in " + time / 60 + " minute" + ((time == 1) ? "" : "s"));
+			}
+
+			return true;
+		}
+
+		if (command.getName().equalsIgnoreCase("lock-horse")) {
+			setHorseLockState(sender, true);
+			return true;
+		} else if (command.getName().equalsIgnoreCase("unlock-horse")) {
+			setHorseLockState(sender, false);
+			return true;
+		}
+
 		return false;
 	}
 
@@ -312,21 +325,21 @@ public class KitchenSink extends JavaPlugin {
 	/**
 	 * Handle the /lock-horse and /unlock-horse commands.
 	 * 
-	 * The player must subsequently right click on the horse. 
+	 * The player must subsequently right click on the horse.
 	 * 
 	 * @param sender the sender of the command.
 	 * @param locked true if the request is to lock the horse; false for unlock.
 	 */
 	protected void setHorseLockState(CommandSender sender, boolean locked) {
-        if (config.LOCK_HORSES) {
-            if (sender instanceof Player) {
-                doHorseLock = true;
-                newHorseLockState = locked;
-            } else {
-                sender.sendMessage("You need to be in-game to lock horses.");
-            }
-        } else {
-            sender.sendMessage(ChatColor.RED + "That command is disabled.");
-        }
+		if (config.LOCK_HORSES) {
+			if (sender instanceof Player) {
+				doHorseLock = true;
+				newHorseLockState = locked;
+			} else {
+				sender.sendMessage("You need to be in-game to lock horses.");
+			}
+		} else {
+			sender.sendMessage(ChatColor.RED + "That command is disabled.");
+		}
 	}
 }

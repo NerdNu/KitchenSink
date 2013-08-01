@@ -33,4 +33,4 @@ Configuration:
 	- *dispensed* Prevent dispensers from dispensing specified items if *safe-dispensers* is true
 * *allow-enchant-items* If list is not empty, allow only specified items to be enchanted
 * *block-brew* Block specified brewing ingredients
-
+* *next-restart* Number of seconds between server restarts

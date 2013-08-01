@@ -52,7 +52,8 @@ class KitchenSinkListener implements Listener {
 	 */
 	private static final HashSet<Integer> INTERACTABLE_TYPES;
 	static {
-		INTERACTABLE_TYPES = new HashSet<Integer>(Arrays.asList(23, 25, 26, 54, 58, 61, 62, 64, 69, 71, 77, 84, 92, 93, 94, 95, 96, 107, 116, 117, 122, 130, 138, 143, 145, 146, 149, 150, 154, 158));
+		INTERACTABLE_TYPES = new HashSet<Integer>(Arrays.asList(23, 25, 26, 54, 58, 61, 62, 64, 69, 71, 77, 84, 92, 93, 94, 95, 96, 107, 116, 117,
+			122, 130, 138, 143, 145, 146, 149, 150, 154, 158));
 	}
 	private final KitchenSink plugin;
 
@@ -115,43 +116,43 @@ class KitchenSinkListener implements Listener {
 
 	@EventHandler(priority = EventPriority.NORMAL)
 	public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
-        Entity entity = event.getRightClicked();
-        if (plugin.config.BLOCK_VILLAGERS && entity instanceof Villager) {
-            Villager v = (Villager) entity;
-            v.setTarget(event.getPlayer());
-            event.getPlayer().damage(1, v);
-            event.setCancelled(true);
-        } else if (plugin.config.LOCK_HORSES && entity instanceof Horse) {
-            Player player = event.getPlayer();
-            Horse horse = (Horse) entity;
-            Location oldLocation = player.getLocation();
-		    if (plugin.doHorseLock) {
-		        plugin.doHorseLock = false;
-		        if (horse.isTamed() && horse.getOwner() == player) {
-		            // By default, horses are locked and lack "unlocked" metadata.		        
-		            if (plugin.newHorseLockState) {
-		                entity.removeMetadata("unlocked", plugin);
-	                    player.sendMessage(ChatColor.GOLD + "Horse locked.");
-    		        } else {
-                        entity.setMetadata("unlocked", new FixedMetadataValue(plugin, null));
-                        player.sendMessage(ChatColor.GOLD + "Horse unlocked.");
-    		        }
-		        } else {
-                    player.sendMessage(ChatColor.RED + "You do not own that horse.");
-		        }
-                event.setCancelled(true);
-		    } else {
-		        // Handle an attempt to mount the horse or attach a lead.
-                if (horse.isTamed() && horse.getOwner() != player && !horse.hasMetadata("unlocked"))
-	            {
-                    event.setCancelled(true);
-                    player.sendMessage(ChatColor.RED + "That horse is locked by its owner.");	                    
-		        }
-		    }
-		    if (event.isCancelled()) {
-                // Try to restore the player's old look angle.
-                player.teleport(oldLocation);
-		    }
+		Entity entity = event.getRightClicked();
+		if (plugin.config.BLOCK_VILLAGERS && entity instanceof Villager) {
+			Villager v = (Villager) entity;
+			v.setTarget(event.getPlayer());
+			event.getPlayer().damage(1, v);
+			event.setCancelled(true);
+		} else if (plugin.config.LOCK_HORSES && entity instanceof Horse) {
+			Player player = event.getPlayer();
+			Horse horse = (Horse) entity;
+			Location oldLocation = player.getLocation();
+			if (plugin.doHorseLock) {
+				plugin.doHorseLock = false;
+				if (horse.isTamed() && horse.getOwner() == player) {
+					// By default, horses are locked and lack "unlocked"
+					// metadata.
+					if (plugin.newHorseLockState) {
+						entity.removeMetadata("unlocked", plugin);
+						player.sendMessage(ChatColor.GOLD + "Horse locked.");
+					} else {
+						entity.setMetadata("unlocked", new FixedMetadataValue(plugin, null));
+						player.sendMessage(ChatColor.GOLD + "Horse unlocked.");
+					}
+				} else {
+					player.sendMessage(ChatColor.RED + "You do not own that horse.");
+				}
+				event.setCancelled(true);
+			} else {
+				// Handle an attempt to mount the horse or attach a lead.
+				if (horse.isTamed() && horse.getOwner() != player && !horse.hasMetadata("unlocked")) {
+					event.setCancelled(true);
+					player.sendMessage(ChatColor.RED + "That horse is locked by its owner.");
+				}
+			}
+			if (event.isCancelled()) {
+				// Try to restore the player's old look angle.
+				player.teleport(oldLocation);
+			}
 		}
 	}
 
@@ -207,7 +208,7 @@ class KitchenSinkListener implements Listener {
 					Location l = event.getEntity().getLocation();
 					Chunk c = l.getChunk();
 					plugin.sendToLog(Level.INFO, "[MobKill] " + killer.getName() + "|" + event.getEntityType().name() + "|" + l.getWorld().getName()
-									+ "|" + l.getX() + "|" + l.getY() + "|" + l.getZ() + "| C[" + c.getX() + "," + c.getZ() + "]");
+													+ "|" + l.getX() + "|" + l.getY() + "|" + l.getZ() + "| C[" + c.getX() + "," + c.getZ() + "]");
 				}
 				if (plugin.config.BUFF_DROPS > 1) {
 					List<ItemStack> items = event.getDrops();
@@ -321,8 +322,8 @@ class KitchenSinkListener implements Listener {
 			}
 		}
 	}
-	
-	@EventHandler(ignoreCancelled=true)
+
+	@EventHandler(ignoreCancelled = true)
 	public void onHangingPlaceEvent(HangingPlaceEvent event) {
 		if (event.getEntity() instanceof Painting) {
 			List<MetadataValue> metaList = event.getPlayer().getMetadata(KitchenSink.PAINTING_META_KEY);
@@ -332,8 +333,9 @@ class KitchenSinkListener implements Listener {
 					Painting painting = (Painting) event.getEntity();
 					painting.setArt((Art) meta.value());
 				}
-				
-				// After placing a painting, clear the metadata so the next painting is random again.
+
+				// After placing a painting, clear the metadata so the next
+				// painting is random again.
 				event.getPlayer().removeMetadata(KitchenSink.PAINTING_META_KEY, plugin);
 			}
 		}
