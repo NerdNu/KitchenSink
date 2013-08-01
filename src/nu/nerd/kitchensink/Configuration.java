@@ -80,6 +80,6 @@ public class Configuration {
 		DISABLED_RIGHT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.right-click");
 		DISABLE_DISPENSED = plugin.getConfig().getIntegerList("disabled-items.dispensed");
 		DISABLE_BUFF = plugin.getConfig().getIntegerList("disable-buff");
-		RESTART_TIME = plugin.getConfig().getInt("restart-time");
+		RESTART_TIME = plugin.getConfig().getInt("restart-time", 7200);
 	}
 }
