@@ -131,7 +131,6 @@ class KitchenSinkListener implements Listener {
 			Horse horse = (Horse) entity;
 			Location oldLocation = player.getLocation();
 			if (player.hasMetadata(KitchenSink.HORSE_DO_LOCK_KEY)) {
-				player.sendMessage("Attempting lock/unlock.");
 				boolean newHorseLockState = false;
 				for (MetadataValue meta : player.getMetadata(KitchenSink.HORSE_DO_LOCK_KEY)) {
 					if (meta.getOwningPlugin() == plugin) {
