@@ -9,14 +9,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.bukkit.Art;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
@@ -26,7 +24,6 @@ import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.minecart.PoweredMinecart;
 import org.bukkit.entity.minecart.StorageMinecart;
-import org.bukkit.event.player.PlayerVelocityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapelessRecipe;
@@ -43,26 +40,25 @@ public class KitchenSink extends JavaPlugin {
 	public final List<Recipe> recipeList = new ArrayList<Recipe>();
 
 	/**
-	 * This flag is set to true when the player runs /lock-horse or
-	 * /unlock-horse to record that the next right click on an entity should
-	 * lock or unlock a horse.
-	 */
-	public boolean doHorseLock;
-
-	/**
-	 * The new lock state of the next horse to be right-clicked on.
-	 */
-	public boolean newHorseLockState;
-
-	/**
 	 * Key of Player metadata used to record most recently selected painting.
 	 */
 	public static final String PAINTING_META_KEY = "KitchenSink.painting";
 
+	/**
+	 * Key of Player metadata set to signify that the next right click on a 
+	 * horse is an attempted lock/unlock. Value is the new boolean lock state.
+	 */
+	public static final String HORSE_DO_LOCK_KEY = "KitchenSink.do_lock";
+	
+	/**
+	 * Key of Horse metadata set to signify that the horse is unlocked for
+	 * riding by players other than the owner.  If absent, horse is locked.
+	 */
+	public static final String HORSE_UNLOCKED_KEY = "KitchenSink.unlocked";
+
 	@Override
 	public void onDisable() {
 		getServer().getScheduler().cancelTasks(this);
-		sendToLog(Level.INFO, getDescription().getVersion() + " disabled.");
 
 		Iterator<Recipe> recipeIterator = getServer().recipeIterator();
 		while (recipeIterator.hasNext()) {
@@ -166,8 +162,6 @@ public class KitchenSink extends JavaPlugin {
 
 		// For /nextrestart
 		config.NEXT_RESTART = (System.currentTimeMillis() / 1000L) + (long) config.RESTART_TIME;
-
-		sendToLog(Level.INFO, getDescription().getVersion() + " enabled.");
 	}
 
 	@Override
@@ -318,10 +312,6 @@ public class KitchenSink extends JavaPlugin {
 		sender.sendMessage(onlinelist);
 	}
 
-	public void sendToLog(Level level, String message) {
-		log.log(level, "[" + getDescription().getName() + "] " + message);
-	}
-
 	/**
 	 * Handle the /lock-horse and /unlock-horse commands.
 	 * 
@@ -333,8 +323,8 @@ public class KitchenSink extends JavaPlugin {
 	protected void setHorseLockState(CommandSender sender, boolean locked) {
 		if (config.LOCK_HORSES) {
 			if (sender instanceof Player) {
-				doHorseLock = true;
-				newHorseLockState = locked;
+				Player player = (Player) sender;
+				player.setMetadata(HORSE_DO_LOCK_KEY, new FixedMetadataValue(this, locked));
 			} else {
 				sender.sendMessage("You need to be in-game to lock horses.");
 			}

@@ -4,18 +4,22 @@ import java.text.Normalizer;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.logging.Level;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Ageable;
 import org.bukkit.entity.Horse;
+import org.bukkit.entity.Ocelot;
 import org.bukkit.entity.Painting;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
+import org.bukkit.entity.Tameable;
 import org.bukkit.entity.Vehicle;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
@@ -126,25 +130,35 @@ class KitchenSinkListener implements Listener {
 			Player player = event.getPlayer();
 			Horse horse = (Horse) entity;
 			Location oldLocation = player.getLocation();
-			if (plugin.doHorseLock) {
-				plugin.doHorseLock = false;
-				if (horse.isTamed() && horse.getOwner() == player) {
-					// By default, horses are locked and lack "unlocked"
-					// metadata.
-					if (plugin.newHorseLockState) {
-						entity.removeMetadata("unlocked", plugin);
-						player.sendMessage(ChatColor.GOLD + "Horse locked.");
-					} else {
-						entity.setMetadata("unlocked", new FixedMetadataValue(plugin, null));
-						player.sendMessage(ChatColor.GOLD + "Horse unlocked.");
+			if (player.hasMetadata(KitchenSink.HORSE_DO_LOCK_KEY)) {
+				player.sendMessage("Attempting lock/unlock.");
+				boolean newHorseLockState = false;
+				for (MetadataValue meta : player.getMetadata(KitchenSink.HORSE_DO_LOCK_KEY)) {
+					if (meta.getOwningPlugin() == plugin) {
+						newHorseLockState = (Boolean) meta.value();
+						break;
 					}
-				} else {
-					player.sendMessage(ChatColor.RED + "You do not own that horse.");
 				}
-				event.setCancelled(true);
+				player.removeMetadata(KitchenSink.HORSE_DO_LOCK_KEY, plugin);
+
+				if (horse.isTamed()) {
+					if (horse.getOwner() == player) {
+						// Default, locked horses lack the "unlocked" metadata.
+						if (newHorseLockState) {
+							entity.removeMetadata(KitchenSink.HORSE_UNLOCKED_KEY, plugin);
+							player.sendMessage(ChatColor.GOLD + "Horse locked.");
+						} else {
+							entity.setMetadata(KitchenSink.HORSE_UNLOCKED_KEY, new FixedMetadataValue(plugin, null));
+							player.sendMessage(ChatColor.GOLD + "Horse unlocked.");
+						}
+					} else {
+						player.sendMessage(ChatColor.RED + "You do not own that horse.");
+						event.setCancelled(true);
+					}
+				}
 			} else {
 				// Handle an attempt to mount the horse or attach a lead.
-				if (horse.isTamed() && horse.getOwner() != player && !horse.hasMetadata("unlocked")) {
+				if (horse.isTamed() && horse.getOwner() != player && !horse.hasMetadata(KitchenSink.HORSE_UNLOCKED_KEY)) {
 					event.setCancelled(true);
 					player.sendMessage(ChatColor.RED + "That horse is locked by its owner.");
 				}
@@ -207,8 +221,28 @@ class KitchenSinkListener implements Listener {
 				if (plugin.config.LOG_ANIMAL_DEATH) {
 					Location l = event.getEntity().getLocation();
 					Chunk c = l.getChunk();
-					plugin.sendToLog(Level.INFO, "[MobKill] " + killer.getName() + "|" + event.getEntityType().name() + "|" + l.getWorld().getName()
-													+ "|" + l.getX() + "|" + l.getY() + "|" + l.getZ() + "| C[" + c.getX() + "," + c.getZ() + "]");
+					String message = "[MobKill] " + killer.getName() + "|" + event.getEntityType().name() +
+										"|" + l.getWorld().getName() + "|" + l.getBlockX() + "|" + l.getBlockY() + "|" + l.getBlockZ() +
+										"|C[" + c.getX() + "," + c.getZ() + "]";
+					if (event.getEntity() instanceof Tameable) {
+						Tameable tameable = (Tameable) event.getEntity();
+						if (tameable instanceof Ocelot) {
+							Ocelot ocelot = (Ocelot) tameable;
+							message += "|" + ocelot.getCatType().name();
+						} else if (tameable instanceof Horse) {
+							Horse horse = (Horse) tameable;
+							message += "|" + horse.getVariant().name() + "," + horse.getColor().name() + "," + horse.getStyle().name() + "|";
+							for (ItemStack item : horse.getInventory()) {
+								if (item != null && item.getType() != Material.AIR) {
+									message += getItemDescription(item) + ",";
+								}
+							}
+						}
+						if (tameable.isTamed()) {
+							message += "|Owner:" + tameable.getOwner().getName();
+						}
+					}
+					plugin.getLogger().info(message);
 				}
 				if (plugin.config.BUFF_DROPS > 1) {
 					List<ItemStack> items = event.getDrops();
@@ -230,9 +264,9 @@ class KitchenSinkListener implements Listener {
 	public void onPlayerDeath(PlayerDeathEvent event) {
 		Player player = event.getEntity();
 		if (plugin.config.LOG_PLAYER_DROPS) {
-			String loot = "[drops]" + player.getName();
+			String loot = "[drops] " + player.getName();
 			for (ItemStack is : event.getDrops()) {
-				loot += " ," + is.getTypeId() + ":" + is.getAmount();
+				loot += ", " + getItemDescription(is);
 			}
 			plugin.getLogger().info(loot);
 		}
@@ -339,5 +373,35 @@ class KitchenSinkListener implements Listener {
 				event.getPlayer().removeMetadata(KitchenSink.PAINTING_META_KEY, plugin);
 			}
 		}
+	}
+
+	/**
+	 * Return a string describing a dropped item stack.
+	 * 
+	 * The string contains the material type name, data value and amount, as
+	 * well as a list of enchantments. It is used in methods that log drops.
+	 * 
+	 * @param item the droppped item stack.
+	 * @return a string describing a dropped item stack.
+	 */
+	public String getItemDescription(ItemStack item) {
+		StringBuilder description = new StringBuilder();
+		description.append(item.getAmount()).append('x').append(item.getType().name()).append(':').append(item.getData().getData());
+
+		Map<Enchantment, Integer> enchants = item.getEnchantments();
+		if (enchants.size() > 0) {
+			description.append('(');
+			boolean first = true;
+			for (Entry<Enchantment, Integer> entry : enchants.entrySet()) {
+				if (first) {
+					first = false;
+				} else {
+					description.append(',');
+				}
+				description.append(entry.getKey().getName()).append(':').append(entry.getValue());
+			}
+			description.append(')');
+		}
+		return description.toString();
 	}
 }
