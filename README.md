@@ -27,6 +27,7 @@ Configuration:
 * *pearl-damage* Damage players when throwing an ender pearl
 * *leatherless-books* Allow books to be crafted using only sugar cane.
 * *lock-horses* Allow players to prevent other players from riding horses they own using /lock-horse.  To unlock: /unlock-horse.
+* *invulnerable-tame-horses* Make *riderless* tame horses invulnerable. Ridden horses can always be damaged.
 * *disabled-items*
 	- *left-click* Prevent players from left clicking with specified items
 	- *right-click* Prevent players from right clicking with specified items

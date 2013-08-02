@@ -22,6 +22,7 @@ safe-portals: false
 pearl-damage: 0
 leatherless-books: false
 lock-horses: false
+invulnerable-tame-horses: false
 disabled-items:
     left-click: []
     right-click:

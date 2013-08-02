@@ -12,6 +12,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Ageable;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
 import org.bukkit.entity.Ocelot;
 import org.bukkit.entity.Painting;
@@ -30,7 +31,9 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
+import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -352,6 +355,16 @@ class KitchenSinkListener implements Listener {
 						((Player) event.getEntity()).removePotionEffect(PotionEffectType.INVISIBILITY);
 					}
 				}
+			}
+		}
+	}
+
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onEntityDamage(EntityDamageEvent event) {
+		if (plugin.config.INVULNERABLE_TAME_HORSES && event.getEntityType() == EntityType.HORSE) {
+			Horse horse = (Horse) event.getEntity();
+			if (horse.isTamed() && horse.getPassenger() == null) {
+				event.setCancelled(true);
 			}
 		}
 	}
