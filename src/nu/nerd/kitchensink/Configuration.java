@@ -30,6 +30,7 @@ public class Configuration {
 	public boolean LEATHERLESS_BOOKS;
 	public boolean LOCK_HORSES;
 	public boolean INVULNERABLE_TAME_HORSES;
+	public boolean HORSE_RECIPES;
 	public int RESTART_TIME;
 	public long NEXT_RESTART;
 
@@ -75,6 +76,7 @@ public class Configuration {
 		PEARL_DAMAGE = plugin.getConfig().getInt("pearl-damage");
 		LEATHERLESS_BOOKS = plugin.getConfig().getBoolean("leatherless-books");
 		LOCK_HORSES = plugin.getConfig().getBoolean("lock-horses");
+		HORSE_RECIPES = plugin.getConfig().getBoolean("horse-recipes");
 		INVULNERABLE_TAME_HORSES = plugin.getConfig().getBoolean("invulnerable-tame-horses");
 		ALLOW_ENCH_ITEMS = plugin.getConfig().getIntegerList("allow-enchant-items");
 		BLOCK_BREW = plugin.getConfig().getIntegerList("block-brew");

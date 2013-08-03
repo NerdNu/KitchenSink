@@ -26,6 +26,7 @@ import org.bukkit.entity.minecart.PoweredMinecart;
 import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -157,11 +158,49 @@ public class KitchenSink extends JavaPlugin {
 			recipeList.add(cheapBook);
 		}
 
+		if (config.HORSE_RECIPES) {
+			ShapedRecipe ironHorseArmor = new ShapedRecipe(new ItemStack(Material.IRON_BARDING))
+			.shape("  b", "ilb", "iii")
+			.setIngredient('l', Material.LEATHER)
+			.setIngredient('i', Material.IRON_INGOT)
+			.setIngredient('b', Material.IRON_BLOCK);
+			getServer().addRecipe(ironHorseArmor);
+			recipeList.add(ironHorseArmor);
+
+			ShapedRecipe goldHorseArmor = new ShapedRecipe(new ItemStack(Material.GOLD_BARDING))
+			.shape("  b", "ilb", "iii")
+			.setIngredient('l', Material.LEATHER)
+			.setIngredient('i', Material.GOLD_INGOT)
+			.setIngredient('b', Material.GOLD_BLOCK);
+			getServer().addRecipe(goldHorseArmor);
+			recipeList.add(goldHorseArmor);
+
+			ShapedRecipe diamondHorseArmor = new ShapedRecipe(new ItemStack(Material.DIAMOND_BARDING))
+			.shape("  b", "ilb", "iii")
+			.setIngredient('l', Material.LEATHER)
+			.setIngredient('i', Material.DIAMOND)
+			.setIngredient('b', Material.DIAMOND_BLOCK);
+			getServer().addRecipe(diamondHorseArmor);
+			recipeList.add(diamondHorseArmor);
+
+			ShapedRecipe nameTag = new ShapedRecipe(new ItemStack(Material.NAME_TAG))
+			.shape(" bb", " bb", " bb")
+			.setIngredient('b', Material.IRON_BLOCK);
+			getServer().addRecipe(nameTag);
+			recipeList.add(nameTag);
+			
+			ShapedRecipe saddle = new ShapedRecipe(new ItemStack(Material.SADDLE))
+			.shape("lll", "lll", "l l")
+			.setIngredient('l', Material.LEATHER);
+			getServer().addRecipe(saddle);
+			recipeList.add(saddle);
+		}
+		
 		getServer().getScheduler().scheduleSyncRepeatingTask(this, lagCheck, 20, 20);
 		getServer().getPluginManager().registerEvents(listener, this);
 
 		// For /nextrestart
-		config.NEXT_RESTART = (System.currentTimeMillis() / 1000L) + (long) config.RESTART_TIME;
+		config.NEXT_RESTART = (System.currentTimeMillis() / 1000L) + config.RESTART_TIME;
 	}
 
 	@Override

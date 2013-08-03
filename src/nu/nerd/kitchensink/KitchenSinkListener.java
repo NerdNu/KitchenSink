@@ -31,7 +31,6 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
-import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
