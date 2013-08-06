@@ -13,6 +13,7 @@ public class Configuration {
 	public boolean DISABLE_SNOW;
 	public boolean DISABLE_DROPS;
 	public boolean DISABLE_INVISIBILITY_ON_COMBAT;
+	public boolean LOWER_STRENGTH_POTION_DAMAGE;
 	public boolean BLOCK_CAPS;
 	public boolean BLOCK_VILLAGERS;
 	public boolean SAFE_ICE;
@@ -60,6 +61,7 @@ public class Configuration {
 		DISABLE_SNOW = plugin.getConfig().getBoolean("disable-snowgrow");
 		DISABLE_DROPS = plugin.getConfig().getBoolean("disable-drops");
 		DISABLE_INVISIBILITY_ON_COMBAT = plugin.getConfig().getBoolean("disable-invisibility-on-combat");
+		LOWER_STRENGTH_POTION_DAMAGE = plugin.getConfig().getBoolean("lower-strength-potion-damage");
 		BLOCK_CAPS = plugin.getConfig().getBoolean("block-caps");
 		BLOCK_VILLAGERS = plugin.getConfig().getBoolean("block-villagers");
 		SAFE_ICE = plugin.getConfig().getBoolean("safe-ice");
