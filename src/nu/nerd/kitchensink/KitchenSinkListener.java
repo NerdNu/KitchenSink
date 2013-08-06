@@ -48,6 +48,7 @@ import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 class KitchenSinkListener implements Listener {
@@ -352,6 +353,24 @@ class KitchenSinkListener implements Listener {
 
 					if (((Player) event.getEntity()).hasPotionEffect(PotionEffectType.INVISIBILITY)) {
 						((Player) event.getEntity()).removePotionEffect(PotionEffectType.INVISIBILITY);
+					}
+				}
+			}
+		}
+		if(plugin.config.LOWER_STRENGTH_POTION_DAMAGE && event.getEntity() instanceof Player && event.getDamager() instanceof Player) {
+			Player damager = (Player) event.getDamager();
+			if (damager.hasPotionEffect(PotionEffectType.INCREASE_DAMAGE)) {
+				for (PotionEffect pe : damager.getActivePotionEffects()){
+					if (pe.getType().equals(PotionEffectType.INCREASE_DAMAGE)) {
+						double newDamage = event.getDamage();
+						if (pe.getAmplifier() == 1) { //str2
+							newDamage = newDamage / 2.6;
+							newDamage = newDamage + 6;
+						} else if (pe.getAmplifier() == 0) { //str1
+							newDamage = newDamage / 1.3;
+							newDamage = newDamage + 3;
+						}
+						event.setDamage(newDamage);
 					}
 				}
 			}
