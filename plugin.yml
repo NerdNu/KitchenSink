@@ -16,6 +16,10 @@ permissions:
     kitchensink.ksinventory:
         description: Edit a players inventory
         default: op
+    kitchensunk.petadmin:
+        description: Bypass ownership test in /unlock-horse, /lock-horse and /untame.
+        default: op
+        
 description: 
 
 commands:
@@ -48,4 +52,8 @@ commands:
         description: Unlock a horse so that players other than the owner can ride it.
         usage: |
             /unlock-horse: Unlock the next horse owned by you that you right click on.
+    untame:
+        description: Untame a pet that you own.
+        usage: |
+            /untame: Untame the next pet owned by you that you right click on.
         

@@ -46,16 +46,22 @@ public class KitchenSink extends JavaPlugin {
 	public static final String PAINTING_META_KEY = "KitchenSink.painting";
 
 	/**
-	 * Key of Player metadata set to signify that the next right click on a 
+	 * Key of Player metadata set to signify that the next right click on a
 	 * horse is an attempted lock/unlock. Value is the new boolean lock state.
 	 */
 	public static final String HORSE_DO_LOCK_KEY = "KitchenSink.do_lock";
-	
+
 	/**
 	 * Key of Horse metadata set to signify that the horse is unlocked for
-	 * riding by players other than the owner.  If absent, horse is locked.
+	 * riding by players other than the owner. If absent, horse is locked.
 	 */
 	public static final String HORSE_UNLOCKED_KEY = "KitchenSink.unlocked";
+
+	/**
+	 * Key of Player metadata set to signify that the next right click on a
+	 * Tameable mob owned by the player will un-tame the mob.
+	 */
+	public static final String UNTAME_KEY = "KitchenSink.untame";
 
 	@Override
 	public void onDisable() {
@@ -188,14 +194,14 @@ public class KitchenSink extends JavaPlugin {
 			.setIngredient('b', Material.IRON_BLOCK);
 			getServer().addRecipe(nameTag);
 			recipeList.add(nameTag);
-			
+
 			ShapedRecipe saddle = new ShapedRecipe(new ItemStack(Material.SADDLE))
 			.shape("lll", "lll", "l l")
 			.setIngredient('l', Material.LEATHER);
 			getServer().addRecipe(saddle);
 			recipeList.add(saddle);
 		}
-		
+
 		getServer().getScheduler().scheduleSyncRepeatingTask(this, lagCheck, 20, 20);
 		getServer().getPluginManager().registerEvents(listener, this);
 
@@ -308,6 +314,19 @@ public class KitchenSink extends JavaPlugin {
 		} else if (command.getName().equalsIgnoreCase("unlock-horse")) {
 			setHorseLockState(sender, false);
 			return true;
+		} else if (command.getName().equalsIgnoreCase("untame")) {
+			if (config.UNTAME_PETS) {
+				if (sender instanceof Player) {
+					Player player = (Player) sender;
+					player.setMetadata(UNTAME_KEY, new FixedMetadataValue(this, null));
+					sender.sendMessage(ChatColor.GOLD + "Right click on a pet that you own.");
+				} else {
+					sender.sendMessage("You need to be in-game to untame pets.");
+				}
+			} else {
+				sender.sendMessage(ChatColor.RED + "That command is disabled.");
+			}
+			return true;
 		}
 
 		return false;
@@ -364,6 +383,7 @@ public class KitchenSink extends JavaPlugin {
 			if (sender instanceof Player) {
 				Player player = (Player) sender;
 				player.setMetadata(HORSE_DO_LOCK_KEY, new FixedMetadataValue(this, locked));
+				sender.sendMessage(ChatColor.GOLD + "Right click on a horse that you own.");
 			} else {
 				sender.sendMessage("You need to be in-game to lock horses.");
 			}

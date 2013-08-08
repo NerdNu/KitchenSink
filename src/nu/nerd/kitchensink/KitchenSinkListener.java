@@ -129,45 +129,83 @@ class KitchenSinkListener implements Listener {
 			v.setTarget(event.getPlayer());
 			event.getPlayer().damage(1, v);
 			event.setCancelled(true);
-		} else if (plugin.config.LOCK_HORSES && entity instanceof Horse) {
+			return;
+		} else if (entity instanceof Tameable) {
+			Tameable tameable = (Tameable) entity;
 			Player player = event.getPlayer();
-			Horse horse = (Horse) entity;
-			Location oldLocation = player.getLocation();
-			if (player.hasMetadata(KitchenSink.HORSE_DO_LOCK_KEY)) {
-				boolean newHorseLockState = false;
-				for (MetadataValue meta : player.getMetadata(KitchenSink.HORSE_DO_LOCK_KEY)) {
-					if (meta.getOwningPlugin() == plugin) {
-						newHorseLockState = (Boolean) meta.value();
-						break;
-					}
-				}
-				player.removeMetadata(KitchenSink.HORSE_DO_LOCK_KEY, plugin);
+			boolean isPetAdmin = player.hasPermission("KitchenSink.petadmin");
+			
+			if (plugin.config.UNTAME_PETS) {
+				if (player.hasMetadata(KitchenSink.UNTAME_KEY)) {
+					player.removeMetadata(KitchenSink.UNTAME_KEY, plugin);
+					event.setCancelled(true);
 
-				if (horse.isTamed()) {
-					if (horse.getOwner() == player) {
-						// Default, locked horses lack the "unlocked" metadata.
-						if (newHorseLockState) {
-							entity.removeMetadata(KitchenSink.HORSE_UNLOCKED_KEY, plugin);
-							player.sendMessage(ChatColor.GOLD + "Horse locked.");
+					if (tameable.isTamed()) {
+						// Warn admins when they bypass ownership.
+						if (isPetAdmin && tameable.getOwner() != player) {
+							player.sendMessage(ChatColor.YELLOW + "That pet belongs to " + tameable.getOwner().getName() + ".");
+						}
+						
+						if (tameable.getOwner() == player || isPetAdmin) {
+							tameable.setTamed(false);
+							tameable.setOwner(null);
+							player.sendMessage(ChatColor.GOLD + "Pet untamed.");
 						} else {
-							entity.setMetadata(KitchenSink.HORSE_UNLOCKED_KEY, new FixedMetadataValue(plugin, null));
-							player.sendMessage(ChatColor.GOLD + "Horse unlocked.");
+							player.sendMessage(ChatColor.RED + "You do not own that pet.");
+						}
+					} else {
+						player.sendMessage(ChatColor.RED + "That animal is not tame.");						
+					}
+					return;
+				}				
+			} 
+			
+			if (plugin.config.LOCK_HORSES && entity instanceof Horse) {
+				Horse horse = (Horse) entity;
+				Location oldLocation = player.getLocation();
+				if (player.hasMetadata(KitchenSink.HORSE_DO_LOCK_KEY)) {
+					event.setCancelled(true);
+					boolean newHorseLockState = false;
+					for (MetadataValue meta : player.getMetadata(KitchenSink.HORSE_DO_LOCK_KEY)) {
+						if (meta.getOwningPlugin() == plugin) {
+							newHorseLockState = (Boolean) meta.value();
+							break;
+						}
+					}
+					player.removeMetadata(KitchenSink.HORSE_DO_LOCK_KEY, plugin);
+
+					if (horse.isTamed()) {
+						if (horse.getOwner() == player || isPetAdmin) {
+							// Warn admins when they bypass ownership.
+							if (isPetAdmin && horse.getOwner() != player) {
+								player.sendMessage(ChatColor.YELLOW + "That horse belongs to " + horse.getOwner().getName() + ".");
+							}
+							
+							// Default, locked horses lack the "unlocked" metadata.
+							if (newHorseLockState) {
+								entity.removeMetadata(KitchenSink.HORSE_UNLOCKED_KEY, plugin);
+								player.sendMessage(ChatColor.GOLD + "Horse locked.");
+							} else {
+								entity.setMetadata(KitchenSink.HORSE_UNLOCKED_KEY, new FixedMetadataValue(plugin, null));
+								player.sendMessage(ChatColor.GOLD + "Horse unlocked.");
+							}
+						} else {
+							player.sendMessage(ChatColor.RED + "You do not own that horse.");
 						}
 					} else {
 						player.sendMessage(ChatColor.RED + "You do not own that horse.");
+					}
+				} else {
+					// Handle an attempt to mount the horse or attach a lead.
+					if (horse.isTamed() && horse.getOwner() != player && !horse.hasMetadata(KitchenSink.HORSE_UNLOCKED_KEY)) {
 						event.setCancelled(true);
+						player.sendMessage(ChatColor.RED + "That horse is locked by its owner.");
 					}
 				}
-			} else {
-				// Handle an attempt to mount the horse or attach a lead.
-				if (horse.isTamed() && horse.getOwner() != player && !horse.hasMetadata(KitchenSink.HORSE_UNLOCKED_KEY)) {
-					event.setCancelled(true);
-					player.sendMessage(ChatColor.RED + "That horse is locked by its owner.");
+				if (event.isCancelled()) {
+					// Try to restore the player's old look angle.
+					player.teleport(oldLocation);
 				}
-			}
-			if (event.isCancelled()) {
-				// Try to restore the player's old look angle.
-				player.teleport(oldLocation);
 			}
 		}
 	}
@@ -357,16 +395,16 @@ class KitchenSinkListener implements Listener {
 				}
 			}
 		}
-		if(plugin.config.LOWER_STRENGTH_POTION_DAMAGE && event.getEntity() instanceof Player && event.getDamager() instanceof Player) {
+		if (plugin.config.LOWER_STRENGTH_POTION_DAMAGE && event.getEntity() instanceof Player && event.getDamager() instanceof Player) {
 			Player damager = (Player) event.getDamager();
 			if (damager.hasPotionEffect(PotionEffectType.INCREASE_DAMAGE)) {
-				for (PotionEffect pe : damager.getActivePotionEffects()){
+				for (PotionEffect pe : damager.getActivePotionEffects()) {
 					if (pe.getType().equals(PotionEffectType.INCREASE_DAMAGE)) {
 						double newDamage = event.getDamage();
-						if (pe.getAmplifier() == 1) { //str2
+						if (pe.getAmplifier() == 1) { // str2
 							newDamage = newDamage / 2.6;
 							newDamage = newDamage + 6;
-						} else if (pe.getAmplifier() == 0) { //str1
+						} else if (pe.getAmplifier() == 0) { // str1
 							newDamage = newDamage / 1.3;
 							newDamage = newDamage + 3;
 						}
