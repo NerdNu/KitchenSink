@@ -6,6 +6,7 @@ buff-shear-drops: 0
 disable-snowgrow: false
 disable-drops: false
 disable-invisibility-on-combat: false
+lower-strength-potion-damage: false
 block-caps: true
 block-villagers: false
 safe-ice: false
