@@ -11,6 +11,8 @@ Configuration:
 * *buff-shear-drops* Increase wool dropped by sheared sheep by factor
 * *disable-snowgrow* Disable snow being generated
 * *disable-drops* Disable items, great for creative servers
+* *disable-invisibility-on-combat* Remove invisibility potion effects when a player PvPs.
+* *lower-strength-potion-damage* Reduce damage dealt with strength potions to Minecraft 1.5 levels.
 * *block-caps* Block people typing in caps too much
 * *block-villagers* Prevent players from trading with villagers
 * *safe-ice* Prevent ice from turning into water when broken
