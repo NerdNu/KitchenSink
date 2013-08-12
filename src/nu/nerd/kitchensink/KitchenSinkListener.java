@@ -45,6 +45,7 @@ import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.event.world.PortalCreateEvent;
+import org.bukkit.inventory.HorseInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
@@ -147,6 +148,23 @@ class KitchenSinkListener implements Listener {
 						}
 						
 						if (tameable.getOwner() == player || isPetAdmin) {
+							// Prevent the existence of saddle-wearing untameable untamed horses.
+							if (tameable instanceof Horse) {
+								Horse horse = (Horse) tameable;
+								HorseInventory inventory = horse.getInventory();
+								Location loc = horse.getLocation();
+								for (ItemStack item : inventory.getContents()) {
+									if (item != null) {
+										loc.getWorld().dropItemNaturally(loc, item);
+									}
+								}
+								inventory.clear();
+								if (horse.isCarryingChest()) {
+									horse.setCarryingChest(false);
+									loc.getWorld().dropItemNaturally(loc, new ItemStack(Material.CHEST));
+								}
+							}
+
 							tameable.setTamed(false);
 							tameable.setOwner(null);
 							player.sendMessage(ChatColor.GOLD + "Pet untamed.");
