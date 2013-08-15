@@ -14,6 +14,8 @@ public class Configuration {
 	public boolean DISABLE_DROPS;
 	public boolean DISABLE_INVISIBILITY_ON_COMBAT;
 	public boolean LOWER_STRENGTH_POTION_DAMAGE;
+	public double HEALTH_POTION_MULTIPLIER;
+	public double REGEN_POTION_MULTIPLIER;
 	public boolean BLOCK_CAPS;
 	public boolean BLOCK_VILLAGERS;
 	public boolean SAFE_ICE;
@@ -35,7 +37,7 @@ public class Configuration {
 	public boolean HORSE_RECIPES;
 	public int RESTART_TIME;
 	public long NEXT_RESTART;
-
+	
 	public List<Integer> ALLOW_ENCH_ITEMS;
 	public List<Integer> BLOCK_BREW;
 	public List<Integer> DISABLED_LEFT_ITEMS;
@@ -63,6 +65,8 @@ public class Configuration {
 		DISABLE_DROPS = plugin.getConfig().getBoolean("disable-drops");
 		DISABLE_INVISIBILITY_ON_COMBAT = plugin.getConfig().getBoolean("disable-invisibility-on-combat");
 		LOWER_STRENGTH_POTION_DAMAGE = plugin.getConfig().getBoolean("lower-strength-potion-damage");
+		HEALTH_POTION_MULTIPLIER = plugin.getConfig().getDouble("health-potion-multiplier", 1.0);
+		REGEN_POTION_MULTIPLIER = plugin.getConfig().getDouble("regen-potion-multiplier", 1.0);
 		BLOCK_CAPS = plugin.getConfig().getBoolean("block-caps");
 		BLOCK_VILLAGERS = plugin.getConfig().getBoolean("block-villagers");
 		SAFE_ICE = plugin.getConfig().getBoolean("safe-ice");

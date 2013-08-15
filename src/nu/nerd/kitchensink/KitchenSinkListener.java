@@ -34,6 +34,8 @@ import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityRegainHealthEvent;
+import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
@@ -382,6 +384,17 @@ class KitchenSinkListener implements Listener {
 		if (!plugin.config.BLOCK_BREW.isEmpty()) {
 			if (plugin.config.BLOCK_BREW.contains(event.getContents().getIngredient().getTypeId())) {
 				event.setCancelled(true);
+			}
+		}
+	}
+
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onEntityRegainHealth(EntityRegainHealthEvent event){
+		if (event.getEntity() instanceof Player) {
+			if (event.getRegainReason() == RegainReason.MAGIC) {
+				event.setAmount(event.getAmount() * plugin.config.HEALTH_POTION_MULTIPLIER);
+			} else if (event.getRegainReason() == RegainReason.MAGIC_REGEN) {
+				event.setAmount(event.getAmount() * plugin.config.REGEN_POTION_MULTIPLIER);
 			}
 		}
 	}
