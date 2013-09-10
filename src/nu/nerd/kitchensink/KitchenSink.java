@@ -1,6 +1,9 @@
 package nu.nerd.kitchensink;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -62,6 +65,15 @@ public class KitchenSink extends JavaPlugin {
 	 * Tameable mob owned by the player will un-tame the mob.
 	 */
 	public static final String UNTAME_KEY = "KitchenSink.untame";
+
+	/**
+	 * The name of the subdirectory of the KitchenSink data directory containing
+	 * host keys. Each user has a separate file named after them containing the
+	 * prefix of their host key, without the server name suffix.
+	 * http://www.sk89q.com/
+	 * 2012/07/fixing-the-minecraft-session-stealer-exploit/
+	 */
+	public static final String HOST_KEYS_DIRECTORY = "hostkeys";
 
 	@Override
 	public void onDisable() {
@@ -368,6 +380,32 @@ public class KitchenSink extends JavaPlugin {
 			onlinelist += " " + color + p;
 		}
 		sender.sendMessage(onlinelist);
+	}
+
+	/**
+	 * Load the contents of the host key file for the specified player.
+	 * 
+	 * @param playerName the name of the player.
+	 * @return a non-null string that is the corresponding prefix of the host
+	 *         name that the player must connect with, or the empty string if
+	 *         there are no restrictions.
+	 */
+	public String getHostKey(String playerName) {
+		File hostKeysDir = new File(getDataFolder(), HOST_KEYS_DIRECTORY);
+		File hostKeyFile = new File(hostKeysDir, playerName);
+		try {
+			BufferedReader reader = null;
+			try {
+				reader = new BufferedReader(new FileReader(hostKeyFile));
+				return reader.readLine();
+			} finally {
+				if (reader != null) {
+					reader.close();
+				}
+			}
+		} catch (IOException ex) {
+			return "";
+		}
 	}
 
 	/**

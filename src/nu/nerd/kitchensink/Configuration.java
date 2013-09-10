@@ -35,6 +35,8 @@ public class Configuration {
 	public boolean INVULNERABLE_TAME_HORSES;
 	public boolean UNTAME_PETS;
 	public boolean HORSE_RECIPES;
+	public boolean HOST_KEYS_CHECK;
+	public boolean HOST_KEYS_DROP_PERMISSIONS;
 	public int RESTART_TIME;
 	public long NEXT_RESTART;
 	
@@ -86,6 +88,8 @@ public class Configuration {
 		HORSE_RECIPES = plugin.getConfig().getBoolean("horse-recipes");
 		INVULNERABLE_TAME_HORSES = plugin.getConfig().getBoolean("invulnerable-tame-horses");
 		UNTAME_PETS = plugin.getConfig().getBoolean("untame-pets");
+		HOST_KEYS_CHECK = plugin.getConfig().getBoolean("host-keys-check", true);
+		HOST_KEYS_DROP_PERMISSIONS = plugin.getConfig().getBoolean("host-keys-drop-permissions");
 		ALLOW_ENCH_ITEMS = plugin.getConfig().getIntegerList("allow-enchant-items");
 		BLOCK_BREW = plugin.getConfig().getIntegerList("block-brew");
 		DISABLED_LEFT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.left-click");

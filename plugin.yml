@@ -2,8 +2,11 @@ name: KitchenSink
 version: 0.4
 author: Travis Watkins
 main: nu.nerd.kitchensink.KitchenSink
-softdepend: [WorldGuard]
+softdepend: [WorldGuard, bPermissions]
 permissions:
+    kitchensink.admin:
+        description: A marker permission that signifies that the player has Admin privileges of various kinds.
+        default: op
     kitchensink.list:
         description: List online players
         default: true

@@ -7,18 +7,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.bukkit.*;
+import org.bukkit.Art;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Ageable;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
 import org.bukkit.entity.Ocelot;
 import org.bukkit.entity.Painting;
-import org.bukkit.entity.Projectile;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Sheep;
 import org.bukkit.entity.Tameable;
 import org.bukkit.entity.Vehicle;
@@ -28,8 +35,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.block.BlockDispenseEvent;
+import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -53,6 +60,9 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+
+import de.bananaco.bpermissions.api.ApiLayer;
+import de.bananaco.bpermissions.api.util.CalculableType;
 
 class KitchenSinkListener implements Listener {
 	private static final String REPLACED_CHARS = "[ \\s\\u000a\\u000d\\u2028\\u2029\\u0009\\u000b\\u000c\\u000d\\u0020\\u00a0\\u1680\\u180e\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200a\\u202f\\u205f\\u3000]{2,}";
@@ -82,9 +92,65 @@ class KitchenSinkListener implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPlayerLogin(PlayerLoginEvent event) {
-		if (event.getPlayer().hasPermission("kitchensink.admin")) {
+		final Player player = event.getPlayer();
+		if (player.hasPermission("kitchensink.admin")) {
+			// By default, always allow admins to log in.
 			event.allow();
+
+			if (plugin.config.HOST_KEYS_CHECK) {
+				String hostPrefix = event.getHostname();
+				int colonIndex = hostPrefix.indexOf('.');
+				if (colonIndex != -1) {
+					hostPrefix = hostPrefix.substring(0, colonIndex);
+				}
+
+				String hostKey = plugin.getHostKey(player.getName());
+				if (hostKey.length() != 0 && !hostPrefix.equals(hostKey)) {
+					// The host key check failed.
+					// Do not leak host key details into the server log.
+					plugin.getLogger().warning(player.getName() + " connected with an invalid host key.");
+					if (plugin.config.HOST_KEYS_DROP_PERMISSIONS && dropToDefaultPermissions(player)) {
+						plugin.getLogger().info(player.getName() + "'s permissions were reduced to default.");
+						Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+							@Override
+							public void run() {
+								player.sendMessage(ChatColor.DARK_RED + "You have logged in with an invalid host key.");
+								player.sendMessage(ChatColor.DARK_RED + "As a security precaution, your permissions have been reduced to default.");
+							}
+						});
+					} else {
+						event.disallow(PlayerLoginEvent.Result.KICK_OTHER, "Login denied: invalid host key. Please contact a tech.");
+					}
+				}
+			}
 			return;
+		}
+	}
+
+	/**
+	 * Remove all top level permissions groups of the player and ensure that
+	 * they are in the default group only.
+	 * 
+	 * If a player happens to be Op, they are deopped too.
+	 * 
+	 * @param player the player to modify.
+	 * @return true if successfully modified, or false on error.
+	 */
+	protected boolean dropToDefaultPermissions(Player player) {
+		try {
+			player.setOp(false);
+			for (World world : Bukkit.getServer().getWorlds()) {
+				for (String group : ApiLayer.getGroups(world.getName(), CalculableType.USER, player.getName())) {
+					if (!group.equalsIgnoreCase("default")) {
+						ApiLayer.removeGroup(world.getName(), CalculableType.USER, player.getName(), group);
+					}
+				}
+				ApiLayer.addGroup(world.getName(), CalculableType.USER, player.getName(), "default");
+			}
+			return true;
+		} catch (Exception ex) {
+			plugin.getLogger().severe(ex.getClass().getName() + ": " + ex.getMessage() + " dropping permissions for " + player.getName());
+			return false;
 		}
 	}
 
@@ -137,7 +203,7 @@ class KitchenSinkListener implements Listener {
 			Tameable tameable = (Tameable) entity;
 			Player player = event.getPlayer();
 			boolean isPetAdmin = player.hasPermission("KitchenSink.petadmin");
-			
+
 			if (plugin.config.UNTAME_PETS) {
 				if (player.hasMetadata(KitchenSink.UNTAME_KEY)) {
 					player.removeMetadata(KitchenSink.UNTAME_KEY, plugin);
@@ -148,9 +214,10 @@ class KitchenSinkListener implements Listener {
 						if (isPetAdmin && tameable.getOwner() != player) {
 							player.sendMessage(ChatColor.YELLOW + "That pet belongs to " + tameable.getOwner().getName() + ".");
 						}
-						
+
 						if (tameable.getOwner() == player || isPetAdmin) {
-							// Prevent the existence of saddle-wearing untameable untamed horses.
+							// Prevent the existence of saddle-wearing
+							// untameable untamed horses.
 							if (tameable instanceof Horse) {
 								Horse horse = (Horse) tameable;
 								HorseInventory inventory = horse.getInventory();
@@ -174,12 +241,12 @@ class KitchenSinkListener implements Listener {
 							player.sendMessage(ChatColor.RED + "You do not own that pet.");
 						}
 					} else {
-						player.sendMessage(ChatColor.RED + "That animal is not tame.");						
+						player.sendMessage(ChatColor.RED + "That animal is not tame.");
 					}
 					return;
-				}				
-			} 
-			
+				}
+			}
+
 			if (plugin.config.LOCK_HORSES && entity instanceof Horse) {
 				Horse horse = (Horse) entity;
 				Location oldLocation = player.getLocation();
@@ -200,8 +267,9 @@ class KitchenSinkListener implements Listener {
 							if (isPetAdmin && horse.getOwner() != player) {
 								player.sendMessage(ChatColor.YELLOW + "That horse belongs to " + horse.getOwner().getName() + ".");
 							}
-							
-							// Default, locked horses lack the "unlocked" metadata.
+
+							// Default, locked horses lack the "unlocked"
+							// metadata.
 							if (newHorseLockState) {
 								entity.removeMetadata(KitchenSink.HORSE_UNLOCKED_KEY, plugin);
 								player.sendMessage(ChatColor.GOLD + "Horse locked.");
@@ -389,7 +457,7 @@ class KitchenSinkListener implements Listener {
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onEntityRegainHealth(EntityRegainHealthEvent event){
+	public void onEntityRegainHealth(EntityRegainHealthEvent event) {
 		if (event.getEntity() instanceof Player) {
 			if (event.getRegainReason() == RegainReason.MAGIC) {
 				event.setAmount(event.getAmount() * plugin.config.HEALTH_POTION_MULTIPLIER);
