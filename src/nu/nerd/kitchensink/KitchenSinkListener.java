@@ -105,7 +105,7 @@ class KitchenSinkListener implements Listener {
 				}
 
 				String hostKey = plugin.getHostKey(player.getName());
-				if (hostKey.length() != 0 && !hostPrefix.equals(hostKey)) {
+				if (!hostPrefix.equals(hostKey)) {
 					// The host key check failed.
 					// Do not leak host key details into the server log.
 					plugin.getLogger().warning(player.getName() + " connected with an invalid host key.");
