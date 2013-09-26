@@ -16,8 +16,10 @@ import java.util.logging.Logger;
 
 import org.bukkit.Art;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
@@ -42,6 +44,13 @@ public class KitchenSink extends JavaPlugin {
 	public final Configuration config = new Configuration(this);
 	public final static Logger log = Logger.getLogger("Minecraft");
 	public final List<Recipe> recipeList = new ArrayList<Recipe>();
+
+	/**
+	 * Location of the next portal to be created. The "safe-portals" setting can
+	 * be bypassed by an admin looking at one of the blocks that constitutes a
+	 * portal frame (except the corners) and running /allow-portal.
+	 */
+	public Location nextPortal;
 
 	/**
 	 * Key of Player metadata used to record most recently selected painting.
@@ -337,6 +346,32 @@ public class KitchenSink extends JavaPlugin {
 				}
 			} else {
 				sender.sendMessage(ChatColor.RED + "That command is disabled.");
+			}
+			return true;
+		}
+
+		if (command.getName().equalsIgnoreCase("allow-portal")) {
+			// Running /allow-portal while looking at some invalid location
+			// invalidates the previously set allowed portal location:
+			nextPortal = null;
+			if (sender instanceof Player) {
+				if (config.SAFE_PORTALS) {
+					Player player = (Player) sender;
+					List<Block> lineOfSight = player.getLastTwoTargetBlocks(null, 20);
+					Block block = (lineOfSight.size() == 2) ? lineOfSight.get(1) : null;
+					if (block != null && block.getType() == Material.OBSIDIAN) {
+						nextPortal = block.getLocation();
+						sender.sendMessage(
+							String.format("%sYou can now light a single portal containing the block at (%d, %d, %d).",
+								ChatColor.GOLD.toString(), nextPortal.getBlockX(), nextPortal.getBlockY(), nextPortal.getBlockZ()));
+					} else {
+						sender.sendMessage(ChatColor.RED + "You need to be looking at the non-corner parts of an obsidian portal frame.");
+					}
+				} else {
+					sender.sendMessage(ChatColor.RED + "Safe portals are not enabled. Anybody can light portals.");
+				}
+			} else {
+				sender.sendMessage(ChatColor.RED + "You need to be in-game to run that.");
 			}
 			return true;
 		}

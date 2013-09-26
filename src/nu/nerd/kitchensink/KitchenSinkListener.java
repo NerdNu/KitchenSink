@@ -413,15 +413,34 @@ class KitchenSinkListener implements Listener {
 		}
 	}
 
-	@EventHandler(priority = EventPriority.HIGHEST)
+	/**
+	 * There's no "elegant" way to work out who was trying to light a portal and
+	 * allow an admin to bypass the safe portals check. EntityCreatePortalEvent
+	 * is only fired when the enderdragon dies - not when a player lights a
+	 * portal.
+	 * 
+	 * So, the /allow-portal command, run by an admin, disables the safe portals
+	 * check for a specific portal location, allowing the portal to be created.
+	 */
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onPortalCreate(PortalCreateEvent event) {
-		if (event.isCancelled())
-			return;
-
 		if (plugin.config.SAFE_PORTALS) {
-			event.setCancelled(true);
-			for (Block b : event.getBlocks()) {
-				b.setTypeId(0);
+			boolean allowed = false;
+			if (plugin.nextPortal != null) {
+				for (Block block : event.getBlocks()) {
+					if (block.getLocation().getBlockX() == plugin.nextPortal.getBlockX() &&
+						block.getLocation().getBlockY() == plugin.nextPortal.getBlockY() &&
+						block.getLocation().getBlockZ() == plugin.nextPortal.getBlockZ()) {
+						allowed = true;
+						plugin.nextPortal = null;
+					}
+				}
+			}
+			if (!allowed) {
+				event.setCancelled(true);
+				for (Block block : event.getBlocks()) {
+					block.setTypeId(0);
+				}
 			}
 		}
 	}

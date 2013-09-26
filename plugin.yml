@@ -59,4 +59,8 @@ commands:
         description: Untame a pet that you own.
         usage: |
             /untame: Untame the next pet owned by you that you right click on.
-        
+    allow-portal:
+        description: An admin can bypass the safe-portals check by looking at the frame of a portal (excluding the corners) and running this command before lighting the portal.
+        permission: kitchensink.admin
+        usage: |
+            /<command>: Look at a portal frame and run this before lighting it to bypass safe portals protections. 
