@@ -418,6 +418,7 @@ class KitchenSinkListener implements Listener {
 		if (event.isCancelled())
 			return;
 
+		final Player player = event.getPlayer();
 		if (!player.hasPermission("kitchensink.admin")) {
 			if (plugin.config.SAFE_PORTALS) {
 				event.setCancelled(true);
