@@ -4,6 +4,16 @@ author: Travis Watkins
 main: nu.nerd.kitchensink.KitchenSink
 softdepend: [WorldGuard, bPermissions]
 permissions:
+    kitchensink.*:
+        description: Access to all KitchenSink commands
+        children:
+            kitchensink.admin: true
+            kitchensink.list: true
+            kitchensink.lag: true
+            kitchensink.unenchant: true
+            kitchensink.ksinventory: true
+            kitchensink.petadmin: true
+            kitchensink.mobcount: true
     kitchensink.admin:
         description: A marker permission that signifies that the player has Admin privileges of various kinds.
         default: op
@@ -22,7 +32,8 @@ permissions:
     kitchensunk.petadmin:
         description: Bypass ownership test in /unlock-horse, /lock-horse and /untame.
         default: op
-        
+    kitchensink.mobcount:
+        default: op
 description: 
 
 commands:
@@ -64,3 +75,8 @@ commands:
         permission: kitchensink.admin
         usage: |
             /<command>: Look at a portal frame and run this before lighting it to bypass safe portals protections. 
+    mob-count:
+        description: Get a count of all loaded mobs
+        permissions: kitchensick.admin
+        usage: |
+            /mob-count: Get a count of all loaded mobs

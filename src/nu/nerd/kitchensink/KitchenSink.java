@@ -151,28 +151,8 @@ public class KitchenSink extends JavaPlugin {
 			Runnable task = new Runnable() {
 				@Override
 				public void run() {
-					Future<Collection<LivingEntity>> future = sched.callSyncMethod(KitchenSink.this, new Callable<Collection<LivingEntity>>() {
-						@Override
-						public Collection<LivingEntity> call() throws Exception {
-							return getServer().getWorlds().get(0).getEntitiesByClass(LivingEntity.class);
-						}
-					});
-
-					Collection<LivingEntity> livingEntities;
-					try {
-						livingEntities = future.get();
-						System.out.println("-!- Starting Mob count");
-						HashMap<String, Integer> a = new HashMap<String, Integer>();
-						for (LivingEntity animal : livingEntities) {
-							if (a.containsKey(animal.getType().name())) {
-								a.put(animal.getType().name(), a.get(animal.getType().name()) + 1);
-							} else {
-								a.put(animal.getType().name(), 1);
-							}
-						}
-						System.out.println("-!- " + a);
-					} catch (Exception ex) {
-					}
+					System.out.println("-!- Starting Mob count");
+					System.out.println("-!- " + getMobCount());
 				}
 			};
 			sched.runTaskTimerAsynchronously(this, task, ONE_MINUTE, 10 * ONE_MINUTE);
@@ -376,6 +356,11 @@ public class KitchenSink extends JavaPlugin {
 			return true;
 		}
 
+		if (command.getName().equalsIgnoreCase("mob-count")) {
+			sender.sendMessage(getMobCount().toString());
+			return true;
+		}
+
 		return false;
 	}
 
@@ -463,5 +448,27 @@ public class KitchenSink extends JavaPlugin {
 		} else {
 			sender.sendMessage(ChatColor.RED + "That command is disabled.");
 		}
+	}
+
+	/**
+	 * Returns counts for all mobs
+	 */
+	public HashMap<String, Integer> getMobCount() {
+		HashMap<String, Integer> counts = new HashMap<String, Integer>();
+
+		try {
+			Collection<LivingEntity> livingEntities;
+			livingEntities = getServer().getWorlds().get(0).getEntitiesByClass(LivingEntity.class);
+			for (LivingEntity animal : livingEntities) {
+				if (counts.containsKey(animal.getType().name())) {
+					counts.put(animal.getType().name(), counts.get(animal.getType().name()) + 1);
+				} else {
+					counts.put(animal.getType().name(), 1);
+				}
+			}
+		} catch (Exception ex) {
+		}
+
+		return counts;
 	}
 }
