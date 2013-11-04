@@ -10,8 +10,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import org.bukkit.Art;
@@ -33,6 +33,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
@@ -83,6 +84,61 @@ public class KitchenSink extends JavaPlugin {
 	 * 2012/07/fixing-the-minecraft-session-stealer-exploit/
 	 */
 	public static final String HOST_KEYS_DIRECTORY = "hostkeys";
+
+	/**
+	 * Map from lower case in-game enchantment names to the Bukkit Enchantment instance.
+	 * 
+	 * Also maps the internal Bukkit Enchantment names in lower case.
+	 */
+	private static final TreeMap<String, Enchantment> ENCHANTMENT_NAMES = new TreeMap<String, Enchantment>();
+	static {
+		// Internal names.
+		for (Enchantment enchant : Enchantment.values()) {
+			ENCHANTMENT_NAMES.put(enchant.getName().toLowerCase(), enchant);
+		}
+		
+		// Common, in-game names.
+		ENCHANTMENT_NAMES.put("power", Enchantment.ARROW_DAMAGE);
+		ENCHANTMENT_NAMES.put("flame", Enchantment.ARROW_FIRE);
+		ENCHANTMENT_NAMES.put("infinity", Enchantment.ARROW_INFINITE);
+		ENCHANTMENT_NAMES.put("punch", Enchantment.ARROW_KNOCKBACK);
+		ENCHANTMENT_NAMES.put("sharpness", Enchantment.DAMAGE_ALL);
+		ENCHANTMENT_NAMES.put("bane_of_arthropods", Enchantment.DAMAGE_ARTHROPODS);
+		ENCHANTMENT_NAMES.put("smite", Enchantment.DAMAGE_UNDEAD);
+		ENCHANTMENT_NAMES.put("haste", Enchantment.DIG_SPEED);
+		ENCHANTMENT_NAMES.put("unbreaking", Enchantment.DURABILITY);
+		ENCHANTMENT_NAMES.put("fortune", Enchantment.LOOT_BONUS_BLOCKS);
+		ENCHANTMENT_NAMES.put("looting", Enchantment.LOOT_BONUS_MOBS);
+		ENCHANTMENT_NAMES.put("respiration", Enchantment.OXYGEN);
+		ENCHANTMENT_NAMES.put("protection", Enchantment.PROTECTION_ENVIRONMENTAL);
+		ENCHANTMENT_NAMES.put("blast_protection", Enchantment.PROTECTION_EXPLOSIONS);
+		ENCHANTMENT_NAMES.put("feather_fall", Enchantment.PROTECTION_FALL);
+		ENCHANTMENT_NAMES.put("fire_protection", Enchantment.PROTECTION_FIRE);
+		ENCHANTMENT_NAMES.put("projectile_protection", Enchantment.PROTECTION_PROJECTILE);
+		ENCHANTMENT_NAMES.put("aqua_afinity", Enchantment.WATER_WORKER);
+	};
+	
+	/**
+	 * Return the enchantment whose internal or common name exactly matches 
+	 * prefix, or else the first enchantment that begins with prefix if there is
+	 * no exact match.
+	 * 
+	 * @param prefix the start of the enchantment name.
+	 * @return the corresponding Enchantment.
+	 */
+	private static Enchantment getEnchantment(String prefix) {
+		prefix = prefix.toLowerCase();
+		Enchantment enchantment = ENCHANTMENT_NAMES.get(prefix);
+		if (enchantment == null) {
+			// Map entries with key >= prefix.
+			SortedMap<String, Enchantment> tail = ENCHANTMENT_NAMES.tailMap(prefix);
+			if (tail.firstKey().startsWith(prefix)) {
+				// Return the first prefix match.
+				return tail.get(tail.firstKey());
+			}
+		}
+		return enchantment;
+	}
 
 	@Override
 	public void onDisable() {
@@ -360,6 +416,52 @@ public class KitchenSink extends JavaPlugin {
 			sender.sendMessage(getMobCount().toString());
 			return true;
 		}
+
+		// Unfortunately, many plugins don't correctly apply enchantments to
+		// enchanted books ("enchantment holders").
+		if (command.getName().equalsIgnoreCase("enchant-book") && sender instanceof Player) {
+			Player player = (Player) sender;
+			ItemStack item = player.getItemInHand();
+
+			// If holding an unenchanted book, replace with enchanted book.
+			if (item.getType() == Material.BOOK) {
+				item.setType(Material.ENCHANTED_BOOK);
+			}
+
+			if (item.getType() != Material.ENCHANTED_BOOK) {
+				player.sendMessage(ChatColor.RED + "You must be holding a book or enchanted book.");
+				return true;
+			}
+
+			if (args.length != 2) {
+				player.sendMessage(ChatColor.RED + "Usage: /enchant-book <enchantment> <level>");
+				return true;
+			}
+
+			Enchantment enchantment = getEnchantment(args[0]);
+			if (enchantment == null) {
+				player.sendMessage(ChatColor.RED + args[0] + " is not a valid enchantment.");
+				return true;
+			}
+			
+			int level;
+			try {
+				level = Integer.parseInt(args[1]);
+				if (level < 1) {
+					player.sendMessage(ChatColor.RED + "The level must be 1 or higher.");
+					return true;
+				}
+			} catch (Exception ex) {
+				player.sendMessage(ChatColor.RED + args[1] + " is not an integer.");
+				return true;
+			}
+
+			EnchantmentStorageMeta meta = (EnchantmentStorageMeta) item.getItemMeta();
+			meta.addStoredEnchant(enchantment, level, true);
+			item.setItemMeta(meta);
+			player.setItemInHand(item);
+			return true;
+		} // /enchant-book
 
 		return false;
 	}

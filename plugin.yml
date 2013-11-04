@@ -80,3 +80,9 @@ commands:
         permissions: kitchensick.admin
         usage: |
             /mob-count: Get a count of all loaded mobs
+    enchant-book:        
+        description: Enchant the book(s) in your hand with the specified enchantment.
+        permissions: kitchensick.admin
+        usage: |
+            /<command> <enchantment> <level>: Enchant the held book(s) with the specified enchantment.
+            
