@@ -112,10 +112,10 @@ public class KitchenSink extends JavaPlugin {
 		ENCHANTMENT_NAMES.put("respiration", Enchantment.OXYGEN);
 		ENCHANTMENT_NAMES.put("protection", Enchantment.PROTECTION_ENVIRONMENTAL);
 		ENCHANTMENT_NAMES.put("blast_protection", Enchantment.PROTECTION_EXPLOSIONS);
-		ENCHANTMENT_NAMES.put("feather_fall", Enchantment.PROTECTION_FALL);
+		ENCHANTMENT_NAMES.put("feather_falling", Enchantment.PROTECTION_FALL);
 		ENCHANTMENT_NAMES.put("fire_protection", Enchantment.PROTECTION_FIRE);
 		ENCHANTMENT_NAMES.put("projectile_protection", Enchantment.PROTECTION_PROJECTILE);
-		ENCHANTMENT_NAMES.put("aqua_afinity", Enchantment.WATER_WORKER);
+		ENCHANTMENT_NAMES.put("aqua_affinity", Enchantment.WATER_WORKER);
 	};
 	
 	/**
