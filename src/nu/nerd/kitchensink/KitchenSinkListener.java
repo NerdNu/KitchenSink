@@ -428,7 +428,8 @@ class KitchenSinkListener implements Listener {
 			boolean allowed = false;
 			if (plugin.nextPortal != null) {
 				for (Block block : event.getBlocks()) {
-					if (block.getLocation().getBlockX() == plugin.nextPortal.getBlockX() &&
+					if (block != null &&
+					    block.getLocation().getBlockX() == plugin.nextPortal.getBlockX() &&
 						block.getLocation().getBlockY() == plugin.nextPortal.getBlockY() &&
 						block.getLocation().getBlockZ() == plugin.nextPortal.getBlockZ()) {
 						allowed = true;
