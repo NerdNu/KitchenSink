@@ -26,6 +26,7 @@ Configuration:
 * *safe-minecarts-delay* The time between clearing empty minecarts
 * *safe-minecarts-drop* Drop a minecart item when a minecart is removed due to *safe-minecarts*
 * *safe-special-carts* Prevent storage and powered minecarts from being affected by *safe-minecarts*
+* *sprint-max-time* Timeout to force player to stop sprinting after the specified amount of ticks. Set to zero or less to disable.
 * *remove-on-exit* Remove a vehicle when a player exits it
 * *safe-portals* Prevent players from creating nether portals
 * *pearl-damage* Damage players when throwing an ender pearl

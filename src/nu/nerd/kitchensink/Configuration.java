@@ -39,6 +39,7 @@ public class Configuration {
 	public boolean HOST_KEYS_DROP_PERMISSIONS;
 	public int RESTART_TIME;
 	public long NEXT_RESTART;
+        public int SPRINT_MAX_TICKS;
 	
 	public List<Integer> ALLOW_ENCH_ITEMS;
 	public List<Integer> BLOCK_BREW;
@@ -97,5 +98,6 @@ public class Configuration {
 		DISABLE_DISPENSED = plugin.getConfig().getIntegerList("disabled-items.dispensed");
 		DISABLE_BUFF = plugin.getConfig().getIntegerList("disable-buff");
 		RESTART_TIME = plugin.getConfig().getInt("restart-time", 7200);
+                SPRINT_MAX_TICKS = plugin.getConfig().getInt("sprint-max-time", 0);
 	}
 }

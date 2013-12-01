@@ -58,6 +58,7 @@ import org.bukkit.inventory.HorseInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
+import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -119,7 +120,7 @@ class KitchenSinkListener implements Listener {
 							}
 						});
 					} else {
-						event.disallow(PlayerLoginEvent.Result.KICK_OTHER, "Login denied: invalid host key. Please contact a tech.");
+						// event.disallow(PlayerLoginEvent.Result.KICK_OTHER, "Login denied: invalid host key. Please contact a tech.");
 					}
 				}
 			}
@@ -561,6 +562,13 @@ class KitchenSinkListener implements Listener {
 			}
 		}
 	}
+        
+        @EventHandler(priority = EventPriority.MONITOR)
+        public void onPlayerToggleSprint(PlayerToggleSprintEvent event) {
+            if (event.isSprinting() && plugin.config.SPRINT_MAX_TICKS > 0) {
+                plugin.getServer().getScheduler().runTaskLater(plugin, new SprintTask(event.getPlayer()), plugin.config.SPRINT_MAX_TICKS);
+            }
+        }
 
 	/**
 	 * Return a string describing a dropped item stack.
