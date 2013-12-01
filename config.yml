@@ -47,3 +47,4 @@ block-brew:
 disable-buff:
 - 329
 restart-time: 7200
+sprint-max-time: 40
