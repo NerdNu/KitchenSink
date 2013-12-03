@@ -120,7 +120,7 @@ class KitchenSinkListener implements Listener {
 							}
 						});
 					} else {
-						// event.disallow(PlayerLoginEvent.Result.KICK_OTHER, "Login denied: invalid host key. Please contact a tech.");
+						event.disallow(PlayerLoginEvent.Result.KICK_OTHER, "Login denied: invalid host key. Please contact a tech.");
 					}
 				}
 			}
