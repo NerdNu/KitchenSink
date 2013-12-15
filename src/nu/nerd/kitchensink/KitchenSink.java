@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.SortedMap;
@@ -470,6 +472,7 @@ public class KitchenSink extends JavaPlugin {
 			String host;
 			Integer port = 25565;
 			String parameter = "combined";
+			String format = null;
 
 			if (args.length >= 1) {
 				if (args[0].contains(":")) {
@@ -480,31 +483,55 @@ public class KitchenSink extends JavaPlugin {
 					host = args[0];
 				}
 
-				if (args.length == 2) {
+				if (args.length >= 2) {
 					parameter = args[1];
 				}
 
 				ServerListPing17 pinger = new ServerListPing17();
 				pinger.setAddress(host, port);
 
+				StatusResponse sr = null;
 				try {
-					StatusResponse sr = pinger.fetchData();
-
 					if (parameter.equalsIgnoreCase("combined"))
-						sender.sendMessage(sr.getDescription() + " | " + sr.getPlayers().getOnline() + " of " + sr.getPlayers().getMax() + " players online");
+						format = "%(DESCRIPTION) | %(PLAYERS_ONLINE) of %(PLAYERS_MAX) players online";
 					else if (parameter.equalsIgnoreCase("description"))
-						sender.sendMessage(sr.getDescription());
-					else if (parameter.equalsIgnoreCase("online"))
-						sender.sendMessage(sr.getPlayers().getOnline() + "");
-					else if (parameter.equalsIgnoreCase("max"))
-						sender.sendMessage(sr.getPlayers().getMax() + "");
+						format = "%(DESCRIPTION)";
+					else if (parameter.equalsIgnoreCase("players_online") || parameter.equalsIgnoreCase("online"))
+						format = "%(PLAYERS_ONLINE)";
+					else if (parameter.equalsIgnoreCase("players_max") || parameter.equalsIgnoreCase("max"))
+						format = "%(PLAYERS_MAX)";
 					else if (parameter.equalsIgnoreCase("version_name"))
-						sender.sendMessage(sr.getVersion().getName());
+						format = "%(VERSION_NAME)";
 					else if (parameter.equalsIgnoreCase("version_protocol"))
-						sender.sendMessage(sr.getVersion().getProtocol());
-				} catch (IOException e) {
+						format = "%(VERSION_PROTOCOL)";
+					else if (parameter.equalsIgnoreCase("custom") && args.length >= 3) {
+						StringBuilder sb = new StringBuilder();
+						for (int i = 2; i < args.length; i++) {
+							sb.append(args[i]);
+							if (i < args.length - 1)
+								sb.append(" ");
+						}
+						format = sb.toString();
+					}
+					else
+						return false;
+
+					sr = pinger.fetchData();
+				} catch (Exception e) {
 					sender.sendMessage("Unable to ping server");
-//					e.printStackTrace();
+				}
+
+				try {
+					Hashtable<String, Object> parameters = new Hashtable<String, Object>();
+					parameters.put("DESCRIPTION", sr.getDescription());
+					parameters.put("PLAYERS_ONLINE", Integer.toString(sr.getPlayers().getOnline()));
+					parameters.put("PLAYERS_MAX", Integer.toString(sr.getPlayers().getMax()));
+					parameters.put("VERSION_NAME", sr.getVersion().getName());
+					parameters.put("VERSION_PROTOCOL", sr.getVersion().getProtocol());
+
+					sender.sendMessage(this.dictFormat(format, parameters));
+				} catch (Exception e) {
+					sender.sendMessage("Invalid format string: \"" + format + "\"");
 				}
 
 				return true;
@@ -620,5 +647,33 @@ public class KitchenSink extends JavaPlugin {
 		}
 
 		return counts;
+	}
+
+	public String dictFormat(String format, Hashtable<String, Object> values)
+	{
+		StringBuilder convFormat = new StringBuilder(format);
+		Enumeration<String> keys = values.keys();
+		ArrayList<Object> valueList = new ArrayList<Object>();
+
+		int currentPos = 1;
+		while (keys.hasMoreElements())
+		{
+			String key = keys.nextElement();
+			String formatKey = "%(" + key + ")";
+			String formatPos = "%" + Integer.toString(currentPos) + "$s";
+
+			int index = -1;
+			while ((index = convFormat.indexOf(formatKey, index)) != -1)
+			{
+				convFormat.replace(index, index + formatKey.length(), formatPos);
+				index += formatPos.length();
+			}
+
+			valueList.add(values.get(key));
+
+			++currentPos;
+		}
+
+		return String.format(convFormat.toString(), valueList.toArray());
 	}
 }
