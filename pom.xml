@@ -10,18 +10,18 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
-    <distributionManagement>
-        <repository>
-            <id>thezomg-rel</id>
-            <name>maven.thezomg.com Releases</name>
-            <url>http://maven.thezomg.com/content/repositories/releases/</url>
-        </repository>
-        <snapshotRepository>
-            <id>thezomg-snap</id>
-            <name>maven.thezomg.com Snapshots</name>
-            <url>http://maven.thezomg.com/content/repositories/snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
+	<distributionManagement>
+		<repository>
+			<id>thezomg-rel</id>
+			<name>maven.thezomg.com Releases</name>
+			<url>http://maven.thezomg.com/content/repositories/releases/</url>
+		</repository>
+		<snapshotRepository>
+			<id>thezomg-snap</id>
+			<name>maven.thezomg.com Snapshots</name>
+			<url>http://maven.thezomg.com/content/repositories/snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
 
 	<pluginRepositories>
 		<pluginRepository>
@@ -33,13 +33,18 @@
 		<dependency>
 			<groupId>org.bukkit</groupId>
 			<artifactId>bukkit</artifactId>
-			<version>1.6.2-R0.1-SNAPSHOT</version>
+			<version>1.7.2-R0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>de.bananaco</groupId>
 			<artifactId>bPermissions</artifactId>
 			<version>1.0.0</version>
 			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.1</version>
 		</dependency>
 	</dependencies>
 	<repositories>
@@ -102,5 +107,40 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
+		<plugins>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-shade-plugin</artifactId>
+			<version>2.2</version>
+			<configuration>
+				<minimizeJar>true</minimizeJar>
+				<relocations>
+					<relocation>
+						<pattern>com.google.gson</pattern>
+						<shadedPattern>nu.nerd.kitchensink.libs.com.google.gson</shadedPattern>
+					</relocation>
+				</relocations>
+				<excludes>
+				</excludes>
+			</configuration>
+			<executions>
+				<execution>
+					<phase>package</phase>
+					<goals>
+						<goal>shade</goal>
+					</goals>
+					<configuration>
+						<shadedArtifactAttached>false</shadedArtifactAttached>
+						<shadedClassifierName>Bundle</shadedClassifierName>
+						<artifactSet>
+							<includes>
+								<include>com.google.code.gson:gson:jar:*</include>
+							</includes>
+						</artifactSet>
+					</configuration>
+				</execution>
+			</executions>
+			</plugin>
+		</plugins>
 	</build>
 </project>

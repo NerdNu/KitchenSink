@@ -14,9 +14,12 @@ permissions:
             kitchensink.ksinventory: true
             kitchensink.petadmin: true
             kitchensink.mobcount: true
+            kitchensink.pingserver: true
     kitchensink.admin:
         description: A marker permission that signifies that the player has Admin privileges of various kinds.
         default: op
+        children:
+            kitchensink.pingserver: true
     kitchensink.list:
         description: List online players
         default: true
@@ -33,6 +36,8 @@ permissions:
         description: Bypass ownership test in /unlock-horse, /lock-horse and /untame.
         default: op
     kitchensink.mobcount:
+        default: op
+    kitchensink.pingserver:
         default: op
 description: 
 
@@ -85,4 +90,8 @@ commands:
         permissions: kitchensick.admin
         usage: |
             /<command> <enchantment> <level>: Enchant the held book(s) with the specified enchantment.
-            
+    ping-server:
+        description: Pings another minecraft server and displays returned information
+        permissions: kitchensink.pingserver
+        usage: |
+            /ping-server <server[:port]> [parameter]

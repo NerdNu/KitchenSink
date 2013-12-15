@@ -14,6 +14,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
+import nu.nerd.kitchensink.ServerListPing17.StatusResponse;
+
 import org.bukkit.Art;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -22,6 +24,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.LivingEntity;
@@ -463,6 +466,51 @@ public class KitchenSink extends JavaPlugin {
 			return true;
 		} // /enchant-book
 
+		if (command.getName().equalsIgnoreCase("ping-server")) {
+			String host;
+			Integer port = 25565;
+			String parameter = "combined";
+
+			if (args.length >= 1) {
+				if (args[0].contains(":")) {
+					String[] host_parts = args[0].split(":");
+					host = host_parts[0];
+					port = Integer.parseInt(host_parts[1]);
+				} else {
+					host = args[0];
+				}
+
+				if (args.length == 2) {
+					parameter = args[1];
+				}
+
+				ServerListPing17 pinger = new ServerListPing17();
+				pinger.setAddress(host, port);
+
+				try {
+					StatusResponse sr = pinger.fetchData();
+
+					if (parameter.equalsIgnoreCase("combined"))
+						sender.sendMessage(sr.getDescription() + " | " + sr.getPlayers().getOnline() + " of " + sr.getPlayers().getMax() + " players online");
+					else if (parameter.equalsIgnoreCase("description"))
+						sender.sendMessage(sr.getDescription());
+					else if (parameter.equalsIgnoreCase("online"))
+						sender.sendMessage(sr.getPlayers().getOnline() + "");
+					else if (parameter.equalsIgnoreCase("max"))
+						sender.sendMessage(sr.getPlayers().getMax() + "");
+					else if (parameter.equalsIgnoreCase("version_name"))
+						sender.sendMessage(sr.getVersion().getName());
+					else if (parameter.equalsIgnoreCase("version_protocol"))
+						sender.sendMessage(sr.getVersion().getProtocol());
+				} catch (IOException e) {
+					sender.sendMessage("Unable to ping server");
+//					e.printStackTrace();
+				}
+
+				return true;
+			}
+		}
+		
 		return false;
 	}
 
