@@ -88,8 +88,8 @@ public class ServerListPing17
 		DataOutputStream handshake = new DataOutputStream(b);
 		handshake.writeByte(0x00); //packet id for handshake
 		writeVarInt(handshake, 4); //protocol version
-		writeVarInt(handshake, this.host.getHostString().length()); //host length
-		handshake.writeBytes(this.host.getHostString()); //host string
+		writeVarInt(handshake, this.host.getAddress().getHostName().length()); //host length
+		handshake.writeBytes(this.host.getAddress().getHostName()); //host string
 		handshake.writeShort(host.getPort()); //port
 		writeVarInt(handshake, 1); //state (1 for handshake)
 
