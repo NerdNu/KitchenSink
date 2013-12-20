@@ -44,3 +44,4 @@ Configuration:
 * *allow-enchant-items* If list is not empty, allow only specified items to be enchanted
 * *block-brew* Block specified brewing ingredients
 * *next-restart* Number of seconds between server restarts
+* *warn-restart-on-join* Whether to warn the player when they join if a restart is less than a minute away

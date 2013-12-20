@@ -50,6 +50,7 @@ import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
@@ -567,6 +568,17 @@ class KitchenSinkListener implements Listener {
         public void onPlayerToggleSprint(PlayerToggleSprintEvent event) {
             if (event.isSprinting() && plugin.config.SPRINT_MAX_TICKS > 0) {
                 plugin.getServer().getScheduler().runTaskLater(plugin, new SprintTask(event.getPlayer()), plugin.config.SPRINT_MAX_TICKS);
+            }
+        }
+        
+        @EventHandler(priority = EventPriority.MONITOR)
+        public void onPlayerJoin(PlayerJoinEvent event) {
+            if (plugin.config.WARN_RESTART) {
+                int time = (int) (plugin.config.NEXT_RESTART - (System.currentTimeMillis() / 1000l));
+
+                if (time < 60 && time > 0) {
+                    event.getPlayer().sendMessage(ChatColor.LIGHT_PURPLE + "Warning: There will be a restart in about " + Integer.toString(time) + " seconds!");
+                }
             }
         }
 

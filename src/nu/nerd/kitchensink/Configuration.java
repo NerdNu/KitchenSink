@@ -37,6 +37,7 @@ public class Configuration {
 	public boolean HORSE_RECIPES;
 	public boolean HOST_KEYS_CHECK;
 	public boolean HOST_KEYS_DROP_PERMISSIONS;
+        public boolean WARN_RESTART;
 	public int RESTART_TIME;
 	public long NEXT_RESTART;
         public int SPRINT_MAX_TICKS;
@@ -97,6 +98,7 @@ public class Configuration {
 		DISABLED_RIGHT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.right-click");
 		DISABLE_DISPENSED = plugin.getConfig().getIntegerList("disabled-items.dispensed");
 		DISABLE_BUFF = plugin.getConfig().getIntegerList("disable-buff");
+                WARN_RESTART = plugin.getConfig().getBoolean("warn-restart-on-join");
 		RESTART_TIME = plugin.getConfig().getInt("restart-time", 7200);
                 SPRINT_MAX_TICKS = plugin.getConfig().getInt("sprint-max-time", 0);
 	}
