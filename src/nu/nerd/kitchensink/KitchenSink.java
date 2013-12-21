@@ -7,12 +7,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.logging.Logger;
+
+import nu.nerd.kitchensink.ServerListPing17.StatusResponse;
 
 import org.bukkit.Art;
 import org.bukkit.ChatColor;
@@ -22,6 +26,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.LivingEntity;
@@ -463,6 +468,76 @@ public class KitchenSink extends JavaPlugin {
 			return true;
 		} // /enchant-book
 
+		if (command.getName().equalsIgnoreCase("ping-server")) {
+			String host;
+			Integer port = 25565;
+			String parameter = "combined";
+			String format = null;
+
+			if (args.length >= 1) {
+				if (args[0].contains(":")) {
+					String[] host_parts = args[0].split(":");
+					host = host_parts[0];
+					port = Integer.parseInt(host_parts[1]);
+				} else {
+					host = args[0];
+				}
+
+				if (args.length >= 2) {
+					parameter = args[1];
+				}
+
+				ServerListPing17 pinger = new ServerListPing17();
+				pinger.setAddress(host, port);
+
+				StatusResponse sr = null;
+				try {
+					if (parameter.equalsIgnoreCase("combined"))
+						format = "%(DESCRIPTION) | %(PLAYERS_ONLINE) of %(PLAYERS_MAX) players online";
+					else if (parameter.equalsIgnoreCase("description"))
+						format = "%(DESCRIPTION)";
+					else if (parameter.equalsIgnoreCase("players_online") || parameter.equalsIgnoreCase("online"))
+						format = "%(PLAYERS_ONLINE)";
+					else if (parameter.equalsIgnoreCase("players_max") || parameter.equalsIgnoreCase("max"))
+						format = "%(PLAYERS_MAX)";
+					else if (parameter.equalsIgnoreCase("version_name"))
+						format = "%(VERSION_NAME)";
+					else if (parameter.equalsIgnoreCase("version_protocol"))
+						format = "%(VERSION_PROTOCOL)";
+					else if (parameter.equalsIgnoreCase("custom") && args.length >= 3) {
+						StringBuilder sb = new StringBuilder();
+						for (int i = 2; i < args.length; i++) {
+							sb.append(args[i]);
+							if (i < args.length - 1)
+								sb.append(" ");
+						}
+						format = sb.toString();
+					}
+					else
+						return false;
+
+					sr = pinger.fetchData();
+				} catch (Exception e) {
+					sender.sendMessage("Unable to ping server");
+				}
+
+				try {
+					Hashtable<String, Object> parameters = new Hashtable<String, Object>();
+					parameters.put("DESCRIPTION", sr.getDescription());
+					parameters.put("PLAYERS_ONLINE", Integer.toString(sr.getPlayers().getOnline()));
+					parameters.put("PLAYERS_MAX", Integer.toString(sr.getPlayers().getMax()));
+					parameters.put("VERSION_NAME", sr.getVersion().getName());
+					parameters.put("VERSION_PROTOCOL", sr.getVersion().getProtocol());
+
+					sender.sendMessage(this.dictFormat(format, parameters));
+				} catch (Exception e) {
+					sender.sendMessage("Invalid format string: \"" + format + "\"");
+				}
+
+				return true;
+			}
+		}
+		
 		return false;
 	}
 
@@ -572,5 +647,33 @@ public class KitchenSink extends JavaPlugin {
 		}
 
 		return counts;
+	}
+
+	public String dictFormat(String format, Hashtable<String, Object> values)
+	{
+		StringBuilder convFormat = new StringBuilder(format);
+		Enumeration<String> keys = values.keys();
+		ArrayList<Object> valueList = new ArrayList<Object>();
+
+		int currentPos = 1;
+		while (keys.hasMoreElements())
+		{
+			String key = keys.nextElement();
+			String formatKey = "%(" + key + ")";
+			String formatPos = "%" + Integer.toString(currentPos) + "$s";
+
+			int index = -1;
+			while ((index = convFormat.indexOf(formatKey, index)) != -1)
+			{
+				convFormat.replace(index, index + formatKey.length(), formatPos);
+				index += formatPos.length();
+			}
+
+			valueList.add(values.get(key));
+
+			++currentPos;
+		}
+
+		return String.format(convFormat.toString(), valueList.toArray());
 	}
 }
