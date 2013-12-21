@@ -48,4 +48,5 @@ disable-buff:
 - 329
 restart-time: 7200
 warn-restart-on-join: true
+warn-restart-on-inventory-open: true
 sprint-max-time: 40

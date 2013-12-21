@@ -47,6 +47,7 @@ import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.inventory.BrewEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -65,6 +66,7 @@ import org.bukkit.potion.PotionEffectType;
 
 import de.bananaco.bpermissions.api.ApiLayer;
 import de.bananaco.bpermissions.api.util.CalculableType;
+import org.bukkit.Sound;
 
 class KitchenSinkListener implements Listener {
 	private static final String REPLACED_CHARS = "[ \\s\\u000a\\u000d\\u2028\\u2029\\u0009\\u000b\\u000c\\u000d\\u0020\\u00a0\\u1680\\u180e\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200a\\u202f\\u205f\\u3000]{2,}";
@@ -573,13 +575,32 @@ class KitchenSinkListener implements Listener {
         
         @EventHandler(priority = EventPriority.MONITOR)
         public void onPlayerJoin(PlayerJoinEvent event) {
-            if (plugin.config.WARN_RESTART) {
+            if (plugin.config.WARN_RESTART_ON_JOIN) {
                 int time = (int) (plugin.config.NEXT_RESTART - (System.currentTimeMillis() / 1000l));
 
                 if (time < 60 && time > 0) {
                     event.getPlayer().sendMessage(ChatColor.LIGHT_PURPLE + "Warning: There will be a restart in about " + Integer.toString(time) + " seconds!");
                 }
             }
+        }
+        
+        @EventHandler(priority = EventPriority.MONITOR)
+        public void onInventoryOpen(InventoryOpenEvent event) {
+            if (plugin.config.WARN_RESTART_ON_INVENTORY_OPEN) {
+                int time = (int) (plugin.config.NEXT_RESTART - (System.currentTimeMillis() / 1000l));
+                
+                if (time < 60 && time > 0) {
+                    if(!(event.getPlayer() instanceof Player)) {
+                        return;
+                    }
+                    
+                    Player player = (Player)event.getPlayer();
+                    player.sendMessage(ChatColor.RED + "WARNING: There will be a restart in about " + Integer.toString(time) + " seconds!");
+                    player.sendMessage(ChatColor.RED + "Having an inventory open when a restart occurs may result in loss of items.");
+                    player.playSound(player.getLocation(), Sound.ANVIL_LAND, 2f, 1f);
+                }
+            }
+            
         }
 
 	/**
