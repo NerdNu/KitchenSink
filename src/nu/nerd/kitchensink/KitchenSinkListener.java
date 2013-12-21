@@ -578,7 +578,7 @@ class KitchenSinkListener implements Listener {
             if (plugin.config.WARN_RESTART_ON_JOIN) {
                 int time = (int) (plugin.config.NEXT_RESTART - (System.currentTimeMillis() / 1000l));
 
-                if (time < 60 && time > 0) {
+                if (time < 90 && time > 0) {
                     event.getPlayer().sendMessage(ChatColor.LIGHT_PURPLE + "Warning: There will be a restart in about " + Integer.toString(time) + " seconds!");
                 }
             }
@@ -589,7 +589,7 @@ class KitchenSinkListener implements Listener {
             if (plugin.config.WARN_RESTART_ON_INVENTORY_OPEN) {
                 int time = (int) (plugin.config.NEXT_RESTART - (System.currentTimeMillis() / 1000l));
                 
-                if (time < 60 && time > 0) {
+                if (time < 90 && time > 0) {
                     if(!(event.getPlayer() instanceof Player)) {
                         return;
                     }
