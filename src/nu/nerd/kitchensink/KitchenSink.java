@@ -26,7 +26,6 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.LivingEntity;
@@ -426,21 +425,21 @@ public class KitchenSink extends JavaPlugin {
 		// enchanted books ("enchantment holders").
 		if (command.getName().equalsIgnoreCase("enchant-book") && sender instanceof Player) {
 			Player player = (Player) sender;
-			ItemStack item = player.getItemInHand();
 
-			// If holding an unenchanted book, replace with enchanted book.
-			if (item.getType() == Material.BOOK) {
-				item.setType(Material.ENCHANTED_BOOK);
-			}
+            if (args.length != 2) {
+                player.sendMessage(ChatColor.RED + "Usage: /enchant-book <enchantment> <level>");
+                return true;
+            }
 
-			if (item.getType() != Material.ENCHANTED_BOOK) {
+            ItemStack item = player.getItemInHand();
+			if (item.getType() != Material.BOOK && item.getType() != Material.ENCHANTED_BOOK) {
 				player.sendMessage(ChatColor.RED + "You must be holding a book or enchanted book.");
 				return true;
 			}
-
-			if (args.length != 2) {
-				player.sendMessage(ChatColor.RED + "Usage: /enchant-book <enchantment> <level>");
-				return true;
+			
+			if (item.getAmount() > 1) {
+                player.sendMessage(ChatColor.RED + "You can only enchant one book at a time.");
+                return true;
 			}
 
 			Enchantment enchantment = getEnchantment(args[0]);
@@ -461,10 +460,18 @@ public class KitchenSink extends JavaPlugin {
 				return true;
 			}
 
+            // If holding an unenchanted book, replace with enchanted book.
+            if (item.getType() == Material.BOOK) {
+                item.setType(Material.ENCHANTED_BOOK);
+            }
+			
 			EnchantmentStorageMeta meta = (EnchantmentStorageMeta) item.getItemMeta();
 			meta.addStoredEnchant(enchantment, level, true);
 			item.setItemMeta(meta);
 			player.setItemInHand(item);
+
+            // Log successful enchants.
+		    getLogger().info(sender.getName() + " enchanted " + item.getAmount() + " book: " + enchantment.getName() + " " + level);
 			return true;
 		} // /enchant-book
 

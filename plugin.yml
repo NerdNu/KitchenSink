@@ -32,7 +32,7 @@ permissions:
     kitchensink.ksinventory:
         description: Edit a players inventory
         default: op
-    kitchensunk.petadmin:
+    kitchensink.petadmin:
         description: Bypass ownership test in /unlock-horse, /lock-horse and /untame.
         default: op
     kitchensink.mobcount:
@@ -82,16 +82,16 @@ commands:
             /<command>: Look at a portal frame and run this before lighting it to bypass safe portals protections. 
     mob-count:
         description: Get a count of all loaded mobs
-        permissions: kitchensick.admin
+        permission: kitchensink.admin
         usage: |
             /mob-count: Get a count of all loaded mobs
     enchant-book:        
         description: Enchant the book(s) in your hand with the specified enchantment.
-        permissions: kitchensick.admin
+        permission: kitchensink.admin
         usage: |
             /<command> <enchantment> <level>: Enchant the held book(s) with the specified enchantment.
     ping-server:
         description: Pings another minecraft server and displays returned information
-        permissions: kitchensink.pingserver
+        permission: kitchensink.pingserver
         usage: |
             /ping-server <server[:port]> [parameter]
