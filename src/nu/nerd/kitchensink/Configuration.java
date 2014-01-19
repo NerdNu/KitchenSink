@@ -12,6 +12,7 @@ public class Configuration {
 	public int BUFF_SHEAR_DROPS;
 	public boolean DISABLE_SNOW;
 	public boolean DISABLE_DROPS;
+	public boolean DISABLE_TNT;
 	public boolean DISABLE_INVISIBILITY_ON_COMBAT;
 	public boolean LOWER_STRENGTH_POTION_DAMAGE;
 	public double HEALTH_POTION_MULTIPLIER;
@@ -68,6 +69,7 @@ public class Configuration {
 		BUFF_SHEAR_DROPS = plugin.getConfig().getInt("buff-shear-drops");
 		DISABLE_SNOW = plugin.getConfig().getBoolean("disable-snowgrow");
 		DISABLE_DROPS = plugin.getConfig().getBoolean("disable-drops");
+		DISABLE_TNT = plugin.getConfig().getBoolean("disable-tnt");
 		DISABLE_INVISIBILITY_ON_COMBAT = plugin.getConfig().getBoolean("disable-invisibility-on-combat");
 		LOWER_STRENGTH_POTION_DAMAGE = plugin.getConfig().getBoolean("lower-strength-potion-damage");
 		HEALTH_POTION_MULTIPLIER = plugin.getConfig().getDouble("health-potion-multiplier", 1.0);

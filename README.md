@@ -11,6 +11,7 @@ Configuration:
 * *buff-shear-drops* Increase wool dropped by sheared sheep by factor
 * *disable-snowgrow* Disable snow being generated
 * *disable-drops* Disable items, great for creative servers
+* *disable-tnt* Disable TNT from being ignited
 * *disable-invisibility-on-combat* Remove invisibility potion effects when a player PvPs.
 * *lower-strength-potion-damage* Reduce damage dealt with strength potions to Minecraft 1.5 levels.
 * *health-potion-multiplier* The multiplicative factor applied to health from instant health potions (splashed and drunk).
