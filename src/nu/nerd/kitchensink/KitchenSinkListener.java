@@ -493,7 +493,7 @@ class KitchenSinkListener implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
-		if (plugin.config.DISABLE_INVISIBILITY_ON_COMBAT && event.getEntity() instanceof Player) {
+		if (plugin.config.DISABLE_INVISIBILITY_ON_COMBAT && !event.isCancelled() &&event.getEntity() instanceof Player) {
 			if (event.getDamager() instanceof Player) {
 				Player damagerPlayer = (Player) event.getDamager();
 				if (damagerPlayer.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
