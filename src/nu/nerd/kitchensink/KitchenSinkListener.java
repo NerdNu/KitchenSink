@@ -35,7 +35,9 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockDispenseEvent;
+import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -192,6 +194,23 @@ class KitchenSinkListener implements Listener {
 				event.setCancelled(true);
 			}
 		}
+		
+		if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+			if (plugin.config.DISABLE_TNT) {
+				if (stack.getType() == Material.FLINT_AND_STEEL && event.getClickedBlock().getType() == Material.TNT) {
+					event.setCancelled(true);
+				}
+			}
+		}
+	}
+	
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onBlockBurn(BlockBurnEvent event) {
+		if (plugin.config.DISABLE_TNT) {
+			if (event.getBlock().getType() == Material.TNT) {
+				event.setCancelled(true);
+			}
+		}
 	}
 
 	@EventHandler(priority = EventPriority.NORMAL)
@@ -340,6 +359,15 @@ class KitchenSinkListener implements Listener {
 	public void onBlockDispense(BlockDispenseEvent event) {
 		if (plugin.config.SAFE_DISPENSERS) {
 			if (plugin.config.DISABLE_DISPENSED.contains(event.getItem().getTypeId())) {
+				event.setCancelled(true);
+			}
+		}
+	}
+	
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onBlockPhysics(BlockPhysicsEvent event) {
+		if (plugin.config.DISABLE_TNT) {
+			if (event.getBlock().getType() == Material.TNT) {
 				event.setCancelled(true);
 			}
 		}

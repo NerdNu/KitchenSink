@@ -5,6 +5,7 @@ buff-drops: 0
 buff-shear-drops: 0
 disable-snowgrow: false
 disable-drops: false
+disable-tnt: false
 disable-invisibility-on-combat: false
 lower-strength-potion-damage: false
 health-potion-multiplier: 1.0
