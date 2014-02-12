@@ -47,3 +47,9 @@ Configuration:
 * *next-restart* Number of seconds between server restarts
 * *warn-restart-on-join* Whether to warn the player when they join if a restart is less than a minute away
 * *warn-restart-on-inventory-open* Whether to warn the player when they open an inventory if a restart is less than a minute away
+* *countdown-max-time* Determines the maximum amount of seconds that can be used in a countdown.
+* *countdown-format* Specifies the format the countdown takes in the chat window.
+* *countdown-color* The text color for the countdown itself.
+* *countdown-style* The text formatting used by the countdown.
+* *countdown-msg-color* Color code used by the message displayed when the countdown is complete.
+* *countdown-msg-style* The text formatting used by the message at countdown completion.

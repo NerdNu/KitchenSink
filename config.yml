@@ -51,3 +51,10 @@ restart-time: 7200
 warn-restart-on-join: true
 warn-restart-on-inventory-open: true
 sprint-max-time: 40
+countdown:
+  maxTime: 15
+  format: '>>$s<<'
+  color: '&c'
+  style: '&l'
+  msgColor: '&a'
+  msgStyle: '&l'
