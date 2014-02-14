@@ -15,6 +15,7 @@ permissions:
             kitchensink.petadmin: true
             kitchensink.mobcount: true
             kitchensink.pingserver: true
+            kitchensink.countdown: true
     kitchensink.admin:
         description: A marker permission that signifies that the player has Admin privileges of various kinds.
         default: op
@@ -38,6 +39,9 @@ permissions:
     kitchensink.mobcount:
         default: op
     kitchensink.pingserver:
+        default: op
+    kitchensink.countdown:
+        description: Allows access to /countdown, /cdcancel, and /cdconfig.
         default: op
 description: 
 
@@ -95,3 +99,18 @@ commands:
         permission: kitchensink.pingserver
         usage: |
             /ping-server <server[:port]> [parameter]
+    countdown:
+        description: Runs a countdown from the specified time and displays message when done.
+        permission: kitchensink.countdown
+        usage: |
+            /countdown [<seconds>:10] [<message>:"Go!"]
+    cdcancel:
+        description: Cancels the currently running countdown.
+        permission: kitchensink.countdown
+        usage: |
+            /cdcancel
+    cdconfig:
+        description: Configure the countdown time limit, format, colors, and styles.
+        permission: kitchenskin.countdown
+        usage: |
+            /cdconfig <maxTime seconds>|<format __$s__>|<color &a-&f>|<style &m-&r>|<msgColor &a-&f>|<msgStyle &m-&r> 

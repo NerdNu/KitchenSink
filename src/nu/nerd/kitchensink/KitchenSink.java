@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -41,6 +42,7 @@ import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
+import org.bukkit.scheduler.BukkitTask;
 
 public class KitchenSink extends JavaPlugin {
 	private static final int ONE_MINUTE = 60 * 20;
@@ -49,6 +51,11 @@ public class KitchenSink extends JavaPlugin {
 	public final Configuration config = new Configuration(this);
 	public final static Logger log = Logger.getLogger("Minecraft");
 	public final List<Recipe> recipeList = new ArrayList<Recipe>();
+	public int countdownTime = 0;
+	public long countdownTicks = 0;
+	public String countdownMessage = "";
+	public boolean countdownActive = false;
+	public BukkitTask countdownTask;
 
 	/**
 	 * Location of the next portal to be created. The "safe-portals" setting can
@@ -542,6 +549,163 @@ public class KitchenSink extends JavaPlugin {
 				}
 
 				return true;
+			}
+		}
+		
+		if(command.getName().equalsIgnoreCase("countdown")) {
+			if (sender.hasPermission("kitchensink.countdown")) {
+				if(countdownActive) {
+					sender.sendMessage(ChatColor.GRAY + "A countdown is already in progress.");
+					return true;
+				} else if (args.length > 0) {
+					List<String> Args = new ArrayList<String>(Arrays.asList(args));
+					try {
+						countdownTime = Integer.parseInt(Args.get(0));
+						if(countdownTime > config.COUNTDOWN_MAX_TIME) countdownTime = config.COUNTDOWN_MAX_TIME;
+						Args.remove(0);
+					} catch (NumberFormatException e) {
+						countdownTime = 10;
+					}
+					countdownTicks = (long) (countdownTime * 20);
+					
+					if(!Args.isEmpty()) {
+						for(String arg:Args) {
+							countdownMessage+= arg + " ";
+						}
+					} else countdownMessage = "Go!";
+					
+					countdownActive = true;
+					countdownTask = this.getServer().getScheduler().runTaskTimer(this, new Runnable() {
+						@Override
+						public void run() {
+							if(countdownTime > 0) {
+								getServer().broadcastMessage(ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_COLOR + config.COUNTDOWN_STYLE) +
+										config.COUNTDOWN_FORMAT.split("\\$s")[0] + countdownTime +
+										(config.COUNTDOWN_FORMAT.split("\\$s").length > 1 ? config.COUNTDOWN_FORMAT.split("\\$s")[1] : ""));
+								countdownTime --;
+							} else {
+								countdownActive = false;
+								getServer().broadcastMessage(ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_MSG_COLOR + config.COUNTDOWN_MSG_STYLE) + countdownMessage);
+								countdownMessage = "";
+								countdownTask.cancel();
+								countdownTask = null;
+							}
+						}
+					}, 0L, 20L);
+					return true;
+				}
+			}
+		}
+		
+		if(command.getName().equalsIgnoreCase("cdcancel")) {
+			if(sender.hasPermission("kitchensink.countdown")) {
+				if(countdownTask != null) {					
+					countdownTask.cancel();
+					countdownActive = false;
+					countdownMessage = "";
+					countdownTask = null;
+					sender.sendMessage(ChatColor.GRAY + "Countdown has been cancelled.");
+				} else sender.sendMessage(ChatColor.GRAY + "No cooldowns are active.");
+				return true;
+			}
+		}
+		
+		if(command.getName().equalsIgnoreCase("cdconfig")) {
+			if(sender.hasPermission("kitchensink.countdown")) {
+				if(args.length > 0) {
+					switch (args[0].toLowerCase()) {
+						case "maxtime":
+							if(args.length < 2) {
+								sender.sendMessage(ChatColor.RED + "Usage: /cdconfig maxTime <seconds>");
+								return true;
+							}
+							try {
+								getConfig().set("countdown.maxTime", Math.abs(Integer.parseInt(args[1])));
+								config.COUNTDOWN_MAX_TIME = Math.abs(Integer.parseInt(args[1]));
+								sender.sendMessage(ChatColor.GRAY + "Countdown maxTime has been set to: " + config.COUNTDOWN_MAX_TIME + " seconds.");
+							} catch (NumberFormatException e) {
+								sender.sendMessage(ChatColor.GRAY + "You must provide a number of seconds when attempting to set maxTime.");
+								return false;
+							}
+							return true;
+						case "format":
+							if(args.length < 2) {
+								sender.sendMessage(ChatColor.RED + "Usage: /cdconfig format __$s__");
+								sender.sendMessage(ChatColor.GRAY + "A valid format is any string containing $s (seconds field) that is less than 50 characters.");
+								return true;
+							}
+							if(args[1].contains("$s") && args[1].length() <= 50) {
+								getConfig().set("countdown.format", args[1]);
+								config.COUNTDOWN_FORMAT = args[1];
+								sender.sendMessage(ChatColor.GRAY + "Format changed to: " + ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_COLOR +
+										config.COUNTDOWN_STYLE + config.COUNTDOWN_FORMAT));
+							} else {
+								sender.sendMessage(ChatColor.GRAY + "A valid countdown format must contain $s and be 50 characters or less.");
+								return false;
+							}
+							return true;
+						case "color":
+							if(args.length < 2) {
+								sender.sendMessage(ChatColor.RED + "Usage: /cdconfig color <&a-&f> ");
+								return true;
+							}
+							if(args[1].matches("&([0-9a-fA-F])")) {
+								getConfig().set("countdown.color", args[1]);
+								config.COUNTDOWN_COLOR = args[1];
+								sender.sendMessage(ChatColor.GRAY + "Color changed to: " + ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_COLOR +
+										config.COUNTDOWN_STYLE + config.COUNTDOWN_FORMAT));
+							} else {
+								sender.sendMessage(ChatColor.GRAY + "Valid countdown color codes: http://minecraft.gamepedia.com/Formatting_codes.");
+								return false;
+							}
+							return true;
+						case "style":
+							if(args.length < 2) {
+								sender.sendMessage(ChatColor.RED + "Usage: /cdconfig style <&m-&o> ");
+								return true;
+							}
+							if(args[1].matches("&([m-oM-OrR])")) {
+								getConfig().set("countdown.style", args[1]);
+								config.COUNTDOWN_STYLE = args[1];
+								sender.sendMessage(ChatColor.GRAY + "Style changed to: " + ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_COLOR +
+										config.COUNTDOWN_STYLE + config.COUNTDOWN_FORMAT));
+							} else {
+								sender.sendMessage(ChatColor.GRAY + "Valid countdown style codes: http://minecraft.gamepedia.com/Formatting_codes.");
+								return false;
+							}
+							return true;
+						case "msgcolor":
+							if(args.length < 2) {
+								sender.sendMessage(ChatColor.RED + "Usage: /cdconfig msgColor <&a-&f> ");
+								return true;
+							}
+							if(args[1].matches("&([0-9a-fA-F])")) {
+								getConfig().set("countdown.msgColor", args[1]);
+								config.COUNTDOWN_MSG_COLOR = args[1];
+								sender.sendMessage(ChatColor.GRAY + "Message color changed to: " + ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_MSG_COLOR +
+										config.COUNTDOWN_MSG_STYLE) + "Go!");
+							} else {
+								sender.sendMessage(ChatColor.GRAY + "Valid countdown color codes: http://minecraft.gamepedia.com/Formatting_codes.");
+								return false;
+							}
+							return true;
+						case "msgstyle":
+							if(args.length < 2) {
+								sender.sendMessage(ChatColor.RED + "Usage: /cdconfig msgStyle <&m-&o> ");
+								return true;
+							}
+							if(args[1].matches("&([m-oM-OrR])")) {
+								getConfig().set("countdown.msgStyle", args[1]);
+								config.COUNTDOWN_MSG_STYLE = args[1];
+								sender.sendMessage(ChatColor.GRAY + "Message style changed to: " + ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_MSG_COLOR +
+										config.COUNTDOWN_MSG_STYLE) + "Go!");
+							} else {
+								sender.sendMessage(ChatColor.GRAY + "Valid countdown style codes: http://minecraft.gamepedia.com/Formatting_codes.");
+								return false;
+							}
+							return true;
+					}
+				}
 			}
 		}
 		
