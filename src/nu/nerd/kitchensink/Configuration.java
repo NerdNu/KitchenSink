@@ -43,12 +43,12 @@ public class Configuration {
 	public int RESTART_TIME;
 	public long NEXT_RESTART;
         public int SPRINT_MAX_TICKS;
-    public int COUNTDOWN_MAX_TIME;
-    public String COUNTDOWN_FORMAT;
-    public String COUNTDOWN_COLOR;
-    public String COUNTDOWN_STYLE;
-    public String COUNTDOWN_MSG_COLOR;
-    public String COUNTDOWN_MSG_STYLE;
+        public int COUNTDOWN_MAX_TIME;
+        public String COUNTDOWN_FORMAT;
+        public String COUNTDOWN_COLOR;
+        public String COUNTDOWN_STYLE;
+        public String COUNTDOWN_MSG_COLOR;
+        public String COUNTDOWN_MSG_STYLE;
 	
 	public List<Integer> ALLOW_ENCH_ITEMS;
 	public List<Integer> BLOCK_BREW;
@@ -111,12 +111,12 @@ public class Configuration {
                 WARN_RESTART_ON_INVENTORY_OPEN = plugin.getConfig().getBoolean("warn-restart-on-inventory-open");
 		RESTART_TIME = plugin.getConfig().getInt("restart-time", 7200);
                 SPRINT_MAX_TICKS = plugin.getConfig().getInt("sprint-max-time", 0);
-        COUNTDOWN_MAX_TIME = plugin.getConfig().getInt("countdown.maxtime", 15);
-        COUNTDOWN_FORMAT = plugin.getConfig().getString("countdown.format", ">>$s<<");
-        if(!COUNTDOWN_FORMAT.contains("$s")) COUNTDOWN_FORMAT = ">>$s<<";
-        COUNTDOWN_COLOR = plugin.getConfig().getString("countdown.color", "&c");
-        COUNTDOWN_STYLE = plugin.getConfig().getString("countdown.style", "&l");
-        COUNTDOWN_MSG_COLOR = plugin.getConfig().getString("countdown.msgColor", "&a");
-        COUNTDOWN_MSG_STYLE = plugin.getConfig().getString("countdown.msgStyle", "&l");
+                COUNTDOWN_MAX_TIME = plugin.getConfig().getInt("countdown.maxtime", 15);
+                COUNTDOWN_FORMAT = plugin.getConfig().getString("countdown.format", ">>$s<<");
+                if(!COUNTDOWN_FORMAT.contains("$s")) COUNTDOWN_FORMAT = ">>$s<<";
+                COUNTDOWN_COLOR = plugin.getConfig().getString("countdown.color", "&c");
+                COUNTDOWN_STYLE = plugin.getConfig().getString("countdown.style", "&l");
+                COUNTDOWN_MSG_COLOR = plugin.getConfig().getString("countdown.msgColor", "&a");
+                COUNTDOWN_MSG_STYLE = plugin.getConfig().getString("countdown.msgStyle", "&l");
 	}
 }
