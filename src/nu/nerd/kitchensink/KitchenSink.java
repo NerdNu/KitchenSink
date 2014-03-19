@@ -163,6 +163,8 @@ public class KitchenSink extends JavaPlugin {
 				recipeList.remove(r);
 			}
 		}
+                
+                config.save();
 	}
 
 	@Override
