@@ -613,7 +613,7 @@ public class KitchenSink extends JavaPlugin {
 		}
 		
 		if(command.getName().equalsIgnoreCase("cdconfig")) {
-			if(sender.hasPermission("kitchensink.countdown")) {
+			if(sender.hasPermission("kitchensink.admin")) {
 				if(args.length > 0) {
 					switch (args[0].toLowerCase()) {
 						case "maxtime":
