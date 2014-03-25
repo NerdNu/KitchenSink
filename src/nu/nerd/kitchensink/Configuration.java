@@ -62,6 +62,7 @@ public class Configuration {
 	}
 
 	public void save() {
+                reload();
 		plugin.saveConfig();
 	}
 
@@ -119,4 +120,22 @@ public class Configuration {
                 COUNTDOWN_MSG_COLOR = plugin.getConfig().getString("countdown.msgColor", "&a");
                 COUNTDOWN_MSG_STYLE = plugin.getConfig().getString("countdown.msgStyle", "&l");
 	}
+        
+        public void reload() {
+            int tempMaxTime = COUNTDOWN_MAX_TIME;
+            String tempFormat = COUNTDOWN_FORMAT;
+            String tempColor = COUNTDOWN_COLOR;
+            String tempStyle = COUNTDOWN_STYLE;
+            String tempMsgColor = COUNTDOWN_MSG_COLOR;
+            String tempMsgStyle = COUNTDOWN_MSG_STYLE;
+            
+            load();
+            
+            COUNTDOWN_MAX_TIME = tempMaxTime;
+            COUNTDOWN_FORMAT = tempFormat;
+            COUNTDOWN_COLOR = tempColor;
+            COUNTDOWN_STYLE = tempStyle;
+            COUNTDOWN_MSG_COLOR = tempMsgColor;
+            COUNTDOWN_MSG_STYLE = tempMsgStyle;
+        }
 }
