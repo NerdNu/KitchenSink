@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import net.minecraft.server.v1_7_R1.MovingObjectPosition;
+import net.minecraft.server.v1_7_R1.Vec3D;
+
 import org.bukkit.Art;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -17,6 +20,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.craftbukkit.v1_7_R1.entity.CraftArrow;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Ageable;
 import org.bukkit.entity.Entity;
@@ -44,6 +48,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -360,6 +365,26 @@ class KitchenSinkListener implements Listener {
 		if (plugin.config.SAFE_DISPENSERS) {
 			if (plugin.config.DISABLE_DISPENSED.contains(event.getItem().getTypeId())) {
 				event.setCancelled(true);
+			}
+		}
+	}
+	
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onProjectileHit(ProjectileHitEvent event){
+		if (plugin.config.DISABLE_TNT) {
+			if (event.getEntityType() == EntityType.ARROW && event.getEntity().getFireTicks() > 0){
+				
+				net.minecraft.server.v1_7_R1.EntityArrow arrow = ((CraftArrow)event.getEntity()).getHandle();
+				
+				Vec3D v0 = Vec3D.a(arrow.locX, arrow.locY, arrow.locZ);
+		        Vec3D v1 = Vec3D.a(arrow.locX + arrow.motX, arrow.locY + arrow.motY, arrow.locZ + arrow.motZ);
+		        MovingObjectPosition pos = arrow.world.rayTrace(v0, v1, false, true, false);
+		        
+		        // Checking if the block hit by the arrow is TNT is inaccurate,
+		        // so we'll just put out the fire if it hits a block at all.
+				if (pos != null && pos.entity == null) {
+					event.getEntity().setFireTicks(0);
+				}
 			}
 		}
 	}
