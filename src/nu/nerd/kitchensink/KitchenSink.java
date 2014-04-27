@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -13,6 +14,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.logging.Logger;
@@ -27,6 +29,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.LivingEntity;
@@ -426,8 +429,19 @@ public class KitchenSink extends JavaPlugin {
 		}
 
 		if (command.getName().equalsIgnoreCase("mob-count")) {
-			sender.sendMessage(getMobCount().toString());
-			return true;
+			if (args.length == 0)
+			{
+				sender.sendMessage(getMobCount().toString());
+				return true;
+			}
+			else if (args.length == 1 && args[0].equalsIgnoreCase("dump"))
+			{
+				sender.sendMessage("Dumping mobs");
+				dumpMobCount();
+				return true;
+			}
+
+			return false;
 		}
 
 		// Unfortunately, many plugins don't correctly apply enchantments to
@@ -820,6 +834,44 @@ public class KitchenSink extends JavaPlugin {
 		}
 
 		return counts;
+	}
+
+	/**
+	 * Returns counts for all mobs
+	 */
+	public void dumpMobCount() {
+		HashMap<String, Integer> counts = new HashMap<String, Integer>();
+		Map<String, ArrayList<Map<String, Integer>>> locations = new HashMap<String, ArrayList<Map<String, Integer>>>();
+
+		try {
+			Collection<LivingEntity> livingEntities = getServer().getWorlds().get(0).getEntitiesByClass(LivingEntity.class);
+			for (LivingEntity animal : livingEntities) {
+				if (counts.containsKey(animal.getType().name())) {
+					counts.put(animal.getType().name(), counts.get(animal.getType().name()) + 1);
+				} else {
+					counts.put(animal.getType().name(), 1);
+				}
+
+				Map<String, Integer> location = new HashMap<String, Integer>();
+				location.put("x", animal.getLocation().getBlockX());
+				location.put("y", animal.getLocation().getBlockY());
+				location.put("z", animal.getLocation().getBlockZ());
+
+				if (!locations.containsKey(animal.getType().name())) {
+					locations.put(animal.getType().name(), new ArrayList<Map<String, Integer>>());
+				}
+				locations.get(animal.getType().name()).add(location);
+			}
+
+			File mobsFile = new File(getDataFolder(), "mobs.yml");
+			YamlConfiguration mobsConfig = new YamlConfiguration();
+			for (String mob : counts.keySet()) {
+				mobsConfig.set(mob + ".count", counts.get(mob));
+				mobsConfig.set(mob + ".locations", locations.get(mob));
+			}
+			mobsConfig.save(mobsFile);
+		} catch (Exception ex) {
+		}
 	}
 
 	public String dictFormat(String format, Hashtable<String, Object> values)
