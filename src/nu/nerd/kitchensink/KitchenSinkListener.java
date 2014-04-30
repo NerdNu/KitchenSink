@@ -46,6 +46,7 @@ import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
@@ -73,6 +74,7 @@ import org.bukkit.potion.PotionEffectType;
 
 import de.bananaco.bpermissions.api.ApiLayer;
 import de.bananaco.bpermissions.api.util.CalculableType;
+
 import org.bukkit.Sound;
 
 class KitchenSinkListener implements Listener {
@@ -593,7 +595,7 @@ class KitchenSinkListener implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onEntityDamage(EntityDamageEvent event) {
-		if (plugin.config.INVULNERABLE_TAME_HORSES && event.getEntityType() == EntityType.HORSE) {
+		if (plugin.config.INVULNERABLE_TAME_HORSES && event.getEntityType() == EntityType.HORSE && event.getCause() != DamageCause.VOID) {
 			Horse horse = (Horse) event.getEntity();
 			if (horse.isTamed() && horse.getPassenger() == null) {
 				event.setCancelled(true);
