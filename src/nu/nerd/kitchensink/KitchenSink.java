@@ -32,9 +32,11 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Boat;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Zombie;
 import org.bukkit.entity.minecart.PoweredMinecart;
 import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.inventory.ItemStack;
@@ -228,6 +230,32 @@ public class KitchenSink extends JavaPlugin {
 				}
 			};
 			sched.runTaskTimerAsynchronously(this, task, ONE_MINUTE, 10 * ONE_MINUTE);
+		}
+
+		if (config.CULL_ZOMBIES) {
+			final BukkitScheduler sched = getServer().getScheduler();
+			Runnable task = new Runnable() {
+				@Override
+				public void run() {
+					try {
+						Collection<LivingEntity> livingEntities = getServer().getWorlds().get(0).getEntitiesByClass(LivingEntity.class);
+						for (LivingEntity mob : livingEntities) {
+							if (mob.getType() == EntityType.ZOMBIE) {
+								Zombie zombie = (Zombie) mob;
+								if (
+										zombie.getTarget() != null &&
+										zombie.getTarget().getType() == EntityType.VILLAGER &&
+										zombie.getRemoveWhenFarAway()
+									) {
+									zombie.remove();
+								}
+							}
+						}
+					} catch (Exception ex) {
+					}
+				}
+			};
+			sched.runTaskTimerAsynchronously(this, task, config.CULL_ZOMBIES_INTERVAL, config.CULL_ZOMBIES_INTERVAL);
 		}
 
 		if (config.LEATHERLESS_BOOKS) {

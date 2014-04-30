@@ -38,24 +38,27 @@ public class Configuration {
 	public boolean HORSE_RECIPES;
 	public boolean HOST_KEYS_CHECK;
 	public boolean HOST_KEYS_DROP_PERMISSIONS;
-        public boolean WARN_RESTART_ON_JOIN;
-        public boolean WARN_RESTART_ON_INVENTORY_OPEN;
+	public boolean WARN_RESTART_ON_JOIN;
+	public boolean WARN_RESTART_ON_INVENTORY_OPEN;
 	public int RESTART_TIME;
 	public long NEXT_RESTART;
-        public int SPRINT_MAX_TICKS;
-        public int COUNTDOWN_MAX_TIME;
-        public String COUNTDOWN_FORMAT;
-        public String COUNTDOWN_COLOR;
-        public String COUNTDOWN_STYLE;
-        public String COUNTDOWN_MSG_COLOR;
-        public String COUNTDOWN_MSG_STYLE;
-	
+	public int SPRINT_MAX_TICKS;
+	public int COUNTDOWN_MAX_TIME;
+	public String COUNTDOWN_FORMAT;
+	public String COUNTDOWN_COLOR;
+	public String COUNTDOWN_STYLE;
+	public String COUNTDOWN_MSG_COLOR;
+	public String COUNTDOWN_MSG_STYLE;
+	public boolean CULL_ZOMBIES;
+	public int CULL_ZOMBIES_INTERVAL;
+
 	public List<Integer> ALLOW_ENCH_ITEMS;
 	public List<Integer> BLOCK_BREW;
 	public List<Integer> DISABLED_LEFT_ITEMS;
 	public List<Integer> DISABLED_RIGHT_ITEMS;
 	public List<Integer> DISABLE_DISPENSED;
 	public List<Integer> DISABLE_BUFF;
+	
 
 	public Configuration(KitchenSink instance) {
 		plugin = instance;
@@ -108,17 +111,19 @@ public class Configuration {
 		DISABLED_RIGHT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.right-click");
 		DISABLE_DISPENSED = plugin.getConfig().getIntegerList("disabled-items.dispensed");
 		DISABLE_BUFF = plugin.getConfig().getIntegerList("disable-buff");
-                WARN_RESTART_ON_JOIN = plugin.getConfig().getBoolean("warn-restart-on-join");
-                WARN_RESTART_ON_INVENTORY_OPEN = plugin.getConfig().getBoolean("warn-restart-on-inventory-open");
+		WARN_RESTART_ON_JOIN = plugin.getConfig().getBoolean("warn-restart-on-join");
+		WARN_RESTART_ON_INVENTORY_OPEN = plugin.getConfig().getBoolean("warn-restart-on-inventory-open");
 		RESTART_TIME = plugin.getConfig().getInt("restart-time", 7200);
-                SPRINT_MAX_TICKS = plugin.getConfig().getInt("sprint-max-time", 0);
-                COUNTDOWN_MAX_TIME = plugin.getConfig().getInt("countdown.maxtime", 15);
-                COUNTDOWN_FORMAT = plugin.getConfig().getString("countdown.format", ">>$s<<");
-                if(!COUNTDOWN_FORMAT.contains("$s")) COUNTDOWN_FORMAT = ">>$s<<";
-                COUNTDOWN_COLOR = plugin.getConfig().getString("countdown.color", "&c");
-                COUNTDOWN_STYLE = plugin.getConfig().getString("countdown.style", "&l");
-                COUNTDOWN_MSG_COLOR = plugin.getConfig().getString("countdown.msgColor", "&a");
-                COUNTDOWN_MSG_STYLE = plugin.getConfig().getString("countdown.msgStyle", "&l");
+		SPRINT_MAX_TICKS = plugin.getConfig().getInt("sprint-max-time", 0);
+		COUNTDOWN_MAX_TIME = plugin.getConfig().getInt("countdown.maxtime", 15);
+		COUNTDOWN_FORMAT = plugin.getConfig().getString("countdown.format", ">>$s<<");
+		if(!COUNTDOWN_FORMAT.contains("$s")) COUNTDOWN_FORMAT = ">>$s<<";
+		COUNTDOWN_COLOR = plugin.getConfig().getString("countdown.color", "&c");
+		COUNTDOWN_STYLE = plugin.getConfig().getString("countdown.style", "&l");
+		COUNTDOWN_MSG_COLOR = plugin.getConfig().getString("countdown.msgColor", "&a");
+		COUNTDOWN_MSG_STYLE = plugin.getConfig().getString("countdown.msgStyle", "&l");
+		CULL_ZOMBIES = plugin.getConfig().getBoolean("cull-zombies", true);
+		CULL_ZOMBIES_INTERVAL = plugin.getConfig().getInt("cull-zombies-interval", 1200);
 	}
         
         public void reload() {
