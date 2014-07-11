@@ -1,10 +1,7 @@
 package nu.nerd.kitchensink;
 
 import java.text.Normalizer;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import net.minecraft.server.v1_7_R1.MovingObjectPosition;
@@ -631,8 +628,7 @@ class KitchenSinkListener implements Listener {
         @EventHandler(priority = EventPriority.MONITOR)
         public void onPlayerJoin(PlayerJoinEvent event) {
             if (plugin.config.WARN_RESTART_ON_JOIN) {
-                int time = (int) (plugin.config.NEXT_RESTART - (System.currentTimeMillis() / 1000l));
-
+                int time = (int)((plugin.nextRestart - System.currentTimeMillis()) / 1000l);
                 if (time < 90 && time > 0) {
                     event.getPlayer().sendMessage(ChatColor.LIGHT_PURPLE + "Warning: There will be a restart in about " + Integer.toString(time) + " seconds!");
                 }
@@ -642,7 +638,7 @@ class KitchenSinkListener implements Listener {
         @EventHandler(priority = EventPriority.MONITOR)
         public void onInventoryOpen(InventoryOpenEvent event) {
             if (plugin.config.WARN_RESTART_ON_INVENTORY_OPEN) {
-                int time = (int) (plugin.config.NEXT_RESTART - (System.currentTimeMillis() / 1000l));
+                int time = (int)((plugin.nextRestart - System.currentTimeMillis()) / 1000l);
                 
                 if (time < 90 && time > 0) {
                     if(!(event.getPlayer() instanceof Player)) {

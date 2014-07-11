@@ -4,19 +4,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.logging.Logger;
 
 import nu.nerd.kitchensink.ServerListPing17.StatusResponse;
@@ -50,7 +39,11 @@ import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 
 public class KitchenSink extends JavaPlugin {
-	private static final int ONE_MINUTE = 60 * 20;
+	private static final int ONE_MINUTE_TICKS = 60 * 20;
+
+    private static final long ONE_DAY_MILLIS = 24 * (60 * (60 * 1000));
+
+
 	private KitchenSinkListener listener = new KitchenSinkListener(this);
 	private LagCheck lagCheck = new LagCheck();
 	public final Configuration config = new Configuration(this);
@@ -61,6 +54,7 @@ public class KitchenSink extends JavaPlugin {
 	public String countdownMessage = "";
 	public boolean countdownActive = false;
 	public BukkitTask countdownTask;
+    public long nextRestart = -1;
 
 	/**
 	 * Location of the next portal to be created. The "safe-portals" setting can
@@ -229,7 +223,7 @@ public class KitchenSink extends JavaPlugin {
 					System.out.println("-!- " + getMobCount());
 				}
 			};
-			sched.runTaskTimerAsynchronously(this, task, ONE_MINUTE, 10 * ONE_MINUTE);
+			sched.runTaskTimerAsynchronously(this, task, ONE_MINUTE_TICKS, 10 * ONE_MINUTE_TICKS);
 		}
 
 		if (config.CULL_ZOMBIES) {
@@ -303,11 +297,32 @@ public class KitchenSink extends JavaPlugin {
 			recipeList.add(saddle);
 		}
 
+        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
+
+        for(String s : config.RESTART_TIMES) {
+            try {
+
+                Date parsed = dateFormat.parse(s);
+                long time = parsed.getTime();
+                long now = System.currentTimeMillis();
+
+                time += now  - (now % ONE_DAY_MILLIS);
+
+                if (now > time) {
+                    time += ONE_DAY_MILLIS;
+                }
+
+                if (nextRestart == -1 || nextRestart > time) {
+                    nextRestart = time;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
 		getServer().getScheduler().scheduleSyncRepeatingTask(this, lagCheck, 20, 20);
 		getServer().getPluginManager().registerEvents(listener, this);
 
-		// For /nextrestart
-		config.NEXT_RESTART = (System.currentTimeMillis() / 1000L) + config.RESTART_TIME;
 	}
 
 	@Override
@@ -399,7 +414,8 @@ public class KitchenSink extends JavaPlugin {
 		}
 
 		if (command.getName().equalsIgnoreCase("nextrestart")) {
-			int time = (int) (config.NEXT_RESTART - (System.currentTimeMillis() / 1000L));
+			int time = (int)((nextRestart - System.currentTimeMillis()) / 1000l);
+
 			if (time < 120) {
 				sender.sendMessage("The server will restart in " + time + " second" + ((time == 1) ? "" : "s"));
 			} else {

@@ -47,7 +47,21 @@ block-brew:
 - 375
 disable-buff:
 - 329
-restart-time: 7200
+
+restart-times:
+- "00:00"
+- "02:00"
+- "04:00"
+- "06:00"
+- "08:00"
+- "10:00"
+- "12:00"
+- "14:00"
+- "16:00"
+- "18:00"
+- "20:00"
+- "22:00"
+
 warn-restart-on-join: true
 warn-restart-on-inventory-open: true
 sprint-max-time: 40
