@@ -297,7 +297,8 @@ public class KitchenSink extends JavaPlugin {
 			recipeList.add(saddle);
 		}
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
+        // Dashes because colons are a YML special char, and bukkit has a tendency to unquote values that have been quoted.
+        SimpleDateFormat dateFormat = new SimpleDateFormat("HH-mm");
 
         for(String s : config.RESTART_TIMES) {
             try {

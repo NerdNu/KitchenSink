@@ -2,3 +2,10 @@ target
 .classpath
 .project
 .settings/
+
+# IntelliJ
+.idea/
+*.iml
+
+# MacOS
+.DS_Store
