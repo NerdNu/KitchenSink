@@ -41,6 +41,7 @@ disabled-items:
     - 326
     - 327
 allow-enchant-items: []
+block-craft: []
 block-brew:
 - 348
 - 376

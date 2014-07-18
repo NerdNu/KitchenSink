@@ -296,6 +296,17 @@ public class KitchenSink extends JavaPlugin {
 			getServer().addRecipe(saddle);
 			recipeList.add(saddle);
 		}
+                
+                if(!config.BLOCK_CRAFT.isEmpty()) {
+                    Iterator<Recipe> it = getServer().recipeIterator();
+                    while(it.hasNext()) {
+                        Recipe recipe = it.next();
+                        for(int id : config.BLOCK_CRAFT) {
+                            if(recipe != null && recipe.getResult().getTypeId() == id)
+                                it.remove();
+                        }
+                    }
+                }
 
         // Dashes because colons are a YML special char, and bukkit has a tendency to unquote values that have been quoted.
         SimpleDateFormat dateFormat = new SimpleDateFormat("HH-mm");
