@@ -57,6 +57,8 @@ public class Configuration {
 	public List<Integer> DISABLED_RIGHT_ITEMS;
 	public List<Integer> DISABLE_DISPENSED;
 	public List<Integer> DISABLE_BUFF;
+	public double SATURATION_MULTIPLIER;
+	public double HUNGER_SLOWDOWN;
 	
 
 	public Configuration(KitchenSink instance) {
@@ -123,7 +125,9 @@ public class Configuration {
 		COUNTDOWN_MSG_STYLE = plugin.getConfig().getString("countdown.msgStyle", "&l");
 		CULL_ZOMBIES = plugin.getConfig().getBoolean("cull-zombies", true);
 		CULL_ZOMBIES_INTERVAL = plugin.getConfig().getInt("cull-zombies-interval", 1200);
-                RESTART_TIMES = plugin.getConfig().getStringList("restart-times");
+		RESTART_TIMES = plugin.getConfig().getStringList("restart-times");
+		SATURATION_MULTIPLIER = plugin.getConfig().getDouble("saturation-multiplier", 0.0);
+		HUNGER_SLOWDOWN = plugin.getConfig().getDouble("hunger-slowdown", 0.0);
 	}
         
         public void reload() {
