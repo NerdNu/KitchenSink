@@ -402,6 +402,18 @@ class KitchenSinkListener implements Listener {
 
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onEntityDeath(EntityDeathEvent event) {
+		if (plugin.config.DISABLE_PEARL_DROPS_IN_END) {
+			Location l = event.getEntity().getLocation();
+			if (l.getWorld().getEnvironment() == World.Environment.THE_END) {
+				Iterator i = event.getDrops().iterator();
+				while (i.hasNext()) {
+					ItemStack is = (ItemStack) i.next();
+					if (is.getType() == Material.ENDER_PEARL){
+						i.remove();
+					}
+				}
+			}
+		}
 		if (event.getEntity() instanceof Ageable) {
 			Player killer = event.getEntity().getKiller();
 			if (killer != null) {
