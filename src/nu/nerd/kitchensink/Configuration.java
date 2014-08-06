@@ -49,14 +49,17 @@ public class Configuration {
 	public String COUNTDOWN_MSG_STYLE;
 	public boolean CULL_ZOMBIES;
 	public int CULL_ZOMBIES_INTERVAL;
-
-    public List<String> RESTART_TIMES;
+        public List<String> RESTART_TIMES;
 	public List<Integer> ALLOW_ENCH_ITEMS;
+        public List<Integer> BLOCK_CRAFT;
 	public List<Integer> BLOCK_BREW;
 	public List<Integer> DISABLED_LEFT_ITEMS;
 	public List<Integer> DISABLED_RIGHT_ITEMS;
 	public List<Integer> DISABLE_DISPENSED;
 	public List<Integer> DISABLE_BUFF;
+	public double SATURATION_MULTIPLIER;
+	public double HUNGER_SLOWDOWN;
+	public boolean DISABLE_PEARL_DROPS_IN_END;
 	
 
 	public Configuration(KitchenSink instance) {
@@ -105,6 +108,7 @@ public class Configuration {
 		HOST_KEYS_CHECK = plugin.getConfig().getBoolean("host-keys-check", true);
 		HOST_KEYS_DROP_PERMISSIONS = plugin.getConfig().getBoolean("host-keys-drop-permissions");
 		ALLOW_ENCH_ITEMS = plugin.getConfig().getIntegerList("allow-enchant-items");
+                BLOCK_CRAFT = plugin.getConfig().getIntegerList("block-craft");
 		BLOCK_BREW = plugin.getConfig().getIntegerList("block-brew");
 		DISABLED_LEFT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.left-click");
 		DISABLED_RIGHT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.right-click");
@@ -122,7 +126,10 @@ public class Configuration {
 		COUNTDOWN_MSG_STYLE = plugin.getConfig().getString("countdown.msgStyle", "&l");
 		CULL_ZOMBIES = plugin.getConfig().getBoolean("cull-zombies", true);
 		CULL_ZOMBIES_INTERVAL = plugin.getConfig().getInt("cull-zombies-interval", 1200);
-        RESTART_TIMES = plugin.getConfig().getStringList("restart-times");
+		RESTART_TIMES = plugin.getConfig().getStringList("restart-times");
+		SATURATION_MULTIPLIER = plugin.getConfig().getDouble("saturation-multiplier", 0.0);
+		HUNGER_SLOWDOWN = plugin.getConfig().getDouble("hunger-slowdown", 0.0);
+		DISABLE_PEARL_DROPS_IN_END = plugin.getConfig().getBoolean("disable-pearl-drops-in-end", false);
 	}
         
         public void reload() {

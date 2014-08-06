@@ -296,6 +296,17 @@ public class KitchenSink extends JavaPlugin {
 			getServer().addRecipe(saddle);
 			recipeList.add(saddle);
 		}
+                
+                if(!config.BLOCK_CRAFT.isEmpty()) {
+                    Iterator<Recipe> it = getServer().recipeIterator();
+                    while(it.hasNext()) {
+                        Recipe recipe = it.next();
+                        for(int id : config.BLOCK_CRAFT) {
+                            if(recipe != null && recipe.getResult().getTypeId() == id)
+                                it.remove();
+                        }
+                    }
+                }
 
         long zoneOffset = TimeZone.getDefault().getOffset(System.currentTimeMillis());
         SimpleDateFormat dateFormat = new SimpleDateFormat("HH-mm");

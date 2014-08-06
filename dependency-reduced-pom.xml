@@ -4,7 +4,7 @@
   <groupId>nu.nerd</groupId>
   <artifactId>KitchenSink</artifactId>
   <name>KitchenSink</name>
-  <version>0.5</version>
+  <version>0.6</version>
   <build>
     <sourceDirectory>${basedir}/src</sourceDirectory>
     <defaultGoal>clean package</defaultGoal>
@@ -99,13 +99,13 @@
     <dependency>
       <groupId>org.bukkit</groupId>
       <artifactId>bukkit</artifactId>
-      <version>1.7.2-R0.1-SNAPSHOT</version>
+      <version>1.7.9-R0.3-SNAPSHOT</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.bukkit</groupId>
       <artifactId>craftbukkit</artifactId>
-      <version>1.7.2-R0.3-SNAPSHOT</version>
+      <version>1.7.9-R0.3-SNAPSHOT</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
