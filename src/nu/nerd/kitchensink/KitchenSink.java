@@ -257,7 +257,7 @@ public class KitchenSink extends JavaPlugin {
 			cheapBook.addIngredient(3, Material.PAPER);
 			getServer().addRecipe(cheapBook);
 			recipeList.add(cheapBook);
-		}
+                }
 
 		if (config.HORSE_RECIPES) {
 			ShapedRecipe ironHorseArmor = new ShapedRecipe(new ItemStack(Material.IRON_BARDING))
@@ -297,7 +297,7 @@ public class KitchenSink extends JavaPlugin {
 			recipeList.add(saddle);
 		}
 
-        // Dashes because colons are a YML special char, and bukkit has a tendency to unquote values that have been quoted.
+        long zoneOffset = TimeZone.getDefault().getOffset(System.currentTimeMillis());
         SimpleDateFormat dateFormat = new SimpleDateFormat("HH-mm");
 
         for(String s : config.RESTART_TIMES) {
@@ -307,7 +307,7 @@ public class KitchenSink extends JavaPlugin {
                 long time = parsed.getTime();
                 long now = System.currentTimeMillis();
 
-                time += now  - (now % ONE_DAY_MILLIS);
+                time += (now  - (now % ONE_DAY_MILLIS) - zoneOffset);
 
                 if (now > time) {
                     time += ONE_DAY_MILLIS;
