@@ -308,24 +308,30 @@ public class KitchenSink extends JavaPlugin {
                     }
                 }
 
-        long zoneOffset = TimeZone.getDefault().getOffset(System.currentTimeMillis());
         SimpleDateFormat dateFormat = new SimpleDateFormat("HH-mm");
 
         for(String s : config.RESTART_TIMES) {
             try {
+                Calendar cal = Calendar.getInstance();
+                cal.set(Calendar.HOUR_OF_DAY, 0);
+                cal.set(Calendar.MINUTE, 0);
+                cal.set(Calendar.MILLISECOND, 0);
 
                 Date parsed = dateFormat.parse(s);
-                long time = parsed.getTime();
+                Calendar parsedCal = Calendar.getInstance();
+                parsedCal.setTime(parsed);
+
+                cal.set(Calendar.MILLISECOND, parsedCal.get(Calendar.MILLISECOND));
+
                 long now = System.currentTimeMillis();
-
-                time += (now  - (now % ONE_DAY_MILLIS) - zoneOffset);
-
-                if (now > time) {
-                    time += ONE_DAY_MILLIS;
+                
+                if (now > cal.getTimeInMillis()) {
+                    cal.add(Calendar.DATE, 1);
                 }
 
-                if (nextRestart == -1 || nextRestart > time) {
-                    nextRestart = time;
+                long calMillis = cal.getTimeInMillis();
+                if (nextRestart == -1 || nextRestart > calMillis) {
+                    nextRestart = calMillis;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
