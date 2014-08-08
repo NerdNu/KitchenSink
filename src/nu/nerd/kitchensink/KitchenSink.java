@@ -315,13 +315,17 @@ public class KitchenSink extends JavaPlugin {
                 Calendar cal = Calendar.getInstance();
                 cal.set(Calendar.HOUR_OF_DAY, 0);
                 cal.set(Calendar.MINUTE, 0);
+                cal.set(Calendar.SECOND, 0);
                 cal.set(Calendar.MILLISECOND, 0);
 
                 Date parsed = dateFormat.parse(s);
                 Calendar parsedCal = Calendar.getInstance();
                 parsedCal.setTime(parsed);
 
-                cal.set(Calendar.MILLISECOND, parsedCal.get(Calendar.MILLISECOND));
+                cal.add(Calendar.HOUR_OF_DAY, parsedCal.get(Calendar.HOUR_OF_DAY));
+                cal.add(Calendar.MINUTE, parsedCal.get(Calendar.MINUTE));
+                cal.add(Calendar.SECOND, parsedCal.get(Calendar.SECOND));
+                cal.add(Calendar.MILLISECOND, parsedCal.get(Calendar.MILLISECOND));
 
                 long now = System.currentTimeMillis();
                 
