@@ -65,6 +65,10 @@ commands:
         description: Allows selection of the next painting placed.
         usage: |
             /painting [<name>]: Choose the painting you will place next.
+    prain:
+        description: Turns client-side weather on or off.
+        usage: |
+            /prain [on|off]
     nextrestart:
         description: Gives you the amount of time until the next restart
     lock-horse:

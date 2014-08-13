@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
 
+import net.minecraft.server.v1_7_R3.PacketPlayOutGameStateChange;
 import nu.nerd.kitchensink.ServerListPing17.StatusResponse;
 
 import org.bukkit.Art;
@@ -19,6 +20,7 @@ import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.EntityType;
@@ -433,6 +435,33 @@ public class KitchenSink extends JavaPlugin {
 				}
 				return true;
 			}
+		}
+		
+		if (command.getName().equalsIgnoreCase("prain")) {
+		    if (config.ALLOW_PERSONAL_WEATHER) {
+    		    if (sender instanceof Player) {
+    		        boolean rain = true;
+    		        if (args.length == 1) {
+    		            if (args[0].equalsIgnoreCase("on")) {
+    		                rain = true;
+    		            } else if (args[0].equalsIgnoreCase("off")) {
+    		                rain = false;
+    		            } else {
+    		                sender.sendMessage(ChatColor.RED + "Usage: /prain [on|off]");
+    		                return true;
+    		            }
+    		        } else if (args.length > 1){
+    		            sender.sendMessage(ChatColor.RED + "Usage: /prain [on|off]");
+    		            return true;
+    		        }
+    		        ((CraftPlayer) sender).getHandle().playerConnection.sendPacket(new PacketPlayOutGameStateChange(rain ? 2 : 1, 0F));
+    		    } else {
+    		        sender.sendMessage("You need to be in-game to use this command.");
+    		    }
+		    } else {
+		        sender.sendMessage(ChatColor.RED + "That command is disabled.");
+		    }
+		    return true;
 		}
 
 		if (command.getName().equalsIgnoreCase("nextrestart")) {

@@ -17,6 +17,7 @@ public class Configuration {
 	public boolean LOWER_STRENGTH_POTION_DAMAGE;
 	public double HEALTH_POTION_MULTIPLIER;
 	public double REGEN_POTION_MULTIPLIER;
+	public boolean ALLOW_PERSONAL_WEATHER;
 	public boolean BLOCK_CAPS;
 	public boolean BLOCK_VILLAGERS;
 	public boolean SAFE_ICE;
@@ -86,6 +87,7 @@ public class Configuration {
 		LOWER_STRENGTH_POTION_DAMAGE = plugin.getConfig().getBoolean("lower-strength-potion-damage");
 		HEALTH_POTION_MULTIPLIER = plugin.getConfig().getDouble("health-potion-multiplier", 1.0);
 		REGEN_POTION_MULTIPLIER = plugin.getConfig().getDouble("regen-potion-multiplier", 1.0);
+		ALLOW_PERSONAL_WEATHER = plugin.getConfig().getBoolean("allow-personal-weather");
 		BLOCK_CAPS = plugin.getConfig().getBoolean("block-caps");
 		BLOCK_VILLAGERS = plugin.getConfig().getBoolean("block-villagers");
 		SAFE_ICE = plugin.getConfig().getBoolean("safe-ice");
