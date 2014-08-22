@@ -441,9 +441,9 @@ class KitchenSinkListener implements Listener {
 							message += "|Owner:" + tameable.getOwner().getName();
 						}
 					}
-                    if (event.getEntity().getCustomName() != null) {
-                        message += "|named " + event.getEntity().getCustomName();
-                    }
+        				if (event.getEntity().getCustomName() != null) {
+                        			message += "|named " + event.getEntity().getCustomName();
+                    			}
 					plugin.getLogger().info(message);
 				}
 				if (plugin.config.BUFF_DROPS > 1) {
