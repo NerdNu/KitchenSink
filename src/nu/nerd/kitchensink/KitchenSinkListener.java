@@ -414,7 +414,7 @@ class KitchenSinkListener implements Listener {
 				}
 			}
 		}
-		if (event.getEntity() instanceof Ageable) {
+		if (event.getEntity() instanceof Ageable || event.getEntity().getCustomName() != null) {
 			Player killer = event.getEntity().getKiller();
 			if (killer != null) {
 				if (plugin.config.LOG_ANIMAL_DEATH) {
@@ -441,6 +441,9 @@ class KitchenSinkListener implements Listener {
 							message += "|Owner:" + tameable.getOwner().getName();
 						}
 					}
+        				if (event.getEntity().getCustomName() != null) {
+                        			message += "|named " + event.getEntity().getCustomName();
+                    			}
 					plugin.getLogger().info(message);
 				}
 				if (plugin.config.BUFF_DROPS > 1) {
