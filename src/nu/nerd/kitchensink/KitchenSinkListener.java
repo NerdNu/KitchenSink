@@ -56,6 +56,7 @@ import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerEggThrowEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
@@ -762,6 +763,11 @@ class KitchenSinkListener implements Listener {
 					20.0D + (mod * 2.0D));
 		}
 		player.setSaturation(saturation.floatValue());
+	}
+	
+	@EventHandler(ignoreCancelled = true)
+	public void onPlayerEggThrow(PlayerEggThrowEvent event) {
+	    event.setHatching(plugin.config.ALLOW_EGG_HATCHING);
 	}
 
 	/**
