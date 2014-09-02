@@ -60,6 +60,7 @@ public class Configuration {
 	public List<Integer> DISABLE_BUFF;
 	public double SATURATION_MULTIPLIER;
 	public double HUNGER_SLOWDOWN;
+	public boolean ALLOW_EGG_HATCHING;
 	public boolean DISABLE_PEARL_DROPS_IN_END;
 	
 
@@ -131,6 +132,7 @@ public class Configuration {
 		RESTART_TIMES = plugin.getConfig().getStringList("restart-times");
 		SATURATION_MULTIPLIER = plugin.getConfig().getDouble("saturation-multiplier", 0.0);
 		HUNGER_SLOWDOWN = plugin.getConfig().getDouble("hunger-slowdown", 0.0);
+		ALLOW_EGG_HATCHING = plugin.getConfig().getBoolean("allow-egg-hatching", true);
 		DISABLE_PEARL_DROPS_IN_END = plugin.getConfig().getBoolean("disable-pearl-drops-in-end", false);
 	}
         

@@ -29,6 +29,7 @@ leatherless-books: false
 lock-horses: false
 invulnerable-tame-horses: false
 untame-pets: false
+allow-egg-hatching: true
 disabled-items:
     left-click: []
     right-click:
