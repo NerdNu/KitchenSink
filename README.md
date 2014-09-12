@@ -36,6 +36,7 @@ Configuration:
 * *lock-horses* Allow players to prevent other players from riding horses they own using /lock-horse.  To unlock: /unlock-horse.
 * *invulnerable-tame-horses* Make *riderless* tame horses invulnerable. Ridden horses can always be damaged.
 * *untame-pets* Allow players to untame a pet by typing /untame and right clicking on a pet they own.
+* *allow-egg-hatching* Allow or deny the spawning of chickens using eggs.
 * *horse-recipes* Enable custom crafting recipes for horse armour and saddles.
 * *host-keys-check* If true (default), check that admins connect with a valid host key.
 * *host-keys-drop-permissions* If true, drop permissions to default on invalid host key; otherwise kick.
