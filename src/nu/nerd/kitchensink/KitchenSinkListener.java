@@ -32,6 +32,7 @@ import org.bukkit.entity.Sheep;
 import org.bukkit.entity.Tameable;
 import org.bukkit.entity.Vehicle;
 import org.bukkit.entity.Villager;
+import org.bukkit.entity.Wolf;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -263,6 +264,15 @@ class KitchenSinkListener implements Listener {
 									horse.setCarryingChest(false);
 									loc.getWorld().dropItemNaturally(loc, new ItemStack(Material.CHEST));
 								}
+							}
+							
+							// Make sure that the pet being untamed is standing, as sitting mobs
+							// without an owner can not be made to stand
+							if (tameable instanceof Wolf && ((Wolf) entity).isSitting()) {
+								((Wolf) entity).setSitting(false);
+							}
+							if (tameable instanceof Ocelot && ((Ocelot) entity).isSitting()) {
+								((Ocelot) entity).setSitting(false);
 							}
 
 							tameable.setTamed(false);
