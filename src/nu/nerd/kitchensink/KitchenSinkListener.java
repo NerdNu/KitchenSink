@@ -457,27 +457,20 @@ class KitchenSinkListener implements Listener {
                     			}
 					plugin.getLogger().info(message);
 				}
+				if (plugin.config.BUFF_DROPS > 1) {
+					List<ItemStack> items = event.getDrops();
+					Location l = event.getEntity().getLocation();
+					for (ItemStack a : items) {
+						if (!plugin.config.DISABLE_BUFF.contains(a.getTypeId())) {
+							// Drops already drop *once* from the event itself.
+							for (int i = 1; i < plugin.config.BUFF_DROPS; i++) {
+								l.getWorld().dropItemNaturally(l, a);
+							}
+						}
+					}
+				}
 			}
 		}
-		if (plugin.config.BUFF_DROPS > 1) {
-		    if (event.getEntity() instanceof Ageable) {
-		        Player killer = event.getEntity().getKiller();
-    		    if (killer != null) {
-    				if (plugin.config.BUFF_DROPS > 1) {
-    					List<ItemStack> items = event.getDrops();
-    					Location l = event.getEntity().getLocation();
-    					for (ItemStack a : items) {
-    						if (!plugin.config.DISABLE_BUFF.contains(a.getTypeId())) {
-    							// Drops already drop *once* from the event itself.
-    							for (int i = 1; i < plugin.config.BUFF_DROPS; i++) {
-    								l.getWorld().dropItemNaturally(l, a);
-    							}
-    						}
-    					}
-    				}
-    			}
-		    }
-	    }
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
