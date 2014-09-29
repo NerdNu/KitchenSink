@@ -46,6 +46,9 @@ permissions:
 description: 
 
 commands:
+    ksreload:
+        description: Reloads the config from file to pull in updates.
+        permission: kitchensink.admin
     unenchant:
         description: Remove enchants from current item
         permission: kitchensink.unenchant
