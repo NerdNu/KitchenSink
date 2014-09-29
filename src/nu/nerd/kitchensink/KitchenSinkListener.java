@@ -475,7 +475,7 @@ class KitchenSinkListener implements Listener {
     					}
     				}
     			}
-			}
+		}
 	    }
 	}
 
