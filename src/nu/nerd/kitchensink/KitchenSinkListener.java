@@ -462,16 +462,18 @@ class KitchenSinkListener implements Listener {
 		if (plugin.config.BUFF_DROPS > 1) {
 			if (event.getEntity() instanceof Ageable) {
     			if (killer != null) {
-					List<ItemStack> items = event.getDrops();
-					Location l = event.getEntity().getLocation();
-					for (ItemStack a : items) {
-						if (!plugin.config.DISABLE_BUFF.contains(a.getTypeId())) {
-							// Drops already drop *once* from the event itself.
-							for (int i = 1; i < plugin.config.BUFF_DROPS; i++) {
-								l.getWorld().dropItemNaturally(l, a);
-							}
-						}
-					}
+    				if (plugin.config.BUFF_DROPS > 1) {
+    					List<ItemStack> items = event.getDrops();
+    					Location l = event.getEntity().getLocation();
+    					for (ItemStack a : items) {
+    						if (!plugin.config.DISABLE_BUFF.contains(a.getTypeId())) {
+    							// Drops already drop *once* from the event itself.
+    							for (int i = 1; i < plugin.config.BUFF_DROPS; i++) {
+    								l.getWorld().dropItemNaturally(l, a);
+    							}
+    						}
+    					}
+    				}
     			}
 		}
 	    }
