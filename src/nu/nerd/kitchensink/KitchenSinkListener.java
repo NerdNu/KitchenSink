@@ -425,8 +425,8 @@ class KitchenSinkListener implements Listener {
 				}
 			}
 		}
-		Player killer = event.getEntity().getKiller();
 		if (event.getEntity() instanceof Ageable || event.getEntity().getCustomName() != null) {
+			Player killer = event.getEntity().getKiller();
 			if (killer != null) {
 				if (plugin.config.LOG_ANIMAL_DEATH) {
 					Location l = event.getEntity().getLocation();
@@ -460,8 +460,9 @@ class KitchenSinkListener implements Listener {
 			}
 		}
 		if (plugin.config.BUFF_DROPS > 1) {
-			if (event.getEntity() instanceof Ageable) {
-    			if (killer != null) {
+		    if (event.getEntity() instanceof Ageable) {
+		        Player killer = event.getEntity().getKiller();
+    		    if (killer != null) {
     				if (plugin.config.BUFF_DROPS > 1) {
     					List<ItemStack> items = event.getDrops();
     					Location l = event.getEntity().getLocation();
@@ -475,7 +476,7 @@ class KitchenSinkListener implements Listener {
     					}
     				}
     			}
-			}
+		    }
 	    }
 	}
 
