@@ -350,9 +350,13 @@ class KitchenSinkListener implements Listener {
         }
 
         String message = event.getMessage();
+        boolean sarcasmDetected = message.startsWith(ChatColor.ITALIC.toString());
         message = ChatColor.stripColor(message);
         message = message.replaceAll(REPLACED_CHARS, " ");
         message = Normalizer.normalize(message, Normalizer.Form.NFD);
+        if (sarcasmDetected) {
+            message = ChatColor.ITALIC + message;
+        }
         event.setMessage(message);
 
         if (plugin.config.BLOCK_CAPS) {
