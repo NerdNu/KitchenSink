@@ -1,5 +1,5 @@
 name: KitchenSink
-version: 0.7
+version: 0.7.2
 author: Travis Watkins
 main: nu.nerd.kitchensink.KitchenSink
 softdepend: [WorldGuard, bPermissions]
