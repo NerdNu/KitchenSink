@@ -8,16 +8,10 @@ import net.minecraft.server.v1_7_R4.MovingObjectPosition;
 import net.minecraft.server.v1_7_R4.Vec3D;
 import net.minecraft.server.v1_7_R4.EntityArrow;
 
-import org.bukkit.Art;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Chunk;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.NoteBlock;
 import org.bukkit.craftbukkit.v1_7_R4.entity.CraftArrow;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Ageable;
@@ -76,8 +70,6 @@ import org.bukkit.potion.PotionEffectType;
 
 import de.bananaco.bpermissions.api.ApiLayer;
 import de.bananaco.bpermissions.api.util.CalculableType;
-
-import org.bukkit.Sound;
 
 class KitchenSinkListener implements Listener {
 
@@ -183,6 +175,25 @@ class KitchenSinkListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerInteract(PlayerInteractEvent event) {
+
+        Player player = event.getPlayer();
+        if (event.getAction() == Action.LEFT_CLICK_BLOCK
+                && player.hasPermission("kitchensink.noteblocks")
+                && player.hasMetadata(KitchenSink.NOTEBLOCK_META_KEY)) {
+
+            Note note = (Note)player.getMetadata(KitchenSink.NOTEBLOCK_META_KEY).get(0).value();
+            if (event.getClickedBlock().getState() instanceof NoteBlock) {
+                NoteBlock clicked = (NoteBlock)event.getClickedBlock().getState();
+                clicked.setNote(note);
+                clicked.play();
+                player.sendMessage(ChatColor.GOLD + "Note block set to note " + note.getTone().toString() + (note.isSharped() ? "#" : "") + " successfully!");
+            } else {
+                player.sendMessage(ChatColor.RED + "That block isn't a note block.");
+            }
+            event.setCancelled(true);
+            player.removeMetadata(KitchenSink.NOTEBLOCK_META_KEY, plugin);
+        }
+
         if (!event.hasItem()) {
             return;
         }

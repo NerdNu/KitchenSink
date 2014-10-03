@@ -11,11 +11,7 @@ import java.util.logging.Logger;
 import net.minecraft.server.v1_7_R4.PacketPlayOutGameStateChange;
 import nu.nerd.kitchensink.ServerListPing17.StatusResponse;
 
-import org.bukkit.Art;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -96,6 +92,12 @@ public class KitchenSink extends JavaPlugin {
      * 2012/07/fixing-the-minecraft-session-stealer-exploit/
      */
     public static final String HOST_KEYS_DIRECTORY = "hostkeys";
+
+    /**
+     * Key of Player metadata which, when set, indicates that the next punch
+     * of a noteblock by a player should change the note of the noteblock.
+     */
+    public static final String NOTEBLOCK_META_KEY = "KitchenSink.noteblock";
 
     /**
      * Map from lower case in-game enchantment names to the Bukkit Enchantment
@@ -820,6 +822,64 @@ public class KitchenSink extends JavaPlugin {
                 }
             }
         }
+
+        if (command.getName().equalsIgnoreCase("note") && sender.hasPermission("kitchensink.noteblocks")) {
+
+            if (!(sender instanceof Player)) {
+                sender.sendMessage("Only players can run that command.");
+                return true;
+            }
+
+            if (args.length == 0) {
+                sender.sendMessage(ChatColor.GOLD + "Usage: /note [high] <note>");
+                sender.sendMessage(ChatColor.GOLD + "where <note> is a sharp, flat or natural note (e.g. \"Ab\").");
+                sender.sendMessage(ChatColor.GOLD + "Use [high] to sound a higher note.");
+                return true;
+            }
+
+            int octave = 0;
+            int noteIndex = 0;
+            if (args.length > 1) {
+                if (args[0].equalsIgnoreCase("high")) {
+                    octave = 1;
+                    noteIndex = 1;
+                }
+            }
+
+            String noteString = args[noteIndex];
+
+            Note note;
+
+            try {
+                note = Note.natural(octave, Note.Tone.valueOf(Character.toString(noteString.charAt(0)).toUpperCase()));
+            } catch(Exception e) {
+                sender.sendMessage(ChatColor.RED + "The note you gave is not valid!");
+                return false;
+            }
+
+            if (noteString.length() == 2) {
+                String modifier = Character.toString(noteString.charAt(1));
+
+                switch (modifier) {
+                    case "#":
+                        note = note.sharped();
+                        break;
+                    case "b":
+                        note = note.flattened();
+                        break;
+                    default:
+                        sender.sendMessage(ChatColor.RED + "The note you gave is not valid!");
+                        return false;
+                }
+            }
+
+            Player senderAsPlayer = (Player)sender;
+            senderAsPlayer.setMetadata(NOTEBLOCK_META_KEY, new FixedMetadataValue(this, note));
+            sender.sendMessage(ChatColor.GOLD + "Punch the note block to apply the note.");
+            return true;
+
+        }
+
 
         return false;
     }

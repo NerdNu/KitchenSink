@@ -43,6 +43,9 @@ permissions:
     kitchensink.countdown:
         description: Allows access to /countdown, /cdcancel, and /cdconfig.
         default: op
+    kitchensink.noteblocks:
+        description: Allows use of /note
+        default: true
 description: 
 
 commands:
@@ -121,3 +124,8 @@ commands:
         permission: kitchenskin.countdown
         usage: |
             /cdconfig <maxTime seconds>|<format __$s__>|<color &a-&f>|<style &m-&r>|<msgColor &a-&f>|<msgStyle &m-&r> 
+    note:
+        description: Change the note a noteblock plays.
+        permission: kitchensink.noteblocks
+        usage: |
+            /note <note>[#/b] [high]
