@@ -56,3 +56,4 @@ Configuration:
 * *countdown-style* The text formatting used by the countdown.
 * *countdown-msg-color* Color code used by the message displayed when the countdown is complete.
 * *countdown-msg-style* The text formatting used by the message at countdown completion.
+* *disable-player-damage-to-villagers* Disables player damage to villagers.

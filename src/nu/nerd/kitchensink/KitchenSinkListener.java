@@ -619,7 +619,7 @@ class KitchenSinkListener implements Listener {
                     }
                 }
             }
-        }
+        } // config.DISABLE_INVISIBILITY_ON_COMBAT
         if (plugin.config.LOWER_STRENGTH_POTION_DAMAGE && event.getEntity() instanceof Player && event.getDamager() instanceof Player) {
             Player damager = (Player) event.getDamager();
             if (damager.hasPotionEffect(PotionEffectType.INCREASE_DAMAGE)) {
@@ -637,8 +637,30 @@ class KitchenSinkListener implements Listener {
                     }
                 }
             }
-        }
-    }
+        } // config.LOWER_STRENGTH_POTION_DAMAGE
+        // if configured, disable damage to villagers from players
+        if (plugin.config.DISABLE_PLAYER_DAMAGE_TO_VILLAGERS && event.getEntityType() == EntityType.VILLAGER) {
+            if (event.getDamager() instanceof Player) {
+                // cancel the damage
+                event.setCancelled(true);
+                
+                //tell the attacker
+                Player player = (Player) event.getDamager();
+                player.sendMessage(ChatColor.DARK_RED + "Villagers are protected against damage from players.");
+            }
+            else if (event.getDamager() instanceof Projectile) {
+                Projectile damageProjectile = (Projectile) event.getDamager();
+                if (damageProjectile.getShooter() instanceof Player) {
+                    // cancel the damage
+                    event.setCancelled(true);
+                    
+                    //tell the attacker
+                    Player player = (Player) damageProjectile.getShooter();
+                    player.sendMessage(ChatColor.DARK_RED + "Villagers are protected against damage from players.");
+                }
+            }
+        } // config.DISABLE_PLAYER_DAMAGE_TO_VILLAGERS
+    } // onEntityDamageByEntity
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityDamage(EntityDamageEvent event) {

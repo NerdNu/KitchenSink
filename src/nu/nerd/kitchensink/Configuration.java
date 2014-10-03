@@ -65,6 +65,7 @@ public class Configuration {
     public double HUNGER_SLOWDOWN;
     public boolean ALLOW_EGG_HATCHING;
     public boolean DISABLE_PEARL_DROPS_IN_END;
+    public boolean DISABLE_PLAYER_DAMAGE_TO_VILLAGERS;
 
     public Configuration(KitchenSink instance) {
         plugin = instance;
@@ -133,6 +134,7 @@ public class Configuration {
         HUNGER_SLOWDOWN = plugin.getConfig().getDouble("hunger-slowdown", 0.0);
         ALLOW_EGG_HATCHING = plugin.getConfig().getBoolean("allow-egg-hatching", true);
         DISABLE_PEARL_DROPS_IN_END = plugin.getConfig().getBoolean("disable-pearl-drops-in-end", false);
+        DISABLE_PLAYER_DAMAGE_TO_VILLAGERS = plugin.getConfig().getBoolean("disable-player-damage-to-villagers", false);
     }
 
     protected void setCountDownSetting(countdown setting, Object value) {
