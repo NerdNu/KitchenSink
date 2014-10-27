@@ -4,7 +4,7 @@
   <groupId>nu.nerd</groupId>
   <artifactId>KitchenSink</artifactId>
   <name>KitchenSink</name>
-  <version>0.7</version>
+  <version>0.8.2</version>
   <build>
     <sourceDirectory>${basedir}/src</sourceDirectory>
     <defaultGoal>clean package</defaultGoal>
