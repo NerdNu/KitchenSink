@@ -375,6 +375,9 @@ class KitchenSinkListener implements Listener {
 
         if (plugin.config.BLOCK_CAPS) {
             int upperCount = 0;
+            for(Player p : plugin.getServer().getOnlinePlayers()) {
+                message = message.replace(p.getName(),"");
+            }
             for (int i = 0; i < message.length(); i++) {
                 if (Character.isUpperCase(message.charAt(i))) {
                     upperCount++;
