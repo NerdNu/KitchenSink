@@ -4,11 +4,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
 
-import net.minecraft.server.v1_7_R4.PacketPlayOutGameStateChange;
 import nu.nerd.kitchensink.ServerListPing17.StatusResponse;
 
 import org.bukkit.*;
@@ -16,7 +16,7 @@ import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.craftbukkit.v1_7_R4.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_7_R4.CraftWorld;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.EntityType;
@@ -36,6 +36,14 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.ProtocolManager;
+import com.comphenix.protocol.events.ListenerPriority;
+import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketContainer;
+import com.comphenix.protocol.events.PacketEvent;
+
 public class KitchenSink extends JavaPlugin {
 
     private static final int ONE_MINUTE_TICKS = 60 * 20;
@@ -44,6 +52,7 @@ public class KitchenSink extends JavaPlugin {
 
     private KitchenSinkListener listener = new KitchenSinkListener(this);
     private LagCheck lagCheck = new LagCheck();
+    private ProtocolManager protocolManager;
     public final Configuration config = new Configuration(this);
     public final static Logger log = Logger.getLogger("Minecraft");
     public final List<Recipe> recipeList = new ArrayList<Recipe>();
@@ -53,6 +62,7 @@ public class KitchenSink extends JavaPlugin {
     public boolean countdownActive = false;
     public BukkitTask countdownTask;
     public long nextRestart = -1;
+    public Set<Player> ignoringTime;
 
     /**
      * Location of the next portal to be created. The "safe-portals" setting can
@@ -343,6 +353,21 @@ public class KitchenSink extends JavaPlugin {
                 e.printStackTrace();
             }
         }
+        
+        protocolManager = ProtocolLibrary.getProtocolManager();
+        
+        if (config.ALLOW_PERSONAL_TIME) {
+            ignoringTime = new HashSet<Player>();
+            protocolManager.addPacketListener(new PacketAdapter(this, ListenerPriority.NORMAL, PacketType.Play.Server.UPDATE_TIME) {
+                      @Override
+                      public void onPacketSending(PacketEvent event) {
+                          if (event.getPacketType() == PacketType.Play.Server.UPDATE_TIME && ignoringTime.contains(event.getPlayer()) && event.getPacket().getLongs().read(1) >= 0) {
+                              event.setCancelled(true);
+                          }
+                      }
+            });
+        }
+        
 
         getServer().getScheduler().scheduleSyncRepeatingTask(this, lagCheck, 20, 20);
         getServer().getPluginManager().registerEvents(listener, this);
@@ -459,7 +484,63 @@ public class KitchenSink extends JavaPlugin {
                         sender.sendMessage(ChatColor.RED + "Usage: /prain [on|off]");
                         return true;
                     }
-                    ((CraftPlayer) sender).getHandle().playerConnection.sendPacket(new PacketPlayOutGameStateChange(rain ? 2 : 1, 0F));
+                    PacketContainer weatherPacket = protocolManager.createPacket(PacketType.Play.Server.GAME_STATE_CHANGE);
+                    weatherPacket.getIntegers().write(0, rain ? 2 : 1);
+                    weatherPacket.getFloat().write(0, 0F);
+                    try {
+                        protocolManager.sendServerPacket((Player) sender, weatherPacket);
+                        sender.sendMessage(rain ? "Weather enabled." : "Weather disabled.");
+                    } catch (InvocationTargetException e) {
+                        throw new RuntimeException("Cannot send packet " + weatherPacket, e);
+                    }
+                } else {
+                    sender.sendMessage("You need to be in-game to use this command.");
+                }
+            } else {
+                sender.sendMessage(ChatColor.RED + "That command is disabled.");
+            }
+            return true;
+        }
+        
+        if (command.getName().equalsIgnoreCase("ptime")) {
+            if (config.ALLOW_PERSONAL_TIME) {
+                if (sender instanceof Player) {
+                    boolean sync = false;
+                    long time = ((Player) sender).getWorld().getFullTime();
+                    if (args.length == 0) {
+                        sync = ignoringTime.contains(sender);
+                    } else if (args.length == 1) {
+                        if (args[0].equalsIgnoreCase("day")) {
+                            time = 6000l;
+                        } else if (args[0].equalsIgnoreCase("night")) {
+                            time = 18000l;
+                        } else {
+                            try {
+                                time = Long.parseLong(args[0]) % 24000;
+                            } catch (NumberFormatException e) {
+                                sender.sendMessage(ChatColor.RED + "Usage: /ptime [day|night|<time>]");
+                                return true;
+                            }
+                        }
+                    } else {
+                        sender.sendMessage(ChatColor.RED + "Usage: /ptime [day|night|<time>]");
+                        return true;
+                    }
+                    if (time < 0) time += 24000;
+                    PacketContainer timePacket = protocolManager.createPacket(PacketType.Play.Server.UPDATE_TIME);
+                    timePacket.getLongs().write(0, ((CraftWorld) ((Player) sender).getWorld()).getHandle().getTime())
+                                         .write(1, sync ? time : time == 0 ? -1 : -time);
+                    try {
+                        protocolManager.sendServerPacket((Player) sender, timePacket);
+                        if (sync) {
+                            ignoringTime.remove(sender);
+                        } else {
+                            ignoringTime.add((Player) sender);
+                        }
+                        sender.sendMessage(sync ? "Time resumed." : "Time set to " + time + ".");
+                    } catch (InvocationTargetException e) {
+                        throw new RuntimeException("Cannot send packet " + timePacket, e);
+                    }
                 } else {
                     sender.sendMessage("You need to be in-game to use this command.");
                 }

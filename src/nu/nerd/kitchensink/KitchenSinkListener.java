@@ -57,6 +57,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.event.world.PortalCreateEvent;
@@ -710,6 +711,13 @@ class KitchenSinkListener implements Listener {
             if (time < 90 && time > 0) {
                 event.getPlayer().sendMessage(ChatColor.LIGHT_PURPLE + "Warning: There will be a restart in about " + Integer.toString(time) + " seconds!");
             }
+        }
+    }
+    
+    @EventHandler(priority = EventPriority.LOW)
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        if (plugin.config.ALLOW_PERSONAL_TIME) {
+            plugin.ignoringTime.remove(event.getPlayer());
         }
     }
 
