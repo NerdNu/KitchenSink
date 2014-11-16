@@ -21,6 +21,7 @@ public class Configuration {
     public double HEALTH_POTION_MULTIPLIER;
     public double REGEN_POTION_MULTIPLIER;
     public boolean ALLOW_PERSONAL_WEATHER;
+    public boolean ALLOW_PERSONAL_TIME;
     public boolean BLOCK_CAPS;
     public boolean BLOCK_VILLAGERS;
     public boolean SAFE_ICE;
@@ -88,6 +89,7 @@ public class Configuration {
         HEALTH_POTION_MULTIPLIER = plugin.getConfig().getDouble("health-potion-multiplier", 1.0);
         REGEN_POTION_MULTIPLIER = plugin.getConfig().getDouble("regen-potion-multiplier", 1.0);
         ALLOW_PERSONAL_WEATHER = plugin.getConfig().getBoolean("allow-personal-weather");
+        ALLOW_PERSONAL_TIME = plugin.getConfig().getBoolean("allow-personal-time");
         BLOCK_CAPS = plugin.getConfig().getBoolean("block-caps");
         BLOCK_VILLAGERS = plugin.getConfig().getBoolean("block-villagers");
         SAFE_ICE = plugin.getConfig().getBoolean("safe-ice");

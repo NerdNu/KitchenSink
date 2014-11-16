@@ -17,6 +17,7 @@ Configuration:
 * *health-potion-multiplier* The multiplicative factor applied to health from instant health potions (splashed and drunk).
 * *regen-potion-multiplier* The multiplicative factor applied to health from regeneration potions (splashed and drunk).
 * *allow-personal-weather* Allow players to use the '/prain' command to turn client-side weather on or off.
+* *allow-personal-time* Allow players to use the '/ptime' command to set their client-side time of day.
 * *block-caps* Block people typing in caps too much
 * *block-villagers* Prevent players from trading with villagers
 * *safe-ice* Prevent ice from turning into water when broken
