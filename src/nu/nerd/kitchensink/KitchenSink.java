@@ -1012,9 +1012,9 @@ public class KitchenSink extends JavaPlugin {
      * name that the player must connect with, or the empty string if there are
      * no restrictions.
      */
-    public String getHostKey(String playerName) {
+    public String getHostKey(Player player) {
         File hostKeysDir = new File(getDataFolder(), HOST_KEYS_DIRECTORY);
-        File hostKeyFile = new File(hostKeysDir, playerName);
+        File hostKeyFile = new File(hostKeysDir, player.getUniqueId().toString());
         try {
             BufferedReader reader = null;
             try {

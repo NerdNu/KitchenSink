@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>nu.nerd</groupId>
 	<artifactId>KitchenSink</artifactId>
@@ -34,7 +34,7 @@
 			<groupId>org.bukkit</groupId>
 			<artifactId>bukkit</artifactId>
 			<version>1.7.10-R0.1-SNAPSHOT</version>
-		 <type>jar</type>
+			<type>jar</type>
 		</dependency>
 		<dependency>
 			<groupId>org.bukkit</groupId>
@@ -104,7 +104,7 @@
 						<archive>
 							<addMavenDescriptor>false</addMavenDescriptor>
 						</archive>
-						<finalName>KitchenSink</finalName>
+						<finalName>KitchenSink-${project.version}</finalName>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -119,38 +119,38 @@
 			</plugins>
 		</pluginManagement>
 		<plugins>
-		<plugin>
-			<groupId>org.apache.maven.plugins</groupId>
-			<artifactId>maven-shade-plugin</artifactId>
-			<version>2.2</version>
-			<configuration>
-				<minimizeJar>true</minimizeJar>
-				<relocations>
-					<relocation>
-						<pattern>com.google.gson</pattern>
-						<shadedPattern>nu.nerd.kitchensink.libs.com.google.gson</shadedPattern>
-					</relocation>
-				</relocations>
-				<excludes>
-				</excludes>
-			</configuration>
-			<executions>
-				<execution>
-					<phase>package</phase>
-					<goals>
-						<goal>shade</goal>
-					</goals>
-					<configuration>
-						<shadedArtifactAttached>false</shadedArtifactAttached>
-						<shadedClassifierName>Bundle</shadedClassifierName>
-						<artifactSet>
-							<includes>
-								<include>com.google.code.gson:gson:jar:*</include>
-							</includes>
-						</artifactSet>
-					</configuration>
-				</execution>
-			</executions>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>2.2</version>
+				<configuration>
+					<minimizeJar>true</minimizeJar>
+					<relocations>
+						<relocation>
+							<pattern>com.google.gson</pattern>
+							<shadedPattern>nu.nerd.kitchensink.libs.com.google.gson</shadedPattern>
+						</relocation>
+					</relocations>
+					<excludes>
+					</excludes>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<shadedArtifactAttached>false</shadedArtifactAttached>
+							<shadedClassifierName>Bundle</shadedClassifierName>
+							<artifactSet>
+								<includes>
+									<include>com.google.code.gson:gson:jar:*</include>
+								</includes>
+							</artifactSet>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

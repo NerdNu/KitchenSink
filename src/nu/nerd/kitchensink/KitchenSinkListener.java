@@ -116,7 +116,7 @@ class KitchenSinkListener implements Listener {
                     hostPrefix = hostPrefix.substring(0, colonIndex);
                 }
 
-                String hostKey = plugin.getHostKey(player.getName());
+                String hostKey = plugin.getHostKey(player);
                 if (!hostPrefix.equals(hostKey)) {
 					// The host key check failed.
                     // Do not leak host key details into the server log.
