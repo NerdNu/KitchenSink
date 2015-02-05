@@ -4,15 +4,15 @@ import java.text.Normalizer;
 import java.util.*;
 import java.util.Map.Entry;
 
-import net.minecraft.server.v1_7_R4.MovingObjectPosition;
-import net.minecraft.server.v1_7_R4.Vec3D;
-import net.minecraft.server.v1_7_R4.EntityArrow;
+import net.minecraft.server.v1_8_R1.MovingObjectPosition;
+import net.minecraft.server.v1_8_R1.Vec3D;
+import net.minecraft.server.v1_8_R1.EntityArrow;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.NoteBlock;
-import org.bukkit.craftbukkit.v1_7_R4.entity.CraftArrow;
+import org.bukkit.craftbukkit.v1_8_R1.entity.CraftArrow;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Ageable;
 import org.bukkit.entity.Entity;
@@ -417,8 +417,8 @@ class KitchenSinkListener implements Listener {
 
                 EntityArrow arrow = ((CraftArrow) event.getEntity()).getHandle();
 
-                Vec3D v0 = Vec3D.a(arrow.locX, arrow.locY, arrow.locZ);
-                Vec3D v1 = Vec3D.a(arrow.locX + arrow.motX, arrow.locY + arrow.motY, arrow.locZ + arrow.motZ);
+                Vec3D v0 = new Vec3D(arrow.locX, arrow.locY, arrow.locZ);
+                Vec3D v1 = new Vec3D(arrow.locX + arrow.motX, arrow.locY + arrow.motY, arrow.locZ + arrow.motZ);
                 MovingObjectPosition pos = arrow.world.rayTrace(v0, v1, false, true, false);
 
 		        // Checking if the block hit by the arrow is TNT is inaccurate,

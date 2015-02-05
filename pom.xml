@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>nu.nerd</groupId>
 	<artifactId>KitchenSink</artifactId>
-	<version>0.8.2</version>
+	<version>0.9.0</version>
 	<packaging>jar</packaging>
 	<name>KitchenSink</name>
 	<properties>
@@ -33,13 +33,13 @@
 		<dependency>
 			<groupId>org.bukkit</groupId>
 			<artifactId>bukkit</artifactId>
-			<version>1.7.10-R0.1-SNAPSHOT</version>
+			<version>1.8-R0.1-SNAPSHOT</version>
 			<type>jar</type>
 		</dependency>
 		<dependency>
 			<groupId>org.bukkit</groupId>
 			<artifactId>craftbukkit</artifactId>
-			<version>1.7.10-R0.1-SNAPSHOT</version>
+			<version>1.8-R0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>de.bananaco</groupId>
@@ -55,10 +55,18 @@
 		<dependency>
 			<groupId>com.comphenix.protocol</groupId>
 			<artifactId>ProtocolLib</artifactId>
-			<version>3.4.0</version>
+			<version>3.6.3-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 	<repositories>
+		<repository>
+			<id>spigot-repo</id>
+			<url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
+		</repository>
+		<repository>
+			<id>shadowvolt-repo</id>
+			<url>http://ci.shadowvolt.com/plugin/repository/everything/</url>
+		</repository>
 		<repository>
 			<id>thezomg-repo</id>
 			<url>http://maven.thezomg.com/content/groups/public/</url>
