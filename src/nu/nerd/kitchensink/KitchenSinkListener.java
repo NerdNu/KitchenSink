@@ -547,6 +547,7 @@ class KitchenSinkListener implements Listener {
                             && block.getLocation().getBlockZ() == plugin.nextPortal.getBlockZ()) {
                         allowed = true;
                         plugin.nextPortal = null;
+						break;
                     }
                 }
             }

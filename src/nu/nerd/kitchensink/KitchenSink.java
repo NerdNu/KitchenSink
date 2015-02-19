@@ -35,6 +35,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.BlockIterator;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
@@ -43,6 +44,7 @@ import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
+import org.bukkit.entity.minecart.HopperMinecart;
 
 public class KitchenSink extends JavaPlugin {
 
@@ -213,7 +215,7 @@ public class KitchenSink extends JavaPlugin {
                         for (Minecart minecart : world.getEntitiesByClass(Minecart.class)) {
                             if (minecart.isEmpty()) {
                                 if (config.SAFE_SPECIAL_CARTS) {
-                                    if (minecart instanceof StorageMinecart || minecart instanceof PoweredMinecart) {
+                                    if (minecart instanceof StorageMinecart || minecart instanceof PoweredMinecart || minecart instanceof HopperMinecart) {
                                         continue;
                                     }
                                 }
@@ -590,8 +592,7 @@ public class KitchenSink extends JavaPlugin {
             if (sender instanceof Player) {
                 if (config.SAFE_PORTALS) {
                     Player player = (Player) sender;
-                    List<Block> lineOfSight = player.getLastTwoTargetBlocks(null, 20);
-                    Block block = (lineOfSight.size() == 2) ? lineOfSight.get(1) : null;
+                    Block block = getTargetBlock(player);
                     if (block != null && block.getType() == Material.OBSIDIAN) {
                         nextPortal = block.getLocation();
                         sender.sendMessage(
@@ -1136,4 +1137,16 @@ public class KitchenSink extends JavaPlugin {
 
         return String.format(convFormat.toString(), valueList.toArray());
     }
+
+	public static Block getTargetBlock(LivingEntity entity) {
+		BlockIterator iterator = new BlockIterator(entity.getLocation(), entity.getEyeHeight());
+		Block result;
+		while (iterator.hasNext()) {
+			result = iterator.next();
+			if (!result.getType().equals(Material.AIR)) {
+				return result;
+			}
+		}
+		return null;
+	}
 }
