@@ -1139,7 +1139,7 @@ public class KitchenSink extends JavaPlugin {
     }
 
 	public static Block getTargetBlock(LivingEntity entity) {
-		BlockIterator iterator = new BlockIterator(entity.getLocation(), entity.getEyeHeight());
+		BlockIterator iterator = new BlockIterator(entity.getLocation(), entity.getEyeHeight(), 20);
 		Block result;
 		while (iterator.hasNext()) {
 			result = iterator.next();
