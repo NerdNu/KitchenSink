@@ -1,6 +1,14 @@
 package nu.nerd.kitchensink;
 
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.EntityType;
 
 enum countdown { maxtime, format, color, style, msgcolor, msgstyle };
 
@@ -62,6 +70,7 @@ public class Configuration {
     public List<Integer> DISABLED_RIGHT_ITEMS;
     public List<Integer> DISABLE_DISPENSED;
     public List<Integer> DISABLE_BUFF;
+    public Map<EntityType, Set<Material>> DISABLED_DROPS;
     public double SATURATION_MULTIPLIER;
     public double HUNGER_SLOWDOWN;
     public boolean ALLOW_EGG_HATCHING;
@@ -118,6 +127,30 @@ public class Configuration {
         DISABLED_RIGHT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.right-click");
         DISABLE_DISPENSED = plugin.getConfig().getIntegerList("disabled-items.dispensed");
         DISABLE_BUFF = plugin.getConfig().getIntegerList("disable-buff");
+        DISABLED_DROPS = new EnumMap<EntityType, Set<Material>>(EntityType.class);
+        ConfigurationSection disabledDropsSection = plugin.getConfig()
+                .getConfigurationSection("disabled-drops");
+        if (disabledDropsSection != null) {
+            for (String key : disabledDropsSection.getKeys(false)) {
+                try {
+                    EntityType type = EntityType.valueOf(key.toUpperCase());
+                    List<String> matStrings = disabledDropsSection.getStringList(key);
+                    Set<Material> mats = EnumSet.noneOf(Material.class);
+                    for (String matString : matStrings) {
+                        try {
+                            mats.add(Material.valueOf(matString.toUpperCase()));
+                        } catch (IllegalArgumentException e) {
+                            plugin.getLogger().warning("disabled-drops." + key
+                                    + " contains an invalid material" + matString);
+                        }
+                    }
+                    DISABLED_DROPS.put(type, mats);
+                } catch (IllegalArgumentException e) {
+                    plugin.getLogger().warning("disabled-drops contains invalid entity type "
+                            + key);
+                }
+            }
+        }
         WARN_RESTART_ON_JOIN = plugin.getConfig().getBoolean("warn-restart-on-join");
         WARN_RESTART_ON_INVENTORY_OPEN = plugin.getConfig().getBoolean("warn-restart-on-inventory-open");
         SPRINT_MAX_TICKS = plugin.getConfig().getInt("sprint-max-time", 0);

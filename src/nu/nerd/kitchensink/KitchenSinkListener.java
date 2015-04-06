@@ -444,12 +444,22 @@ class KitchenSinkListener implements Listener {
         if (plugin.config.DISABLE_PEARL_DROPS_IN_END) {
             Location l = event.getEntity().getLocation();
             if (l.getWorld().getEnvironment() == World.Environment.THE_END) {
-                Iterator i = event.getDrops().iterator();
+                Iterator<ItemStack> i = event.getDrops().iterator();
                 while (i.hasNext()) {
-                    ItemStack is = (ItemStack) i.next();
+                    ItemStack is = i.next();
                     if (is.getType() == Material.ENDER_PEARL) {
                         i.remove();
                     }
+                }
+            }
+        }
+        if (plugin.config.DISABLED_DROPS.containsKey(event.getEntity().getType())) {
+            Set<Material> mats = plugin.config.DISABLED_DROPS.get(event.getEntity().getType());
+            Iterator<ItemStack> i = event.getDrops().iterator();
+            while (i.hasNext()) {
+                ItemStack is = i.next();
+                if (mats.contains(is.getType())) {
+                    i.remove();
                 }
             }
         }
@@ -651,7 +661,7 @@ class KitchenSinkListener implements Listener {
             if (event.getDamager() instanceof Player) {
                 // cancel the damage
                 event.setCancelled(true);
-                
+
                 //tell the attacker
                 Player player = (Player) event.getDamager();
                 player.sendMessage(ChatColor.DARK_RED + "Villagers are protected against damage from players.");
@@ -661,7 +671,7 @@ class KitchenSinkListener implements Listener {
                 if (damageProjectile.getShooter() instanceof Player) {
                     // cancel the damage
                     event.setCancelled(true);
-                    
+
                     //tell the attacker
                     Player player = (Player) damageProjectile.getShooter();
                     player.sendMessage(ChatColor.DARK_RED + "Villagers are protected against damage from players.");
@@ -714,7 +724,7 @@ class KitchenSinkListener implements Listener {
             }
         }
     }
-    
+
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerQuit(PlayerQuitEvent event) {
         if (plugin.config.ALLOW_PERSONAL_TIME) {
