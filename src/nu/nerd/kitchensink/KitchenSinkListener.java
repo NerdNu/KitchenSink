@@ -4,15 +4,15 @@ import java.text.Normalizer;
 import java.util.*;
 import java.util.Map.Entry;
 
-import net.minecraft.server.v1_8_R1.MovingObjectPosition;
-import net.minecraft.server.v1_8_R1.Vec3D;
-import net.minecraft.server.v1_8_R1.EntityArrow;
+import net.minecraft.server.v1_8_R2.MovingObjectPosition;
+import net.minecraft.server.v1_8_R2.Vec3D;
+import net.minecraft.server.v1_8_R2.EntityArrow;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.NoteBlock;
-import org.bukkit.craftbukkit.v1_8_R1.entity.CraftArrow;
+import org.bukkit.craftbukkit.v1_8_R2.entity.CraftArrow;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Ageable;
 import org.bukkit.entity.Entity;
