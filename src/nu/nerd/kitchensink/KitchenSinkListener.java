@@ -367,7 +367,7 @@ class KitchenSinkListener implements Listener {
             boolean sarcasmDetected = message.startsWith(ChatColor.ITALIC.toString());
             message = ChatColor.stripColor(message);
             message = message.replaceAll(REPLACED_CHARS, " ");
-            message = Normalizer.normalize(message, Normalizer.Form.NFD);
+            message = Normalizer.normalize(message, Normalizer.Form.NFC);
             if (sarcasmDetected) {
                 message = ChatColor.ITALIC + message;
             }
