@@ -376,6 +376,7 @@ class KitchenSinkListener implements Listener {
 
         if (plugin.config.BLOCK_CAPS) {
             int upperCount = 0;
+			int messageLength = 0;
             for(Player p : plugin.getServer().getOnlinePlayers()) {
                 message = message.replace(p.getName(),"");
             }
@@ -383,9 +384,12 @@ class KitchenSinkListener implements Listener {
                 if (Character.isUpperCase(message.charAt(i))) {
                     upperCount++;
                 }
+				if (Character.isLetter(message.charAt(i)) || message.charAt(i) == ' ') {
+					messageLength++;
+				}
             }
 
-            if ((upperCount > message.length() / 2) && message.length() > 8) {
+            if ((upperCount > messageLength / 2) && messageLength > 8) {
                 event.getPlayer().sendMessage(ChatColor.DARK_GREEN + "Please don't type in all caps.");
                 event.setCancelled(true);
             }
