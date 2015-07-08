@@ -385,7 +385,7 @@ class KitchenSinkListener implements Listener {
                 if (Character.isUpperCase(c)) {
                     upperCount++;
                 }
-                if (Character.isLetter(message.charAt(i)) || message.charAt(i) == ' ') {
+                if (Character.isLetter(c) || c == ' ') {
                     messageLength++;
                 }
             }
