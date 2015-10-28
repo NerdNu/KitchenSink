@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>nu.nerd</groupId>
 	<artifactId>KitchenSink</artifactId>
-	<version>0.9.4</version>
+	<version>0.9.5</version>
 	<packaging>jar</packaging>
 	<name>KitchenSink</name>
 	<properties>
@@ -34,13 +34,13 @@
 		<dependency>
 			<groupId>org.bukkit</groupId>
 			<artifactId>bukkit</artifactId>
-			<version>1.8.7-R0.1-SNAPSHOT</version>
+			<version>1.8.8-R0.1-SNAPSHOT</version>
 			<type>jar</type>
 		</dependency>
 		<dependency>
 			<groupId>org.bukkit</groupId>
                         <artifactId>craftbukkit</artifactId>
-                        <version>1.8.7-R0.1-SNAPSHOT</version>
+                        <version>1.8.8-R0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>de.bananaco</groupId>
@@ -124,8 +124,6 @@
 							<shadedPattern>nu.nerd.kitchensink.libs.com.google.gson</shadedPattern>
 						</relocation>
 					</relocations>
-					<excludes>
-					</excludes>
 				</configuration>
 				<executions>
 					<execution>

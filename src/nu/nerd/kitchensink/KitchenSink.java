@@ -235,7 +235,7 @@ public class KitchenSink extends JavaPlugin {
                 @Override
                 public void run() {
                     System.out.println("-!- Starting Mob count");
-                    System.out.println("-!- " + getMobCount());
+                    System.out.println("-!- " + getMultiworldMobCount());
                 }
             };
             sched.runTaskTimerAsynchronously(this, task, ONE_MINUTE_TICKS, 10 * ONE_MINUTE_TICKS);
@@ -612,11 +612,18 @@ public class KitchenSink extends JavaPlugin {
 
         if (command.getName().equalsIgnoreCase("mob-count")) {
             if (args.length == 0) {
-                sender.sendMessage(getMobCount().toString());
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage(getMobCount(null).toString());
+                } else {
+                    sender.sendMessage(getMobCount(((Player) sender).getWorld()).toString());
+                }
                 return true;
             } else if (args.length == 1 && args[0].equalsIgnoreCase("dump")) {
                 sender.sendMessage("Dumping mobs");
                 dumpMobCount();
+                return true;
+            } else if (args.length == 1 && args[0].equalsIgnoreCase("all")) {
+                sender.sendMessage(getMultiworldMobCount().toString());
                 return true;
             }
 
@@ -1008,7 +1015,7 @@ public class KitchenSink extends JavaPlugin {
     /**
      * Load the contents of the host key file for the specified player.
      *
-     * @param playerName the name of the player.
+     * @param player the name of the player.
      * @return a non-null string that is the corresponding prefix of the host
      * name that the player must connect with, or the empty string if there are
      * no restrictions.
@@ -1056,12 +1063,16 @@ public class KitchenSink extends JavaPlugin {
     /**
      * Returns counts for all mobs
      */
-    public HashMap<String, Integer> getMobCount() {
+    public HashMap<String, Integer> getMobCount(World world) {
         HashMap<String, Integer> counts = new HashMap<String, Integer>();
+
+        if (world == null) {
+            world = getServer().getWorlds().get(0);
+        }
 
         try {
             Collection<LivingEntity> livingEntities;
-            livingEntities = getServer().getWorlds().get(0).getEntitiesByClass(LivingEntity.class);
+            livingEntities = world.getEntitiesByClass(LivingEntity.class);
             for (LivingEntity animal : livingEntities) {
                 if (counts.containsKey(animal.getType().name())) {
                     counts.put(animal.getType().name(), counts.get(animal.getType().name()) + 1);
@@ -1072,6 +1083,24 @@ public class KitchenSink extends JavaPlugin {
         } catch (Exception ex) {
         }
 
+        return counts;
+    }
+
+    public HashMap<String, Integer> getMultiworldMobCount() {
+        HashMap<String, Integer> counts = new HashMap<String, Integer>();
+        try {
+            for (World world : getServer().getWorlds()) {
+                Collection<LivingEntity> livingEntities;
+                livingEntities = world.getEntitiesByClass(LivingEntity.class);
+                for (LivingEntity animal : livingEntities) {
+                    if (counts.containsKey(animal.getType().name())) {
+                        counts.put(animal.getType().name(), counts.get(animal.getType().name()) + 1);
+                    } else {
+                        counts.put(animal.getType().name(), 1);
+                    }
+                }
+            }
+        } catch (Exception ex) {}
         return counts;
     }
 

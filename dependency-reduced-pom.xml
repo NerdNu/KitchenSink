@@ -4,7 +4,7 @@
   <groupId>nu.nerd</groupId>
   <artifactId>KitchenSink</artifactId>
   <name>KitchenSink</name>
-  <version>0.9.4</version>
+  <version>0.9.5</version>
   <build>
     <sourceDirectory>${basedir}/src</sourceDirectory>
     <defaultGoal>clean package</defaultGoal>
@@ -70,7 +70,6 @@
               <shadedPattern>nu.nerd.kitchensink.libs.com.google.gson</shadedPattern>
             </relocation>
           </relocations>
-          <excludes />
         </configuration>
       </plugin>
     </plugins>
@@ -99,15 +98,14 @@
     <dependency>
       <groupId>org.bukkit</groupId>
       <artifactId>bukkit</artifactId>
-      <version>1.8.7-R0.1-SNAPSHOT</version>
+      <version>1.8.8-R0.1-SNAPSHOT</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.bukkit</groupId>
       <artifactId>craftbukkit</artifactId>
-      <version>1.8.7-R0.1-SNAPSHOT</version>
-      <scope>system</scope>
-      <systemPath>C:\Users\c45y\Desktop\BuildTools\craftbukkit-1.8.7.jar</systemPath>
+      <version>1.8.8-R0.1-SNAPSHOT</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>de.bananaco</groupId>
