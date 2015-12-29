@@ -25,6 +25,7 @@ public class Configuration {
     public boolean DISABLE_DROPS;
     public boolean DISABLE_TNT;
     public boolean DISABLE_INVISIBILITY_ON_COMBAT;
+    public boolean DISABLE_GOLEM_NATURAL_SPAWN;
     public boolean LOWER_STRENGTH_POTION_DAMAGE;
     public double HEALTH_POTION_MULTIPLIER;
     public double REGEN_POTION_MULTIPLIER;
@@ -94,6 +95,7 @@ public class Configuration {
         DISABLE_DROPS = plugin.getConfig().getBoolean("disable-drops");
         DISABLE_TNT = plugin.getConfig().getBoolean("disable-tnt");
         DISABLE_INVISIBILITY_ON_COMBAT = plugin.getConfig().getBoolean("disable-invisibility-on-combat");
+        DISABLE_GOLEM_NATURAL_SPAWN = plugin.getConfig().getBoolean("disable-golem-natural-spawn", false);
         LOWER_STRENGTH_POTION_DAMAGE = plugin.getConfig().getBoolean("lower-strength-potion-damage");
         HEALTH_POTION_MULTIPLIER = plugin.getConfig().getDouble("health-potion-multiplier", 1.0);
         REGEN_POTION_MULTIPLIER = plugin.getConfig().getDouble("regen-potion-multiplier", 1.0);
