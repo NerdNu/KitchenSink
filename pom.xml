@@ -91,7 +91,7 @@
 						<archive>
 							<addMavenDescriptor>false</addMavenDescriptor>
 						</archive>
-						<finalName>KitchenSink-${project.version}</finalName>
+						<finalName>${project.artifactId}-${project.version}</finalName>
 					</configuration>
 				</plugin>
 				<plugin>
