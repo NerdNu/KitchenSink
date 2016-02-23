@@ -119,7 +119,7 @@ public class Configuration {
         LOCK_HORSES = plugin.getConfig().getBoolean("lock-horses");
         INVULNERABLE_TAME_HORSES = plugin.getConfig().getBoolean("invulnerable-tame-horses");
         UNTAME_PETS = plugin.getConfig().getBoolean("untame-pets");
-        HOST_KEYS_CHECK = plugin.getConfig().getBoolean("host-keys-check", true);
+        HOST_KEYS_CHECK = plugin.getConfig().getBoolean("host-keys-check");
         HOST_KEYS_DROP_PERMISSIONS = plugin.getConfig().getBoolean("host-keys-drop-permissions");
         ALLOW_ENCH_ITEMS = plugin.getConfig().getIntegerList("allow-enchant-items");
         BLOCK_CRAFT = plugin.getConfig().getIntegerList("block-craft");
