@@ -4,21 +4,15 @@ import java.text.Normalizer;
 import java.util.*;
 import java.util.Map.Entry;
 
-import net.minecraft.server.v1_7_R4.MovingObjectPosition;
-import net.minecraft.server.v1_7_R4.Vec3D;
-import net.minecraft.server.v1_7_R4.EntityArrow;
+import net.minecraft.server.v1_8_R3.MovingObjectPosition;
+import net.minecraft.server.v1_8_R3.Vec3D;
+import net.minecraft.server.v1_8_R3.EntityArrow;
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftArrow;
 
-import org.bukkit.Art;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Chunk;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_7_R4.entity.CraftArrow;
+import org.bukkit.block.NoteBlock;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Ageable;
 import org.bukkit.entity.Entity;
@@ -43,16 +37,9 @@ import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
-import org.bukkit.event.entity.FoodLevelChangeEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
-import org.bukkit.event.entity.ItemSpawnEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
@@ -63,6 +50,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.event.world.PortalCreateEvent;
@@ -76,8 +64,6 @@ import org.bukkit.potion.PotionEffectType;
 
 import de.bananaco.bpermissions.api.ApiLayer;
 import de.bananaco.bpermissions.api.util.CalculableType;
-
-import org.bukkit.Sound;
 
 class KitchenSinkListener implements Listener {
 
@@ -123,7 +109,7 @@ class KitchenSinkListener implements Listener {
                     hostPrefix = hostPrefix.substring(0, colonIndex);
                 }
 
-                String hostKey = plugin.getHostKey(player.getName());
+                String hostKey = plugin.getHostKey(player);
                 if (!hostPrefix.equals(hostKey)) {
 					// The host key check failed.
                     // Do not leak host key details into the server log.
@@ -183,6 +169,25 @@ class KitchenSinkListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerInteract(PlayerInteractEvent event) {
+
+        Player player = event.getPlayer();
+        if (event.getAction() == Action.LEFT_CLICK_BLOCK
+                && player.hasPermission("kitchensink.noteblocks")
+                && player.hasMetadata(KitchenSink.NOTEBLOCK_META_KEY)) {
+
+            Note note = (Note)player.getMetadata(KitchenSink.NOTEBLOCK_META_KEY).get(0).value();
+            if (event.getClickedBlock().getState() instanceof NoteBlock) {
+                NoteBlock clicked = (NoteBlock)event.getClickedBlock().getState();
+                clicked.setNote(note);
+                clicked.play();
+                player.sendMessage(ChatColor.GOLD + "Note block set to note " + note.getTone().toString() + (note.isSharped() ? "#" : "") + " successfully!");
+            } else {
+                player.sendMessage(ChatColor.RED + "That block isn't a note block.");
+            }
+            event.setCancelled(true);
+            player.removeMetadata(KitchenSink.NOTEBLOCK_META_KEY, plugin);
+        }
+
         if (!event.hasItem()) {
             return;
         }
@@ -350,24 +355,33 @@ class KitchenSinkListener implements Listener {
         }
 
         String message = event.getMessage();
-        boolean sarcasmDetected = message.startsWith(ChatColor.ITALIC.toString());
-        message = ChatColor.stripColor(message);
-        message = message.replaceAll(REPLACED_CHARS, " ");
-        message = Normalizer.normalize(message, Normalizer.Form.NFD);
-        if (sarcasmDetected) {
-            message = ChatColor.ITALIC + message;
+
+        if (plugin.config.NORMALIZE_CHAT) {
+            boolean sarcasmDetected = message.startsWith(ChatColor.ITALIC.toString());
+            message = ChatColor.stripColor(message);
+            message = message.replaceAll(REPLACED_CHARS, " ");
+            message = Normalizer.normalize(message, Normalizer.Form.NFC);
+            if (sarcasmDetected) {
+                message = ChatColor.ITALIC + message;
+            }
+            event.setMessage(message);
         }
-        event.setMessage(message);
 
         if (plugin.config.BLOCK_CAPS) {
             int upperCount = 0;
-            for (int i = 0; i < message.length(); i++) {
-                if (Character.isUpperCase(message.charAt(i))) {
+            int messageLength = 0;
+            for(Player p : plugin.getServer().getOnlinePlayers()) {
+                message = message.replace(p.getName(),"");
+            }
+            for (char c : message.toCharArray()) {
+                if (Character.isUpperCase(c)) {
                     upperCount++;
                 }
+                if (Character.isLetter(c) || c == ' ') {
+                    messageLength++;
+                }
             }
-
-            if ((upperCount > message.length() / 2) && message.length() > 8) {
+            if ((upperCount > messageLength / 2) && messageLength > 8) {
                 event.getPlayer().sendMessage(ChatColor.DARK_GREEN + "Please don't type in all caps.");
                 event.setCancelled(true);
             }
@@ -399,8 +413,8 @@ class KitchenSinkListener implements Listener {
 
                 EntityArrow arrow = ((CraftArrow) event.getEntity()).getHandle();
 
-                Vec3D v0 = Vec3D.a(arrow.locX, arrow.locY, arrow.locZ);
-                Vec3D v1 = Vec3D.a(arrow.locX + arrow.motX, arrow.locY + arrow.motY, arrow.locZ + arrow.motZ);
+                Vec3D v0 = new Vec3D(arrow.locX, arrow.locY, arrow.locZ);
+                Vec3D v1 = new Vec3D(arrow.locX + arrow.motX, arrow.locY + arrow.motY, arrow.locZ + arrow.motZ);
                 MovingObjectPosition pos = arrow.world.rayTrace(v0, v1, false, true, false);
 
 		        // Checking if the block hit by the arrow is TNT is inaccurate,
@@ -426,12 +440,22 @@ class KitchenSinkListener implements Listener {
         if (plugin.config.DISABLE_PEARL_DROPS_IN_END) {
             Location l = event.getEntity().getLocation();
             if (l.getWorld().getEnvironment() == World.Environment.THE_END) {
-                Iterator i = event.getDrops().iterator();
+                Iterator<ItemStack> i = event.getDrops().iterator();
                 while (i.hasNext()) {
-                    ItemStack is = (ItemStack) i.next();
+                    ItemStack is = i.next();
                     if (is.getType() == Material.ENDER_PEARL) {
                         i.remove();
                     }
+                }
+            }
+        }
+        if (plugin.config.DISABLED_DROPS.containsKey(event.getEntity().getType())) {
+            Set<Material> mats = plugin.config.DISABLED_DROPS.get(event.getEntity().getType());
+            Iterator<ItemStack> i = event.getDrops().iterator();
+            while (i.hasNext()) {
+                ItemStack is = i.next();
+                if (mats.contains(is.getType())) {
+                    i.remove();
                 }
             }
         }
@@ -529,6 +553,7 @@ class KitchenSinkListener implements Listener {
                             && block.getLocation().getBlockZ() == plugin.nextPortal.getBlockZ()) {
                         allowed = true;
                         plugin.nextPortal = null;
+						break;
                     }
                 }
             }
@@ -608,7 +633,7 @@ class KitchenSinkListener implements Listener {
                     }
                 }
             }
-        }
+        } // config.DISABLE_INVISIBILITY_ON_COMBAT
         if (plugin.config.LOWER_STRENGTH_POTION_DAMAGE && event.getEntity() instanceof Player && event.getDamager() instanceof Player) {
             Player damager = (Player) event.getDamager();
             if (damager.hasPotionEffect(PotionEffectType.INCREASE_DAMAGE)) {
@@ -626,8 +651,30 @@ class KitchenSinkListener implements Listener {
                     }
                 }
             }
-        }
-    }
+        } // config.LOWER_STRENGTH_POTION_DAMAGE
+        // if configured, disable damage to villagers from players
+        if (plugin.config.DISABLE_PLAYER_DAMAGE_TO_VILLAGERS && event.getEntityType() == EntityType.VILLAGER) {
+            if (event.getDamager() instanceof Player) {
+                // cancel the damage
+                event.setCancelled(true);
+
+                //tell the attacker
+                Player player = (Player) event.getDamager();
+                player.sendMessage(ChatColor.DARK_RED + "Villagers are protected against damage from players.");
+            }
+            else if (event.getDamager() instanceof Projectile) {
+                Projectile damageProjectile = (Projectile) event.getDamager();
+                if (damageProjectile.getShooter() instanceof Player) {
+                    // cancel the damage
+                    event.setCancelled(true);
+
+                    //tell the attacker
+                    Player player = (Player) damageProjectile.getShooter();
+                    player.sendMessage(ChatColor.DARK_RED + "Villagers are protected against damage from players.");
+                }
+            }
+        } // config.DISABLE_PLAYER_DAMAGE_TO_VILLAGERS
+    } // onEntityDamageByEntity
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityDamage(EntityDamageEvent event) {
@@ -671,6 +718,13 @@ class KitchenSinkListener implements Listener {
             if (time < 90 && time > 0) {
                 event.getPlayer().sendMessage(ChatColor.LIGHT_PURPLE + "Warning: There will be a restart in about " + Integer.toString(time) + " seconds!");
             }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOW)
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        if (plugin.config.ALLOW_PERSONAL_TIME) {
+            plugin.ignoringTime.remove(event.getPlayer());
         }
     }
 
@@ -788,6 +842,14 @@ class KitchenSinkListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onPlayerEggThrow(PlayerEggThrowEvent event) {
         event.setHatching(plugin.config.ALLOW_EGG_HATCHING);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onCreatureSpawn(CreatureSpawnEvent event) {
+        // Stop iron golems from spawning in villages
+        if (event.getSpawnReason().equals(CreatureSpawnEvent.SpawnReason.VILLAGE_DEFENSE)) {
+            event.setCancelled(plugin.config.DISABLE_GOLEM_NATURAL_SPAWN);
+        }
     }
 
     /**

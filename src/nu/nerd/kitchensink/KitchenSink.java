@@ -4,23 +4,19 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
 
-import net.minecraft.server.v1_7_R4.PacketPlayOutGameStateChange;
 import nu.nerd.kitchensink.ServerListPing17.StatusResponse;
 
-import org.bukkit.Art;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.craftbukkit.v1_7_R4.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.EntityType;
@@ -39,6 +35,16 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.BlockIterator;
+
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.ProtocolManager;
+import com.comphenix.protocol.events.ListenerPriority;
+import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketContainer;
+import com.comphenix.protocol.events.PacketEvent;
+import org.bukkit.entity.minecart.HopperMinecart;
 
 public class KitchenSink extends JavaPlugin {
 
@@ -48,6 +54,7 @@ public class KitchenSink extends JavaPlugin {
 
     private KitchenSinkListener listener = new KitchenSinkListener(this);
     private LagCheck lagCheck = new LagCheck();
+    private ProtocolManager protocolManager;
     public final Configuration config = new Configuration(this);
     public final static Logger log = Logger.getLogger("Minecraft");
     public final List<Recipe> recipeList = new ArrayList<Recipe>();
@@ -57,6 +64,7 @@ public class KitchenSink extends JavaPlugin {
     public boolean countdownActive = false;
     public BukkitTask countdownTask;
     public long nextRestart = -1;
+    public Set<Player> ignoringTime;
 
     /**
      * Location of the next portal to be created. The "safe-portals" setting can
@@ -96,6 +104,12 @@ public class KitchenSink extends JavaPlugin {
      * 2012/07/fixing-the-minecraft-session-stealer-exploit/
      */
     public static final String HOST_KEYS_DIRECTORY = "hostkeys";
+
+    /**
+     * Key of Player metadata which, when set, indicates that the next punch
+     * of a noteblock by a player should change the note of the noteblock.
+     */
+    public static final String NOTEBLOCK_META_KEY = "KitchenSink.noteblock";
 
     /**
      * Map from lower case in-game enchantment names to the Bukkit Enchantment
@@ -201,7 +215,7 @@ public class KitchenSink extends JavaPlugin {
                         for (Minecart minecart : world.getEntitiesByClass(Minecart.class)) {
                             if (minecart.isEmpty()) {
                                 if (config.SAFE_SPECIAL_CARTS) {
-                                    if (minecart instanceof StorageMinecart || minecart instanceof PoweredMinecart) {
+                                    if (minecart instanceof StorageMinecart || minecart instanceof PoweredMinecart || minecart instanceof HopperMinecart) {
                                         continue;
                                     }
                                 }
@@ -221,7 +235,7 @@ public class KitchenSink extends JavaPlugin {
                 @Override
                 public void run() {
                     System.out.println("-!- Starting Mob count");
-                    System.out.println("-!- " + getMobCount());
+                    System.out.println("-!- " + getMultiworldMobCount());
                 }
             };
             sched.runTaskTimerAsynchronously(this, task, ONE_MINUTE_TICKS, 10 * ONE_MINUTE_TICKS);
@@ -341,6 +355,21 @@ public class KitchenSink extends JavaPlugin {
                 e.printStackTrace();
             }
         }
+        
+        protocolManager = ProtocolLibrary.getProtocolManager();
+        
+        if (config.ALLOW_PERSONAL_TIME) {
+            ignoringTime = new HashSet<Player>();
+            protocolManager.addPacketListener(new PacketAdapter(this, ListenerPriority.NORMAL, PacketType.Play.Server.UPDATE_TIME) {
+                      @Override
+                      public void onPacketSending(PacketEvent event) {
+                          if (event.getPacketType() == PacketType.Play.Server.UPDATE_TIME && ignoringTime.contains(event.getPlayer()) && event.getPacket().getLongs().read(1) >= 0) {
+                              event.setCancelled(true);
+                          }
+                      }
+            });
+        }
+        
 
         getServer().getScheduler().scheduleSyncRepeatingTask(this, lagCheck, 20, 20);
         getServer().getPluginManager().registerEvents(listener, this);
@@ -457,7 +486,63 @@ public class KitchenSink extends JavaPlugin {
                         sender.sendMessage(ChatColor.RED + "Usage: /prain [on|off]");
                         return true;
                     }
-                    ((CraftPlayer) sender).getHandle().playerConnection.sendPacket(new PacketPlayOutGameStateChange(rain ? 2 : 1, 0F));
+                    PacketContainer weatherPacket = protocolManager.createPacket(PacketType.Play.Server.GAME_STATE_CHANGE);
+                    weatherPacket.getIntegers().write(0, rain ? 2 : 1);
+                    weatherPacket.getFloat().write(0, 0F);
+                    try {
+                        protocolManager.sendServerPacket((Player) sender, weatherPacket);
+                        sender.sendMessage(rain ? "Weather enabled." : "Weather disabled.");
+                    } catch (InvocationTargetException e) {
+                        throw new RuntimeException("Cannot send packet " + weatherPacket, e);
+                    }
+                } else {
+                    sender.sendMessage("You need to be in-game to use this command.");
+                }
+            } else {
+                sender.sendMessage(ChatColor.RED + "That command is disabled.");
+            }
+            return true;
+        }
+        
+        if (command.getName().equalsIgnoreCase("ptime")) {
+            if (config.ALLOW_PERSONAL_TIME) {
+                if (sender instanceof Player) {
+                    boolean sync = false;
+                    long time = ((Player) sender).getWorld().getFullTime();
+                    if (args.length == 0) {
+                        sync = ignoringTime.contains(sender);
+                    } else if (args.length == 1) {
+                        if (args[0].equalsIgnoreCase("day")) {
+                            time = 6000l;
+                        } else if (args[0].equalsIgnoreCase("night")) {
+                            time = 18000l;
+                        } else {
+                            try {
+                                time = Long.parseLong(args[0]) % 24000;
+                            } catch (NumberFormatException e) {
+                                sender.sendMessage(ChatColor.RED + "Usage: /ptime [day|night|<time>]");
+                                return true;
+                            }
+                        }
+                    } else {
+                        sender.sendMessage(ChatColor.RED + "Usage: /ptime [day|night|<time>]");
+                        return true;
+                    }
+                    if (time < 0) time += 24000;
+                    PacketContainer timePacket = protocolManager.createPacket(PacketType.Play.Server.UPDATE_TIME);
+                    timePacket.getLongs().write(0, ((CraftWorld) ((Player) sender).getWorld()).getHandle().getTime())
+                                         .write(1, sync ? time : time == 0 ? -1 : -time);
+                    try {
+                        protocolManager.sendServerPacket((Player) sender, timePacket);
+                        if (sync) {
+                            ignoringTime.remove(sender);
+                        } else {
+                            ignoringTime.add((Player) sender);
+                        }
+                        sender.sendMessage(sync ? "Time resumed." : "Time set to " + time + ".");
+                    } catch (InvocationTargetException e) {
+                        throw new RuntimeException("Cannot send packet " + timePacket, e);
+                    }
                 } else {
                     sender.sendMessage("You need to be in-game to use this command.");
                 }
@@ -507,8 +592,7 @@ public class KitchenSink extends JavaPlugin {
             if (sender instanceof Player) {
                 if (config.SAFE_PORTALS) {
                     Player player = (Player) sender;
-                    List<Block> lineOfSight = player.getLastTwoTargetBlocks(null, 20);
-                    Block block = (lineOfSight.size() == 2) ? lineOfSight.get(1) : null;
+                    Block block = getTargetBlock(player);
                     if (block != null && block.getType() == Material.OBSIDIAN) {
                         nextPortal = block.getLocation();
                         sender.sendMessage(
@@ -528,11 +612,18 @@ public class KitchenSink extends JavaPlugin {
 
         if (command.getName().equalsIgnoreCase("mob-count")) {
             if (args.length == 0) {
-                sender.sendMessage(getMobCount().toString());
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage(getMobCount(null).toString());
+                } else {
+                    sender.sendMessage(getMobCount(((Player) sender).getWorld()).toString());
+                }
                 return true;
             } else if (args.length == 1 && args[0].equalsIgnoreCase("dump")) {
                 sender.sendMessage("Dumping mobs");
                 dumpMobCount();
+                return true;
+            } else if (args.length == 1 && args[0].equalsIgnoreCase("all")) {
+                sender.sendMessage(getMultiworldMobCount().toString());
                 return true;
             }
 
@@ -821,6 +912,64 @@ public class KitchenSink extends JavaPlugin {
             }
         }
 
+        if (command.getName().equalsIgnoreCase("note") && sender.hasPermission("kitchensink.noteblocks")) {
+
+            if (!(sender instanceof Player)) {
+                sender.sendMessage("Only players can run that command.");
+                return true;
+            }
+
+            if (args.length == 0) {
+                sender.sendMessage(ChatColor.GOLD + "Usage: /note [high] <note>");
+                sender.sendMessage(ChatColor.GOLD + "where <note> is a sharp, flat or natural note (e.g. \"Ab\").");
+                sender.sendMessage(ChatColor.GOLD + "Use [high] to sound a higher note.");
+                return true;
+            }
+
+            int octave = 0;
+            int noteIndex = 0;
+            if (args.length > 1) {
+                if (args[0].equalsIgnoreCase("high")) {
+                    octave = 1;
+                    noteIndex = 1;
+                }
+            }
+
+            String noteString = args[noteIndex];
+
+            Note note;
+
+            try {
+                note = Note.natural(octave, Note.Tone.valueOf(Character.toString(noteString.charAt(0)).toUpperCase()));
+            } catch(Exception e) {
+                sender.sendMessage(ChatColor.RED + "The note you gave is not valid!");
+                return false;
+            }
+
+            if (noteString.length() == 2) {
+                String modifier = Character.toString(noteString.charAt(1));
+
+                switch (modifier) {
+                    case "#":
+                        note = note.sharped();
+                        break;
+                    case "b":
+                        note = note.flattened();
+                        break;
+                    default:
+                        sender.sendMessage(ChatColor.RED + "The note you gave is not valid!");
+                        return false;
+                }
+            }
+
+            Player senderAsPlayer = (Player)sender;
+            senderAsPlayer.setMetadata(NOTEBLOCK_META_KEY, new FixedMetadataValue(this, note));
+            sender.sendMessage(ChatColor.GOLD + "Punch the note block to apply the note.");
+            return true;
+
+        }
+
+
         return false;
     }
 
@@ -866,14 +1015,14 @@ public class KitchenSink extends JavaPlugin {
     /**
      * Load the contents of the host key file for the specified player.
      *
-     * @param playerName the name of the player.
+     * @param player the name of the player.
      * @return a non-null string that is the corresponding prefix of the host
      * name that the player must connect with, or the empty string if there are
      * no restrictions.
      */
-    public String getHostKey(String playerName) {
+    public String getHostKey(Player player) {
         File hostKeysDir = new File(getDataFolder(), HOST_KEYS_DIRECTORY);
-        File hostKeyFile = new File(hostKeysDir, playerName);
+        File hostKeyFile = new File(hostKeysDir, player.getUniqueId().toString());
         try {
             BufferedReader reader = null;
             try {
@@ -914,12 +1063,16 @@ public class KitchenSink extends JavaPlugin {
     /**
      * Returns counts for all mobs
      */
-    public HashMap<String, Integer> getMobCount() {
+    public HashMap<String, Integer> getMobCount(World world) {
         HashMap<String, Integer> counts = new HashMap<String, Integer>();
+
+        if (world == null) {
+            world = getServer().getWorlds().get(0);
+        }
 
         try {
             Collection<LivingEntity> livingEntities;
-            livingEntities = getServer().getWorlds().get(0).getEntitiesByClass(LivingEntity.class);
+            livingEntities = world.getEntitiesByClass(LivingEntity.class);
             for (LivingEntity animal : livingEntities) {
                 if (counts.containsKey(animal.getType().name())) {
                     counts.put(animal.getType().name(), counts.get(animal.getType().name()) + 1);
@@ -930,6 +1083,24 @@ public class KitchenSink extends JavaPlugin {
         } catch (Exception ex) {
         }
 
+        return counts;
+    }
+
+    public HashMap<String, Integer> getMultiworldMobCount() {
+        HashMap<String, Integer> counts = new HashMap<String, Integer>();
+        try {
+            for (World world : getServer().getWorlds()) {
+                Collection<LivingEntity> livingEntities;
+                livingEntities = world.getEntitiesByClass(LivingEntity.class);
+                for (LivingEntity animal : livingEntities) {
+                    if (counts.containsKey(animal.getType().name())) {
+                        counts.put(animal.getType().name(), counts.get(animal.getType().name()) + 1);
+                    } else {
+                        counts.put(animal.getType().name(), 1);
+                    }
+                }
+            }
+        } catch (Exception ex) {}
         return counts;
     }
 
@@ -995,4 +1166,16 @@ public class KitchenSink extends JavaPlugin {
 
         return String.format(convFormat.toString(), valueList.toArray());
     }
+
+	public static Block getTargetBlock(LivingEntity entity) {
+		BlockIterator iterator = new BlockIterator(entity.getLocation(), entity.getEyeHeight(), 20);
+		Block result;
+		while (iterator.hasNext()) {
+			result = iterator.next();
+			if (!result.getType().equals(Material.AIR)) {
+				return result;
+			}
+		}
+		return null;
+	}
 }

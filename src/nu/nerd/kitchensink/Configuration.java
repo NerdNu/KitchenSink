@@ -1,6 +1,14 @@
 package nu.nerd.kitchensink;
 
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.EntityType;
 
 enum countdown { maxtime, format, color, style, msgcolor, msgstyle };
 
@@ -17,10 +25,12 @@ public class Configuration {
     public boolean DISABLE_DROPS;
     public boolean DISABLE_TNT;
     public boolean DISABLE_INVISIBILITY_ON_COMBAT;
+    public boolean DISABLE_GOLEM_NATURAL_SPAWN;
     public boolean LOWER_STRENGTH_POTION_DAMAGE;
     public double HEALTH_POTION_MULTIPLIER;
     public double REGEN_POTION_MULTIPLIER;
     public boolean ALLOW_PERSONAL_WEATHER;
+    public boolean ALLOW_PERSONAL_TIME;
     public boolean BLOCK_CAPS;
     public boolean BLOCK_VILLAGERS;
     public boolean SAFE_ICE;
@@ -61,10 +71,13 @@ public class Configuration {
     public List<Integer> DISABLED_RIGHT_ITEMS;
     public List<Integer> DISABLE_DISPENSED;
     public List<Integer> DISABLE_BUFF;
+    public Map<EntityType, Set<Material>> DISABLED_DROPS;
     public double SATURATION_MULTIPLIER;
     public double HUNGER_SLOWDOWN;
     public boolean ALLOW_EGG_HATCHING;
     public boolean DISABLE_PEARL_DROPS_IN_END;
+    public boolean DISABLE_PLAYER_DAMAGE_TO_VILLAGERS;
+    public boolean NORMALIZE_CHAT;
 
     public Configuration(KitchenSink instance) {
         plugin = instance;
@@ -82,10 +95,12 @@ public class Configuration {
         DISABLE_DROPS = plugin.getConfig().getBoolean("disable-drops");
         DISABLE_TNT = plugin.getConfig().getBoolean("disable-tnt");
         DISABLE_INVISIBILITY_ON_COMBAT = plugin.getConfig().getBoolean("disable-invisibility-on-combat");
+        DISABLE_GOLEM_NATURAL_SPAWN = plugin.getConfig().getBoolean("disable-golem-natural-spawn", false);
         LOWER_STRENGTH_POTION_DAMAGE = plugin.getConfig().getBoolean("lower-strength-potion-damage");
         HEALTH_POTION_MULTIPLIER = plugin.getConfig().getDouble("health-potion-multiplier", 1.0);
         REGEN_POTION_MULTIPLIER = plugin.getConfig().getDouble("regen-potion-multiplier", 1.0);
         ALLOW_PERSONAL_WEATHER = plugin.getConfig().getBoolean("allow-personal-weather");
+        ALLOW_PERSONAL_TIME = plugin.getConfig().getBoolean("allow-personal-time");
         BLOCK_CAPS = plugin.getConfig().getBoolean("block-caps");
         BLOCK_VILLAGERS = plugin.getConfig().getBoolean("block-villagers");
         SAFE_ICE = plugin.getConfig().getBoolean("safe-ice");
@@ -114,6 +129,30 @@ public class Configuration {
         DISABLED_RIGHT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.right-click");
         DISABLE_DISPENSED = plugin.getConfig().getIntegerList("disabled-items.dispensed");
         DISABLE_BUFF = plugin.getConfig().getIntegerList("disable-buff");
+        DISABLED_DROPS = new EnumMap<EntityType, Set<Material>>(EntityType.class);
+        ConfigurationSection disabledDropsSection = plugin.getConfig()
+                .getConfigurationSection("disabled-drops");
+        if (disabledDropsSection != null) {
+            for (String key : disabledDropsSection.getKeys(false)) {
+                try {
+                    EntityType type = EntityType.valueOf(key.toUpperCase());
+                    List<String> matStrings = disabledDropsSection.getStringList(key);
+                    Set<Material> mats = EnumSet.noneOf(Material.class);
+                    for (String matString : matStrings) {
+                        try {
+                            mats.add(Material.valueOf(matString.toUpperCase()));
+                        } catch (IllegalArgumentException e) {
+                            plugin.getLogger().warning("disabled-drops." + key
+                                    + " contains an invalid material" + matString);
+                        }
+                    }
+                    DISABLED_DROPS.put(type, mats);
+                } catch (IllegalArgumentException e) {
+                    plugin.getLogger().warning("disabled-drops contains invalid entity type "
+                            + key);
+                }
+            }
+        }
         WARN_RESTART_ON_JOIN = plugin.getConfig().getBoolean("warn-restart-on-join");
         WARN_RESTART_ON_INVENTORY_OPEN = plugin.getConfig().getBoolean("warn-restart-on-inventory-open");
         SPRINT_MAX_TICKS = plugin.getConfig().getInt("sprint-max-time", 0);
@@ -133,6 +172,8 @@ public class Configuration {
         HUNGER_SLOWDOWN = plugin.getConfig().getDouble("hunger-slowdown", 0.0);
         ALLOW_EGG_HATCHING = plugin.getConfig().getBoolean("allow-egg-hatching", true);
         DISABLE_PEARL_DROPS_IN_END = plugin.getConfig().getBoolean("disable-pearl-drops-in-end", false);
+        DISABLE_PLAYER_DAMAGE_TO_VILLAGERS = plugin.getConfig().getBoolean("disable-player-damage-to-villagers", false);
+        NORMALIZE_CHAT = plugin.getConfig().getBoolean("normalize-chat", true);
     }
 
     protected void setCountDownSetting(countdown setting, Object value) {

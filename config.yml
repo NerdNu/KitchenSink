@@ -7,10 +7,12 @@ disable-snowgrow: false
 disable-drops: false
 disable-tnt: false
 disable-invisibility-on-combat: false
+disable-golem-natural-spawn: false
 lower-strength-potion-damage: false
 health-potion-multiplier: 1.0
 regen-potion-multiplier: 1.0
 allow-personal-weather: false
+allow-personal-time: false
 block-caps: true
 block-villagers: false
 safe-ice: false

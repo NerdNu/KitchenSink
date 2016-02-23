@@ -1,8 +1,8 @@
 name: KitchenSink
-version: 0.7
+version: ${project.version}
 author: Travis Watkins
 main: nu.nerd.kitchensink.KitchenSink
-softdepend: [WorldGuard, bPermissions]
+softdepend: [WorldGuard, bPermissions, ProtocolLib]
 permissions:
     kitchensink.*:
         description: Access to all KitchenSink commands
@@ -43,6 +43,9 @@ permissions:
     kitchensink.countdown:
         description: Allows access to /countdown, /cdcancel, and /cdconfig.
         default: op
+    kitchensink.noteblocks:
+        description: Allows use of /note
+        default: true
 description: 
 
 commands:
@@ -72,6 +75,10 @@ commands:
         description: Turns client-side weather on or off.
         usage: |
             /prain [on|off]
+    ptime:
+        description: Sets the player's client-side time. If using a number, the given time should be between 0 and 24000.
+        usage: |
+            /ptime [day|night|<time>]
     nextrestart:
         description: Gives you the amount of time until the next restart
     lock-horse:
@@ -121,3 +128,8 @@ commands:
         permission: kitchenskin.countdown
         usage: |
             /cdconfig <maxTime seconds>|<format __$s__>|<color &a-&f>|<style &m-&r>|<msgColor &a-&f>|<msgStyle &m-&r> 
+    note:
+        description: Change the note a noteblock plays.
+        permission: kitchensink.noteblocks
+        usage: |
+            /note <note>[#/b] [high]

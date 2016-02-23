@@ -4,7 +4,7 @@
   <groupId>nu.nerd</groupId>
   <artifactId>KitchenSink</artifactId>
   <name>KitchenSink</name>
-  <version>0.7</version>
+  <version>0.9.6</version>
   <build>
     <sourceDirectory>${basedir}/src</sourceDirectory>
     <defaultGoal>clean package</defaultGoal>
@@ -28,7 +28,7 @@
             <archive>
               <addMavenDescriptor>false</addMavenDescriptor>
             </archive>
-            <finalName>KitchenSink</finalName>
+            <finalName>KitchenSink-${project.version}</finalName>
           </configuration>
         </plugin>
         <plugin>
@@ -70,23 +70,22 @@
               <shadedPattern>nu.nerd.kitchensink.libs.com.google.gson</shadedPattern>
             </relocation>
           </relocations>
-          <excludes />
         </configuration>
       </plugin>
     </plugins>
   </build>
   <repositories>
     <repository>
-      <releases />
-      <snapshots />
-      <id>thezomg-repo</id>
-      <url>http://maven.thezomg.com/content/groups/public/</url>
+      <id>spigot-repo</id>
+      <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
     </repository>
     <repository>
-      <releases />
-      <snapshots />
-      <id>bukkit-repo</id>
-      <url>http://repo.bukkit.org/content/groups/public/</url>
+      <id>thezomg-repo</id>
+      <url>http://ci.shadowvolt.com/plugin/repository/everything/</url>
+    </repository>
+    <repository>
+      <id>kitteh-repo</id>
+      <url>http://repo.kitteh.org/content/groups/public</url>
     </repository>
   </repositories>
   <pluginRepositories>
@@ -99,19 +98,25 @@
     <dependency>
       <groupId>org.bukkit</groupId>
       <artifactId>bukkit</artifactId>
-      <version>1.7.10-R0.1-SNAPSHOT</version>
+      <version>1.8.8-R0.1-SNAPSHOT</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.bukkit</groupId>
       <artifactId>craftbukkit</artifactId>
-      <version>1.7.10-R0.1-SNAPSHOT</version>
+      <version>1.8.8-R0.1-SNAPSHOT</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>de.bananaco</groupId>
       <artifactId>bPermissions</artifactId>
-      <version>1.0.0</version>
+      <version>2.10.9d</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.comphenix.protocol</groupId>
+      <artifactId>ProtocolLib</artifactId>
+      <version>3.6.3-SNAPSHOT</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
