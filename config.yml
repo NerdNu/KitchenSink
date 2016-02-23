@@ -1,3 +1,6 @@
+debug:
+  disable-tnt: false
+
 animal-count: false
 log-animals: false
 log-player-drops: false
@@ -11,8 +14,6 @@ disable-golem-natural-spawn: false
 lower-strength-potion-damage: false
 health-potion-multiplier: 1.0
 regen-potion-multiplier: 1.0
-allow-personal-weather: false
-allow-personal-time: false
 block-caps: true
 block-villagers: false
 safe-ice: false
@@ -77,3 +78,4 @@ countdown:
   style: '&l'
   msgColor: '&a'
   msgStyle: '&l'
+

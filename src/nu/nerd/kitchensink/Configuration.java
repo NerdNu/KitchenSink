@@ -10,11 +10,15 @@ import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 
-enum countdown { maxtime, format, color, style, msgcolor, msgstyle };
+enum countdown {
+    maxtime, format, color, style, msgcolor, msgstyle
+};
 
 public class Configuration {
 
     private final KitchenSink plugin;
+
+    public boolean DEBUG_DISABLE_TNT;
 
     public boolean ANIMAL_COUNT;
     public boolean LOG_ANIMAL_DEATH;
@@ -29,8 +33,6 @@ public class Configuration {
     public boolean LOWER_STRENGTH_POTION_DAMAGE;
     public double HEALTH_POTION_MULTIPLIER;
     public double REGEN_POTION_MULTIPLIER;
-    public boolean ALLOW_PERSONAL_WEATHER;
-    public boolean ALLOW_PERSONAL_TIME;
     public boolean BLOCK_CAPS;
     public boolean BLOCK_VILLAGERS;
     public boolean SAFE_ICE;
@@ -86,6 +88,7 @@ public class Configuration {
     public void load() {
         plugin.reloadConfig();
 
+        DEBUG_DISABLE_TNT = plugin.getConfig().getBoolean("debug.disable-tnt");
         ANIMAL_COUNT = plugin.getConfig().getBoolean("animal-count");
         LOG_ANIMAL_DEATH = plugin.getConfig().getBoolean("log-animals");
         LOG_PLAYER_DROPS = plugin.getConfig().getBoolean("log-player-drops");
@@ -99,8 +102,6 @@ public class Configuration {
         LOWER_STRENGTH_POTION_DAMAGE = plugin.getConfig().getBoolean("lower-strength-potion-damage");
         HEALTH_POTION_MULTIPLIER = plugin.getConfig().getDouble("health-potion-multiplier", 1.0);
         REGEN_POTION_MULTIPLIER = plugin.getConfig().getDouble("regen-potion-multiplier", 1.0);
-        ALLOW_PERSONAL_WEATHER = plugin.getConfig().getBoolean("allow-personal-weather");
-        ALLOW_PERSONAL_TIME = plugin.getConfig().getBoolean("allow-personal-time");
         BLOCK_CAPS = plugin.getConfig().getBoolean("block-caps");
         BLOCK_VILLAGERS = plugin.getConfig().getBoolean("block-villagers");
         SAFE_ICE = plugin.getConfig().getBoolean("safe-ice");
@@ -131,7 +132,7 @@ public class Configuration {
         DISABLE_BUFF = plugin.getConfig().getIntegerList("disable-buff");
         DISABLED_DROPS = new EnumMap<EntityType, Set<Material>>(EntityType.class);
         ConfigurationSection disabledDropsSection = plugin.getConfig()
-                .getConfigurationSection("disabled-drops");
+        .getConfigurationSection("disabled-drops");
         if (disabledDropsSection != null) {
             for (String key : disabledDropsSection.getKeys(false)) {
                 try {
@@ -143,13 +144,13 @@ public class Configuration {
                             mats.add(Material.valueOf(matString.toUpperCase()));
                         } catch (IllegalArgumentException e) {
                             plugin.getLogger().warning("disabled-drops." + key
-                                    + " contains an invalid material" + matString);
+                                                       + " contains an invalid material" + matString);
                         }
                     }
                     DISABLED_DROPS.put(type, mats);
                 } catch (IllegalArgumentException e) {
                     plugin.getLogger().warning("disabled-drops contains invalid entity type "
-                            + key);
+                                               + key);
                 }
             }
         }
@@ -179,28 +180,28 @@ public class Configuration {
     protected void setCountDownSetting(countdown setting, Object value) {
         plugin.reloadConfig();
         switch (setting) {
-            case maxtime:
-                COUNTDOWN_MAX_TIME = (Integer) value;
-                plugin.getConfig().set("countdown.maxTime", (Integer) value);
-                break;
-            case format:
-                COUNTDOWN_FORMAT = (String) value;
-                plugin.getConfig().set("countdown.format", (String) value);
-                break;
-            case color:
-                COUNTDOWN_COLOR = (String) value;
-                plugin.getConfig().set("countdown.color", (String) value);
-                break;
-            case style:
-                COUNTDOWN_STYLE = (String) value;
-                plugin.getConfig().set("countdown.style", (String) value);
-                break;
-            case msgcolor:
-                COUNTDOWN_MSG_COLOR = (String) value;
-                plugin.getConfig().set("countdown.msgcolor", (String) value);
-            case msgstyle:
-                COUNTDOWN_MSG_STYLE = (String) value;
-                plugin.getConfig().set("countdown.msgstyle", (String) value);
+        case maxtime:
+            COUNTDOWN_MAX_TIME = (Integer) value;
+            plugin.getConfig().set("countdown.maxTime", value);
+            break;
+        case format:
+            COUNTDOWN_FORMAT = (String) value;
+            plugin.getConfig().set("countdown.format", value);
+            break;
+        case color:
+            COUNTDOWN_COLOR = (String) value;
+            plugin.getConfig().set("countdown.color", value);
+            break;
+        case style:
+            COUNTDOWN_STYLE = (String) value;
+            plugin.getConfig().set("countdown.style", value);
+            break;
+        case msgcolor:
+            COUNTDOWN_MSG_COLOR = (String) value;
+            plugin.getConfig().set("countdown.msgcolor", value);
+        case msgstyle:
+            COUNTDOWN_MSG_STYLE = (String) value;
+            plugin.getConfig().set("countdown.msgstyle", value);
         }
         plugin.saveConfig();
     }

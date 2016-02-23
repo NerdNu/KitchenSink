@@ -1,8 +1,9 @@
 KitchenSink
------------
+===========
+A plugin for miscellaneous functionality that hasn't found a home elsewhere.
 
-Configuration:
-
+Configuration
+-------------
 * *animal-count* Print number of each mob every 10 minutes
 * *log-animals* Log passive animal kills to console
 * *log-player-drops* Log player drop sums to console
@@ -16,8 +17,6 @@ Configuration:
 * *lower-strength-potion-damage* Reduce damage dealt with strength potions to Minecraft 1.5 levels.
 * *health-potion-multiplier* The multiplicative factor applied to health from instant health potions (splashed and drunk).
 * *regen-potion-multiplier* The multiplicative factor applied to health from regeneration potions (splashed and drunk).
-* *allow-personal-weather* Allow players to use the '/prain' command to turn client-side weather on or off.
-* *allow-personal-time* Allow players to use the '/ptime' command to set their client-side time of day.
 * *block-caps* Block people typing in caps too much
 * *block-villagers* Prevent players from trading with villagers
 * *safe-ice* Prevent ice from turning into water when broken
