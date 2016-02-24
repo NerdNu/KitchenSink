@@ -54,6 +54,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
+import org.bukkit.event.entity.ExplosionPrimeEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -429,13 +430,42 @@ class KitchenSinkListener implements Listener {
     /**
      * When configured, extinguish flaming arrows that hit TNT.
      *
+     * WorldGuard's block-tnt setting prevents the explosion but does not
+     * prevent the TNT from being turned into a primed TNT entity. This
+     * implementation makes a best effort attempt to prevent decorative TNT from
+     * being removed by flaming arrows.
+     *
+     * At the time of writing, the Bukkit API has several bugs relevant to this
+     * task that remain unresolved after 3 years:
+     * <ul>
+     * <li>https://bukkit.atlassian.net/browse/BUKKIT-770</li>
+     * <li>https://bukkit.atlassian.net/browse/BUKKIT-3885</li>
+     * <li>https://bukkit.atlassian.net/browse/BUKKIT-2231</li>
+     * </ul>
+     *
+     * There is no easy way to detect when TNT has been set off by an arrow.
+     * BlockIgniteEvent is not raised. BlockExplodeEvent also doesn't get
+     * raised.
+     *
+     * The location of the arrow in the ProjectileHitEvent can be up to 3 blocks
+     * away from where the arrow sticks into a block. You can ray trace the
+     * arrow's trajectory based on its final position and velocity, per
      * https://bukkit.org/threads/getting-block-hit-by-projectile-arrow.49071/
+     * and that will give you the block that the arrow is sticking into, but if
+     * that block is adjacent to a TNT, and the arrow is sufficiently close to
+     * the TNT, then the TNT will ignite.
+     *
+     * However, even if you get all of that right, occasionally the TNT will be
+     * ignited before the ProjectileHitEvent is fired, meaning that it is not
+     * possible to stop the TNT block from being removed from the world. In that
+     * case, we intercept ExplosionPrimeEvent and remove the primed TNT entity.
      */
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onProjectileHit(ProjectileHitEvent event) {
         if (plugin.config.DISABLE_TNT) {
             Projectile projectile = event.getEntity();
-            if (projectile.getType() == EntityType.ARROW && projectile.getFireTicks() > 0) {
+            if (projectile.getType() == EntityType.ARROW &&
+                projectile.getFireTicks() > 0) {
                 World world = projectile.getWorld();
                 BlockIterator iterator = new BlockIterator(world,
                     projectile.getLocation().toVector(),
@@ -445,20 +475,50 @@ class KitchenSinkListener implements Listener {
                 while (iterator.hasNext()) {
                     hitBlock = iterator.next();
                     if (hitBlock.getType() != Material.AIR) {
+                        if (plugin.config.DEBUG_DISABLE_TNT) {
+                            plugin.getLogger().info("DEBUG: Lit arrow hit " +
+                                                    blockLocationToString(hitBlock.getLocation()));
+                        }
+
+                        for (int x = -1; x <= 1; ++x) {
+                            for (int z = -1; z <= 1; ++z) {
+                                for (int y = -1; y <= 1; ++y) {
+                                    Block neighbour = hitBlock.getRelative(x, y, z);
+                                    if (neighbour != null && neighbour.getType() == Material.TNT) {
+                                        projectile.setFireTicks(0);
+
+                                        if (plugin.config.DEBUG_DISABLE_TNT) {
+                                            Location loc = neighbour.getLocation();
+                                            plugin.getLogger().info(
+                                                "DEBUG: Arrow extenguished due to TNT at " + blockLocationToString(loc)
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         break;
                     }
                 }
+            }
+        }
+    } // onProjectileHit
 
-                if (plugin.config.DEBUG_DISABLE_TNT) {
-                    Location loc = hitBlock.getLocation();
-                    plugin.getLogger().info("DEBUG: Arrow hit " + hitBlock.getType().name() +
-                                            " (" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + ")"
-                    );
-                }
+    /**
+     * Sometimes a flaming arrow will light TNT and there is no way to stop the
+     * TNT turning into an entity.
+     *
+     * See the comment for {@link #onProjectileHit(ProjectileHitEvent)}.
+     */
+    @EventHandler()
+    public void onExplosionPrime(ExplosionPrimeEvent event) {
+        if (plugin.config.DISABLE_TNT && event.getEntityType() == EntityType.PRIMED_TNT) {
+            event.getEntity().remove();
+            event.setCancelled(true);
 
-                if (hitBlock.getType() == Material.TNT) {
-                    projectile.setFireTicks(0);
-                }
+            if (plugin.config.DEBUG_DISABLE_TNT) {
+                Location loc = event.getEntity().getLocation();
+                plugin.getLogger().info("DEBUG: Cancelled ExplosionPrimeEvent at " + blockLocationToString(loc));
             }
         }
     }
@@ -913,5 +973,15 @@ class KitchenSinkListener implements Listener {
             description.append(')');
         }
         return description.toString();
+    }
+
+    /**
+     * Return the integer block coordinates of a Location as a String.
+     *
+     * @param loc the Location.
+     * @return the integer block coordinates of a Location as a String.
+     */
+    public String blockLocationToString(Location loc) {
+        return "(" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + ")";
     }
 }
