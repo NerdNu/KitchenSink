@@ -1,15 +1,25 @@
 package nu.nerd.kitchensink;
 
 import java.text.Normalizer;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
-import net.minecraft.server.v1_8_R3.MovingObjectPosition;
-import net.minecraft.server.v1_8_R3.Vec3D;
-import net.minecraft.server.v1_8_R3.EntityArrow;
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftArrow;
-
-import org.bukkit.*;
+import org.bukkit.Art;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Note;
+import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.NoteBlock;
@@ -37,9 +47,18 @@ import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
-import org.bukkit.event.entity.*;
+import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
+import org.bukkit.event.entity.ExplosionPrimeEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.entity.ItemSpawnEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
@@ -50,17 +69,17 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
+import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.HorseInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
-import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.BlockIterator;
 
 import de.bananaco.bpermissions.api.ApiLayer;
 import de.bananaco.bpermissions.api.util.CalculableType;
@@ -76,7 +95,7 @@ class KitchenSinkListener implements Listener {
 
     static {
         INTERACTABLE_TYPES = new HashSet<Integer>(Arrays.asList(23, 25, 26, 54, 58, 61, 62, 64, 69, 71, 77, 84, 92, 93, 94, 95, 96, 107, 116, 117,
-                122, 130, 138, 143, 145, 146, 149, 150, 154, 158));
+            122, 130, 138, 143, 145, 146, 149, 150, 154, 158));
     }
     private final KitchenSink plugin;
 
@@ -111,7 +130,7 @@ class KitchenSinkListener implements Listener {
 
                 String hostKey = plugin.getHostKey(player);
                 if (!hostPrefix.equals(hostKey)) {
-					// The host key check failed.
+                    // The host key check failed.
                     // Do not leak host key details into the server log.
                     plugin.getLogger().warning(player.getName() + " connected with an invalid host key.");
                     if (plugin.config.HOST_KEYS_DROP_PERMISSIONS && dropToDefaultPermissions(player)) {
@@ -172,15 +191,16 @@ class KitchenSinkListener implements Listener {
 
         Player player = event.getPlayer();
         if (event.getAction() == Action.LEFT_CLICK_BLOCK
-                && player.hasPermission("kitchensink.noteblocks")
-                && player.hasMetadata(KitchenSink.NOTEBLOCK_META_KEY)) {
+            && player.hasPermission("kitchensink.noteblocks")
+            && player.hasMetadata(KitchenSink.NOTEBLOCK_META_KEY)) {
 
-            Note note = (Note)player.getMetadata(KitchenSink.NOTEBLOCK_META_KEY).get(0).value();
+            Note note = (Note) player.getMetadata(KitchenSink.NOTEBLOCK_META_KEY).get(0).value();
             if (event.getClickedBlock().getState() instanceof NoteBlock) {
-                NoteBlock clicked = (NoteBlock)event.getClickedBlock().getState();
+                NoteBlock clicked = (NoteBlock) event.getClickedBlock().getState();
                 clicked.setNote(note);
                 clicked.play();
-                player.sendMessage(ChatColor.GOLD + "Note block set to note " + note.getTone().toString() + (note.isSharped() ? "#" : "") + " successfully!");
+                player.sendMessage(ChatColor.GOLD + "Note block set to note " + note.getTone().toString() + (note.isSharped() ? "#" : "")
+                                   + " successfully!");
             } else {
                 player.sendMessage(ChatColor.RED + "That block isn't a note block.");
             }
@@ -193,7 +213,7 @@ class KitchenSinkListener implements Listener {
         }
         if (plugin.config.PEARL_DAMAGE > 0) {
             if ((event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.RIGHT_CLICK_AIR)
-                    && event.getItem().getType() == Material.ENDER_PEARL) {
+                && event.getItem().getType() == Material.ENDER_PEARL) {
                 if (event.getClickedBlock() == null || !INTERACTABLE_TYPES.contains(event.getClickedBlock().getTypeId())) {
                     event.getPlayer().damage(plugin.config.PEARL_DAMAGE);
                 }
@@ -257,7 +277,7 @@ class KitchenSinkListener implements Listener {
                         }
 
                         if (tameable.getOwner() == player || isPetAdmin) {
-							// Prevent the existence of saddle-wearing
+                            // Prevent the existence of saddle-wearing
                             // untameable untamed horses.
                             if (tameable instanceof Horse) {
                                 Horse horse = (Horse) tameable;
@@ -275,7 +295,8 @@ class KitchenSinkListener implements Listener {
                                 }
                             }
 
-							// Make sure that the pet being untamed is standing, as sitting mobs
+                            // Make sure that the pet being untamed is standing,
+                            // as sitting mobs
                             // without an owner can not be made to stand
                             if (tameable instanceof Wolf && ((Wolf) entity).isSitting()) {
                                 ((Wolf) entity).setSitting(false);
@@ -318,7 +339,7 @@ class KitchenSinkListener implements Listener {
                                 player.sendMessage(ChatColor.YELLOW + "That horse belongs to " + horse.getOwner().getName() + ".");
                             }
 
-							// Default, locked horses lack the "unlocked"
+                            // Default, locked horses lack the "unlocked"
                             // metadata.
                             if (newHorseLockState) {
                                 entity.removeMetadata(KitchenSink.HORSE_UNLOCKED_KEY, plugin);
@@ -370,8 +391,8 @@ class KitchenSinkListener implements Listener {
         if (plugin.config.BLOCK_CAPS) {
             int upperCount = 0;
             int messageLength = 0;
-            for(Player p : plugin.getServer().getOnlinePlayers()) {
-                message = message.replace(p.getName(),"");
+            for (Player p : plugin.getServer().getOnlinePlayers()) {
+                message = message.replace(p.getName(), "");
             }
             for (char c : message.toCharArray()) {
                 if (Character.isUpperCase(c)) {
@@ -406,22 +427,98 @@ class KitchenSinkListener implements Listener {
         }
     }
 
+    /**
+     * When configured, extinguish flaming arrows that hit TNT.
+     *
+     * WorldGuard's block-tnt setting prevents the explosion but does not
+     * prevent the TNT from being turned into a primed TNT entity. This
+     * implementation makes a best effort attempt to prevent decorative TNT from
+     * being removed by flaming arrows.
+     *
+     * At the time of writing, the Bukkit API has several bugs relevant to this
+     * task that remain unresolved after 3 years:
+     * <ul>
+     * <li>https://bukkit.atlassian.net/browse/BUKKIT-770</li>
+     * <li>https://bukkit.atlassian.net/browse/BUKKIT-3885</li>
+     * <li>https://bukkit.atlassian.net/browse/BUKKIT-2231</li>
+     * </ul>
+     *
+     * There is no easy way to detect when TNT has been set off by an arrow.
+     * BlockIgniteEvent is not raised. BlockExplodeEvent also doesn't get
+     * raised.
+     *
+     * The location of the arrow in the ProjectileHitEvent can be up to 3 blocks
+     * away from where the arrow sticks into a block. You can ray trace the
+     * arrow's trajectory based on its final position and velocity, per
+     * https://bukkit.org/threads/getting-block-hit-by-projectile-arrow.49071/
+     * and that will give you the block that the arrow is sticking into, but if
+     * that block is adjacent to a TNT, and the arrow is sufficiently close to
+     * the TNT, then the TNT will ignite.
+     *
+     * However, even if you get all of that right, occasionally the TNT will be
+     * ignited before the ProjectileHitEvent is fired, meaning that it is not
+     * possible to stop the TNT block from being removed from the world. In that
+     * case, we intercept ExplosionPrimeEvent and remove the primed TNT entity.
+     */
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onProjectileHit(ProjectileHitEvent event) {
         if (plugin.config.DISABLE_TNT) {
-            if (event.getEntityType() == EntityType.ARROW && event.getEntity().getFireTicks() > 0) {
+            Projectile projectile = event.getEntity();
+            if (projectile.getType() == EntityType.ARROW &&
+                projectile.getFireTicks() > 0) {
+                World world = projectile.getWorld();
+                BlockIterator iterator = new BlockIterator(world,
+                    projectile.getLocation().toVector(),
+                    projectile.getVelocity().normalize(), 0, 4);
 
-                EntityArrow arrow = ((CraftArrow) event.getEntity()).getHandle();
+                Block hitBlock = null;
+                while (iterator.hasNext()) {
+                    hitBlock = iterator.next();
+                    if (hitBlock.getType() != Material.AIR) {
+                        if (plugin.config.DEBUG_DISABLE_TNT) {
+                            plugin.getLogger().info("DEBUG: Lit arrow hit " +
+                                                    blockLocationToString(hitBlock.getLocation()));
+                        }
 
-                Vec3D v0 = new Vec3D(arrow.locX, arrow.locY, arrow.locZ);
-                Vec3D v1 = new Vec3D(arrow.locX + arrow.motX, arrow.locY + arrow.motY, arrow.locZ + arrow.motZ);
-                MovingObjectPosition pos = arrow.world.rayTrace(v0, v1, false, true, false);
+                        for (int x = -1; x <= 1; ++x) {
+                            for (int z = -1; z <= 1; ++z) {
+                                for (int y = -1; y <= 1; ++y) {
+                                    Block neighbour = hitBlock.getRelative(x, y, z);
+                                    if (neighbour != null && neighbour.getType() == Material.TNT) {
+                                        projectile.setFireTicks(0);
 
-		        // Checking if the block hit by the arrow is TNT is inaccurate,
-                // so we'll just put out the fire if it hits a block at all.
-                if (pos != null && pos.entity == null) {
-                    event.getEntity().setFireTicks(0);
+                                        if (plugin.config.DEBUG_DISABLE_TNT) {
+                                            Location loc = neighbour.getLocation();
+                                            plugin.getLogger().info(
+                                                "DEBUG: Arrow extenguished due to TNT at " + blockLocationToString(loc)
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    }
                 }
+            }
+        }
+    } // onProjectileHit
+
+    /**
+     * Sometimes a flaming arrow will light TNT and there is no way to stop the
+     * TNT turning into an entity.
+     *
+     * See the comment for {@link #onProjectileHit(ProjectileHitEvent)}.
+     */
+    @EventHandler()
+    public void onExplosionPrime(ExplosionPrimeEvent event) {
+        if (plugin.config.DISABLE_TNT && event.getEntityType() == EntityType.PRIMED_TNT) {
+            event.getEntity().remove();
+            event.setCancelled(true);
+
+            if (plugin.config.DEBUG_DISABLE_TNT) {
+                Location loc = event.getEntity().getLocation();
+                plugin.getLogger().info("DEBUG: Cancelled ExplosionPrimeEvent at " + blockLocationToString(loc));
             }
         }
     }
@@ -466,8 +563,8 @@ class KitchenSinkListener implements Listener {
                     Location l = event.getEntity().getLocation();
                     Chunk c = l.getChunk();
                     String message = "[MobKill] " + killer.getName() + "|" + event.getEntityType().name()
-                            + "|" + l.getWorld().getName() + "|" + l.getBlockX() + "|" + l.getBlockY() + "|" + l.getBlockZ()
-                            + "|C[" + c.getX() + "," + c.getZ() + "]";
+                                     + "|" + l.getWorld().getName() + "|" + l.getBlockX() + "|" + l.getBlockY() + "|" + l.getBlockZ()
+                                     + "|C[" + c.getX() + "," + c.getZ() + "]";
                     if (event.getEntity() instanceof Tameable) {
                         Tameable tameable = (Tameable) event.getEntity();
                         if (tameable instanceof Ocelot) {
@@ -525,7 +622,7 @@ class KitchenSinkListener implements Listener {
             Sheep entity = (Sheep) event.getEntity();
             Location l = entity.getLocation();
 
-			// Minecraft drops 1 - 3 wool. Mutiply by BUFF_SHEAR_DROPS, minus
+            // Minecraft drops 1 - 3 wool. Mutiply by BUFF_SHEAR_DROPS, minus
             // the drops dropped by the event.
             int count = (1 + (int) (3 * Math.random())) * (plugin.config.BUFF_SHEAR_DROPS - 1);
             l.getWorld().dropItemNaturally(l, new ItemStack(Material.WOOL, count, (byte) entity.getColor().ordinal()));
@@ -548,12 +645,12 @@ class KitchenSinkListener implements Listener {
             if (plugin.nextPortal != null) {
                 for (Block block : event.getBlocks()) {
                     if (block != null
-                            && block.getLocation().getBlockX() == plugin.nextPortal.getBlockX()
-                            && block.getLocation().getBlockY() == plugin.nextPortal.getBlockY()
-                            && block.getLocation().getBlockZ() == plugin.nextPortal.getBlockZ()) {
+                        && block.getLocation().getBlockX() == plugin.nextPortal.getBlockX()
+                        && block.getLocation().getBlockY() == plugin.nextPortal.getBlockY()
+                        && block.getLocation().getBlockZ() == plugin.nextPortal.getBlockZ()) {
                         allowed = true;
                         plugin.nextPortal = null;
-						break;
+                        break;
                     }
                 }
             }
@@ -652,13 +749,13 @@ class KitchenSinkListener implements Listener {
                 }
             }
         } // config.LOWER_STRENGTH_POTION_DAMAGE
-        // if configured, disable damage to villagers from players
+          // if configured, disable damage to villagers from players
         if (plugin.config.DISABLE_PLAYER_DAMAGE_TO_VILLAGERS && event.getEntityType() == EntityType.VILLAGER) {
             if (event.getDamager() instanceof Player) {
                 // cancel the damage
                 event.setCancelled(true);
 
-                //tell the attacker
+                // tell the attacker
                 Player player = (Player) event.getDamager();
                 player.sendMessage(ChatColor.DARK_RED + "Villagers are protected against damage from players.");
             }
@@ -668,7 +765,7 @@ class KitchenSinkListener implements Listener {
                     // cancel the damage
                     event.setCancelled(true);
 
-                    //tell the attacker
+                    // tell the attacker
                     Player player = (Player) damageProjectile.getShooter();
                     player.sendMessage(ChatColor.DARK_RED + "Villagers are protected against damage from players.");
                 }
@@ -697,7 +794,7 @@ class KitchenSinkListener implements Listener {
                     painting.setArt((Art) meta.value());
                 }
 
-				// After placing a painting, clear the metadata so the next
+                // After placing a painting, clear the metadata so the next
                 // painting is random again.
                 event.getPlayer().removeMetadata(KitchenSink.PAINTING_META_KEY, plugin);
             }
@@ -716,15 +813,9 @@ class KitchenSinkListener implements Listener {
         if (plugin.config.WARN_RESTART_ON_JOIN) {
             int time = (int) ((plugin.nextRestart - System.currentTimeMillis()) / 1000l);
             if (time < 90 && time > 0) {
-                event.getPlayer().sendMessage(ChatColor.LIGHT_PURPLE + "Warning: There will be a restart in about " + Integer.toString(time) + " seconds!");
+                event.getPlayer().sendMessage(
+                    ChatColor.LIGHT_PURPLE + "Warning: There will be a restart in about " + Integer.toString(time) + " seconds!");
             }
-        }
-    }
-
-    @EventHandler(priority = EventPriority.LOW)
-    public void onPlayerQuit(PlayerQuitEvent event) {
-        if (plugin.config.ALLOW_PERSONAL_TIME) {
-            plugin.ignoringTime.remove(event.getPlayer());
         }
     }
 
@@ -747,9 +838,9 @@ class KitchenSinkListener implements Listener {
 
     }
 
-	// Code borrowed from erocs Humbug plugin
+    // Code borrowed from erocs Humbug plugin
     // https://github.com/erocs/Humbug
-    private Map<Player, Double> playerLastEat_ = new HashMap<Player, Double>();
+    private final Map<Player, Double> playerLastEat_ = new HashMap<Player, Double>();
 
     @EventHandler
     public void setSaturationOnFoodEat(PlayerItemConsumeEvent event) {
@@ -762,62 +853,62 @@ class KitchenSinkListener implements Listener {
             return;
         }
         switch (mat) {
-            case APPLE:
-                playerLastEat_.put(player, multiplier * 2.4);
-            case BAKED_POTATO:
-                playerLastEat_.put(player, multiplier * 7.2);
-            case BREAD:
-                playerLastEat_.put(player, multiplier * 6);
-            case CAKE:
-                playerLastEat_.put(player, multiplier * 0.4);
-            case CARROT_ITEM:
-                playerLastEat_.put(player, multiplier * 4.8);
-            case COOKED_FISH:
-                playerLastEat_.put(player, multiplier * 6);
-            case GRILLED_PORK:
-                playerLastEat_.put(player, multiplier * 12.8);
-            case COOKIE:
-                playerLastEat_.put(player, multiplier * 0.4);
-            case GOLDEN_APPLE:
-                playerLastEat_.put(player, multiplier * 9.6);
-            case GOLDEN_CARROT:
-                playerLastEat_.put(player, multiplier * 14.4);
-            case MELON:
-                playerLastEat_.put(player, multiplier * 1.2);
-            case MUSHROOM_SOUP:
-                playerLastEat_.put(player, multiplier * 7.2);
-            case POISONOUS_POTATO:
-                playerLastEat_.put(player, multiplier * 1.2);
-            case POTATO:
-                playerLastEat_.put(player, multiplier * 0.6);
-            case RAW_FISH:
-                playerLastEat_.put(player, multiplier * 1);
-            case PUMPKIN_PIE:
-                playerLastEat_.put(player, multiplier * 4.8);
-            case RAW_BEEF:
-                playerLastEat_.put(player, multiplier * 1.8);
-            case RAW_CHICKEN:
-                playerLastEat_.put(player, multiplier * 1.2);
-            case PORK:
-                playerLastEat_.put(player, multiplier * 1.8);
-            case ROTTEN_FLESH:
-                playerLastEat_.put(player, multiplier * 0.8);
-            case SPIDER_EYE:
-                playerLastEat_.put(player, multiplier * 3.2);
-            case COOKED_BEEF:
-                playerLastEat_.put(player, multiplier * 12.8);
-            default:
-                playerLastEat_.put(player, multiplier);
-                Bukkit.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
-					// In case the player ingested a potion, this removes the
-                    // saturation from the list. Unsure if I have every item
-                    // listed. There is always the other cases of like food
-                    // that shares same id
-                    @Override
-                    public void run() {
-                        playerLastEat_.remove(player);
-                    }
-                }, 80);
+        case APPLE:
+            playerLastEat_.put(player, multiplier * 2.4);
+        case BAKED_POTATO:
+            playerLastEat_.put(player, multiplier * 7.2);
+        case BREAD:
+            playerLastEat_.put(player, multiplier * 6);
+        case CAKE:
+            playerLastEat_.put(player, multiplier * 0.4);
+        case CARROT_ITEM:
+            playerLastEat_.put(player, multiplier * 4.8);
+        case COOKED_FISH:
+            playerLastEat_.put(player, multiplier * 6);
+        case GRILLED_PORK:
+            playerLastEat_.put(player, multiplier * 12.8);
+        case COOKIE:
+            playerLastEat_.put(player, multiplier * 0.4);
+        case GOLDEN_APPLE:
+            playerLastEat_.put(player, multiplier * 9.6);
+        case GOLDEN_CARROT:
+            playerLastEat_.put(player, multiplier * 14.4);
+        case MELON:
+            playerLastEat_.put(player, multiplier * 1.2);
+        case MUSHROOM_SOUP:
+            playerLastEat_.put(player, multiplier * 7.2);
+        case POISONOUS_POTATO:
+            playerLastEat_.put(player, multiplier * 1.2);
+        case POTATO:
+            playerLastEat_.put(player, multiplier * 0.6);
+        case RAW_FISH:
+            playerLastEat_.put(player, multiplier * 1);
+        case PUMPKIN_PIE:
+            playerLastEat_.put(player, multiplier * 4.8);
+        case RAW_BEEF:
+            playerLastEat_.put(player, multiplier * 1.8);
+        case RAW_CHICKEN:
+            playerLastEat_.put(player, multiplier * 1.2);
+        case PORK:
+            playerLastEat_.put(player, multiplier * 1.8);
+        case ROTTEN_FLESH:
+            playerLastEat_.put(player, multiplier * 0.8);
+        case SPIDER_EYE:
+            playerLastEat_.put(player, multiplier * 3.2);
+        case COOKED_BEEF:
+            playerLastEat_.put(player, multiplier * 12.8);
+        default:
+            playerLastEat_.put(player, multiplier);
+            Bukkit.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
+                // In case the player ingested a potion, this removes the
+                // saturation from the list. Unsure if I have every item
+                // listed. There is always the other cases of like food
+                // that shares same id
+                @Override
+                public void run() {
+                    playerLastEat_.remove(player);
+                }
+            }, 80);
         }
     }
 
@@ -833,15 +924,17 @@ class KitchenSinkListener implements Listener {
             }
         } else {
             saturation = Math.min(
-                    player.getSaturation() + mod,
-                    20.0D + (mod * 2.0D));
+                player.getSaturation() + mod,
+                20.0D + (mod * 2.0D));
         }
         player.setSaturation(saturation.floatValue());
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onPlayerEggThrow(PlayerEggThrowEvent event) {
-        event.setHatching(plugin.config.ALLOW_EGG_HATCHING);
+        if (event.isHatching() && !plugin.config.ALLOW_EGG_HATCHING) {
+            event.setHatching(false);
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -880,5 +973,15 @@ class KitchenSinkListener implements Listener {
             description.append(')');
         }
         return description.toString();
+    }
+
+    /**
+     * Return the integer block coordinates of a Location as a String.
+     *
+     * @param loc the Location.
+     * @return the integer block coordinates of a Location as a String.
+     */
+    public String blockLocationToString(Location loc) {
+        return "(" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + ")";
     }
 }

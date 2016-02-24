@@ -4,19 +4,35 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import nu.nerd.kitchensink.ServerListPing17.StatusResponse;
 
-import org.bukkit.*;
+import org.bukkit.Art;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Note;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.EntityType;
@@ -24,11 +40,11 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Zombie;
+import org.bukkit.entity.minecart.HopperMinecart;
 import org.bukkit.entity.minecart.PoweredMinecart;
 import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
-import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -37,24 +53,14 @@ import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BlockIterator;
 
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.ProtocolManager;
-import com.comphenix.protocol.events.ListenerPriority;
-import com.comphenix.protocol.events.PacketAdapter;
-import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.events.PacketEvent;
-import org.bukkit.entity.minecart.HopperMinecart;
-
 public class KitchenSink extends JavaPlugin {
 
     private static final int ONE_MINUTE_TICKS = 60 * 20;
 
     private static final long ONE_DAY_MILLIS = 24 * (60 * (60 * 1000));
 
-    private KitchenSinkListener listener = new KitchenSinkListener(this);
-    private LagCheck lagCheck = new LagCheck();
-    private ProtocolManager protocolManager;
+    private final KitchenSinkListener listener = new KitchenSinkListener(this);
+    private final LagCheck lagCheck = new LagCheck();
     public final Configuration config = new Configuration(this);
     public final static Logger log = Logger.getLogger("Minecraft");
     public final List<Recipe> recipeList = new ArrayList<Recipe>();
@@ -64,7 +70,6 @@ public class KitchenSink extends JavaPlugin {
     public boolean countdownActive = false;
     public BukkitTask countdownTask;
     public long nextRestart = -1;
-    public Set<Player> ignoringTime;
 
     /**
      * Location of the next portal to be created. The "safe-portals" setting can
@@ -106,8 +111,8 @@ public class KitchenSink extends JavaPlugin {
     public static final String HOST_KEYS_DIRECTORY = "hostkeys";
 
     /**
-     * Key of Player metadata which, when set, indicates that the next punch
-     * of a noteblock by a player should change the note of the noteblock.
+     * Key of Player metadata which, when set, indicates that the next punch of
+     * a noteblock by a player should change the note of the noteblock.
      */
     public static final String NOTEBLOCK_META_KEY = "KitchenSink.noteblock";
 
@@ -144,16 +149,16 @@ public class KitchenSink extends JavaPlugin {
         ENCHANTMENT_NAMES.put("projectile_protection", Enchantment.PROTECTION_PROJECTILE);
         ENCHANTMENT_NAMES.put("aqua_affinity", Enchantment.WATER_WORKER);
     };
-	
-	/**
-	 * Return the enchantment whose internal or common name exactly matches 
-	 * prefix, or else the first enchantment that begins with prefix if there is
-	 * no exact match.
-	 * 
-	 * @param prefix the start of the enchantment name.
-	 * @return the corresponding Enchantment.
-	 */
-	private static Enchantment getEnchantment(String prefix) {
+
+    /**
+     * Return the enchantment whose internal or common name exactly matches
+     * prefix, or else the first enchantment that begins with prefix if there is
+     * no exact match.
+     *
+     * @param prefix the start of the enchantment name.
+     * @return the corresponding Enchantment.
+     */
+    private static Enchantment getEnchantment(String prefix) {
         prefix = prefix.toLowerCase();
         Enchantment enchantment = ENCHANTMENT_NAMES.get(prefix);
         if (enchantment == null) {
@@ -193,6 +198,7 @@ public class KitchenSink extends JavaPlugin {
 
         if (config.SAFE_BOATS) {
             getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
+                @Override
                 public void run() {
                     for (World world : getServer().getWorlds()) {
                         for (Boat boat : world.getEntitiesByClass(Boat.class)) {
@@ -210,12 +216,14 @@ public class KitchenSink extends JavaPlugin {
 
         if (config.SAFE_MINECARTS) {
             getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
+                @Override
                 public void run() {
                     for (World world : getServer().getWorlds()) {
                         for (Minecart minecart : world.getEntitiesByClass(Minecart.class)) {
                             if (minecart.isEmpty()) {
                                 if (config.SAFE_SPECIAL_CARTS) {
-                                    if (minecart instanceof StorageMinecart || minecart instanceof PoweredMinecart || minecart instanceof HopperMinecart) {
+                                    if (minecart instanceof StorageMinecart || minecart instanceof PoweredMinecart
+                                        || minecart instanceof HopperMinecart) {
                                         continue;
                                     }
                                 }
@@ -252,8 +260,8 @@ public class KitchenSink extends JavaPlugin {
                             if (mob.getType() == EntityType.ZOMBIE) {
                                 Zombie zombie = (Zombie) mob;
                                 if (zombie.getTarget() != null
-                                        && zombie.getTarget().getType() == EntityType.VILLAGER
-                                        && zombie.getRemoveWhenFarAway()) {
+                                    && zombie.getTarget().getType() == EntityType.VILLAGER
+                                    && zombie.getRemoveWhenFarAway()) {
                                     zombie.remove();
                                 }
                             }
@@ -270,44 +278,6 @@ public class KitchenSink extends JavaPlugin {
             cheapBook.addIngredient(3, Material.PAPER);
             getServer().addRecipe(cheapBook);
             recipeList.add(cheapBook);
-        }
-
-        if (config.HORSE_RECIPES) {
-            ShapedRecipe ironHorseArmor = new ShapedRecipe(new ItemStack(Material.IRON_BARDING))
-                    .shape("  b", "ilb", "iii")
-                    .setIngredient('l', Material.LEATHER)
-                    .setIngredient('i', Material.IRON_INGOT)
-                    .setIngredient('b', Material.IRON_BLOCK);
-            getServer().addRecipe(ironHorseArmor);
-            recipeList.add(ironHorseArmor);
-
-            ShapedRecipe goldHorseArmor = new ShapedRecipe(new ItemStack(Material.GOLD_BARDING))
-                    .shape("  b", "ilb", "iii")
-                    .setIngredient('l', Material.LEATHER)
-                    .setIngredient('i', Material.GOLD_INGOT)
-                    .setIngredient('b', Material.GOLD_BLOCK);
-            getServer().addRecipe(goldHorseArmor);
-            recipeList.add(goldHorseArmor);
-
-            ShapedRecipe diamondHorseArmor = new ShapedRecipe(new ItemStack(Material.DIAMOND_BARDING))
-                    .shape("  b", "ilb", "iii")
-                    .setIngredient('l', Material.LEATHER)
-                    .setIngredient('i', Material.DIAMOND)
-                    .setIngredient('b', Material.DIAMOND_BLOCK);
-            getServer().addRecipe(diamondHorseArmor);
-            recipeList.add(diamondHorseArmor);
-
-            ShapedRecipe nameTag = new ShapedRecipe(new ItemStack(Material.NAME_TAG))
-                    .shape(" bb", " bb", " bb")
-                    .setIngredient('b', Material.IRON_BLOCK);
-            getServer().addRecipe(nameTag);
-            recipeList.add(nameTag);
-
-            ShapedRecipe saddle = new ShapedRecipe(new ItemStack(Material.SADDLE))
-                    .shape("lll", "lll", "l l")
-                    .setIngredient('l', Material.LEATHER);
-            getServer().addRecipe(saddle);
-            recipeList.add(saddle);
         }
 
         if (!config.BLOCK_CRAFT.isEmpty()) {
@@ -355,21 +325,6 @@ public class KitchenSink extends JavaPlugin {
                 e.printStackTrace();
             }
         }
-        
-        protocolManager = ProtocolLibrary.getProtocolManager();
-        
-        if (config.ALLOW_PERSONAL_TIME) {
-            ignoringTime = new HashSet<Player>();
-            protocolManager.addPacketListener(new PacketAdapter(this, ListenerPriority.NORMAL, PacketType.Play.Server.UPDATE_TIME) {
-                      @Override
-                      public void onPacketSending(PacketEvent event) {
-                          if (event.getPacketType() == PacketType.Play.Server.UPDATE_TIME && ignoringTime.contains(event.getPlayer()) && event.getPacket().getLongs().read(1) >= 0) {
-                              event.setCancelled(true);
-                          }
-                      }
-            });
-        }
-        
 
         getServer().getScheduler().scheduleSyncRepeatingTask(this, lagCheck, 20, 20);
         getServer().getPluginManager().registerEvents(listener, this);
@@ -413,18 +368,18 @@ public class KitchenSink extends JavaPlugin {
         }
         if (command.getName().equalsIgnoreCase("ksinventory")) {
             if (args.length >= 1) {
-                Player mutee = getServer().getPlayer(args[0]);
+                Player clearee = getServer().getPlayer(args[0]);
                 if (args.length == 2) {
                     if (args[1].equals("clear")) {
-                        mutee.getInventory().clear();
-                        mutee.getInventory().setArmorContents(new ItemStack[mutee.getInventory().getArmorContents().length]);
-                        mutee.saveData();
+                        clearee.getInventory().clear();
+                        clearee.getInventory().setArmorContents(new ItemStack[clearee.getInventory().getArmorContents().length]);
+                        clearee.saveData();
                         sender.sendMessage("Inventory Cleared.");
                         return true;
                     }
                 }
-                if (mutee != null && sender instanceof Player) {
-                    ((Player) sender).openInventory(mutee.getPlayer().getInventory());
+                if (clearee != null && sender instanceof Player) {
+                    ((Player) sender).openInventory(clearee.getPlayer().getInventory());
                 }
                 return true;
             }
@@ -458,7 +413,7 @@ public class KitchenSink extends JavaPlugin {
                         Art art = Art.getByName(args[0]);
                         player.setMetadata("KitchenSink.painting", new FixedMetadataValue(this, art));
                         sender.sendMessage(ChatColor.GOLD + "The next painting you place will be: "
-                                + ChatColor.YELLOW + art.name().toLowerCase());
+                                           + ChatColor.YELLOW + art.name().toLowerCase());
                     } catch (Exception ex) {
                         sender.sendMessage(ChatColor.RED + "Unknown painting: " + args[0]);
                     }
@@ -467,89 +422,6 @@ public class KitchenSink extends JavaPlugin {
                 }
                 return true;
             }
-        }
-
-        if (command.getName().equalsIgnoreCase("prain")) {
-            if (config.ALLOW_PERSONAL_WEATHER) {
-                if (sender instanceof Player) {
-                    boolean rain = true;
-                    if (args.length == 1) {
-                        if (args[0].equalsIgnoreCase("on")) {
-                            rain = true;
-                        } else if (args[0].equalsIgnoreCase("off")) {
-                            rain = false;
-                        } else {
-                            sender.sendMessage(ChatColor.RED + "Usage: /prain [on|off]");
-                            return true;
-                        }
-                    } else if (args.length > 1) {
-                        sender.sendMessage(ChatColor.RED + "Usage: /prain [on|off]");
-                        return true;
-                    }
-                    PacketContainer weatherPacket = protocolManager.createPacket(PacketType.Play.Server.GAME_STATE_CHANGE);
-                    weatherPacket.getIntegers().write(0, rain ? 2 : 1);
-                    weatherPacket.getFloat().write(0, 0F);
-                    try {
-                        protocolManager.sendServerPacket((Player) sender, weatherPacket);
-                        sender.sendMessage(rain ? "Weather enabled." : "Weather disabled.");
-                    } catch (InvocationTargetException e) {
-                        throw new RuntimeException("Cannot send packet " + weatherPacket, e);
-                    }
-                } else {
-                    sender.sendMessage("You need to be in-game to use this command.");
-                }
-            } else {
-                sender.sendMessage(ChatColor.RED + "That command is disabled.");
-            }
-            return true;
-        }
-        
-        if (command.getName().equalsIgnoreCase("ptime")) {
-            if (config.ALLOW_PERSONAL_TIME) {
-                if (sender instanceof Player) {
-                    boolean sync = false;
-                    long time = ((Player) sender).getWorld().getFullTime();
-                    if (args.length == 0) {
-                        sync = ignoringTime.contains(sender);
-                    } else if (args.length == 1) {
-                        if (args[0].equalsIgnoreCase("day")) {
-                            time = 6000l;
-                        } else if (args[0].equalsIgnoreCase("night")) {
-                            time = 18000l;
-                        } else {
-                            try {
-                                time = Long.parseLong(args[0]) % 24000;
-                            } catch (NumberFormatException e) {
-                                sender.sendMessage(ChatColor.RED + "Usage: /ptime [day|night|<time>]");
-                                return true;
-                            }
-                        }
-                    } else {
-                        sender.sendMessage(ChatColor.RED + "Usage: /ptime [day|night|<time>]");
-                        return true;
-                    }
-                    if (time < 0) time += 24000;
-                    PacketContainer timePacket = protocolManager.createPacket(PacketType.Play.Server.UPDATE_TIME);
-                    timePacket.getLongs().write(0, ((CraftWorld) ((Player) sender).getWorld()).getHandle().getTime())
-                                         .write(1, sync ? time : time == 0 ? -1 : -time);
-                    try {
-                        protocolManager.sendServerPacket((Player) sender, timePacket);
-                        if (sync) {
-                            ignoringTime.remove(sender);
-                        } else {
-                            ignoringTime.add((Player) sender);
-                        }
-                        sender.sendMessage(sync ? "Time resumed." : "Time set to " + time + ".");
-                    } catch (InvocationTargetException e) {
-                        throw new RuntimeException("Cannot send packet " + timePacket, e);
-                    }
-                } else {
-                    sender.sendMessage("You need to be in-game to use this command.");
-                }
-            } else {
-                sender.sendMessage(ChatColor.RED + "That command is disabled.");
-            }
-            return true;
         }
 
         if (command.getName().equalsIgnoreCase("nextrestart")) {
@@ -586,7 +458,7 @@ public class KitchenSink extends JavaPlugin {
         }
 
         if (command.getName().equalsIgnoreCase("allow-portal")) {
-			// Running /allow-portal while looking at some invalid location
+            // Running /allow-portal while looking at some invalid location
             // invalidates the previously set allowed portal location:
             nextPortal = null;
             if (sender instanceof Player) {
@@ -596,8 +468,8 @@ public class KitchenSink extends JavaPlugin {
                     if (block != null && block.getType() == Material.OBSIDIAN) {
                         nextPortal = block.getLocation();
                         sender.sendMessage(
-                                String.format("%sYou can now light a single portal containing the block at (%d, %d, %d).",
-                                        ChatColor.GOLD.toString(), nextPortal.getBlockX(), nextPortal.getBlockY(), nextPortal.getBlockZ()));
+                        String.format("%sYou can now light a single portal containing the block at (%d, %d, %d).",
+                            ChatColor.GOLD.toString(), nextPortal.getBlockX(), nextPortal.getBlockY(), nextPortal.getBlockZ()));
                     } else {
                         sender.sendMessage(ChatColor.RED + "You need to be looking at the non-corner parts of an obsidian portal frame.");
                     }
@@ -630,7 +502,7 @@ public class KitchenSink extends JavaPlugin {
             return false;
         }
 
-		// Unfortunately, many plugins don't correctly apply enchantments to
+        // Unfortunately, many plugins don't correctly apply enchantments to
         // enchanted books ("enchantment holders").
         if (command.getName().equalsIgnoreCase("enchant-book") && sender instanceof Player) {
             Player player = (Player) sender;
@@ -771,7 +643,7 @@ public class KitchenSink extends JavaPlugin {
                     } catch (NumberFormatException e) {
                         countdownTime = 10;
                     }
-                    countdownTicks = (long) (countdownTime * 20);
+                    countdownTicks = countdownTime * 20;
 
                     if (!Args.isEmpty()) {
                         for (String arg : Args) {
@@ -786,13 +658,16 @@ public class KitchenSink extends JavaPlugin {
                         @Override
                         public void run() {
                             if (countdownTime > 0) {
-                                getServer().broadcastMessage(ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_COLOR + config.COUNTDOWN_STYLE)
-                                        + config.COUNTDOWN_FORMAT.split("\\$s")[0] + countdownTime
-                                        + (config.COUNTDOWN_FORMAT.split("\\$s").length > 1 ? config.COUNTDOWN_FORMAT.split("\\$s")[1] : ""));
+                                getServer().broadcastMessage(
+                                    ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_COLOR + config.COUNTDOWN_STYLE)
+                                    + config.COUNTDOWN_FORMAT.split("\\$s")[0] + countdownTime
+                                    + (config.COUNTDOWN_FORMAT.split("\\$s").length > 1 ? config.COUNTDOWN_FORMAT.split("\\$s")[1] : ""));
                                 countdownTime--;
                             } else {
                                 countdownActive = false;
-                                getServer().broadcastMessage(ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_MSG_COLOR + config.COUNTDOWN_MSG_STYLE) + countdownMessage);
+                                getServer().broadcastMessage(
+                                    ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_MSG_COLOR + config.COUNTDOWN_MSG_STYLE)
+                                    + countdownMessage);
                                 countdownMessage = "";
                                 countdownTask.cancel();
                                 countdownTask = null;
@@ -823,90 +698,96 @@ public class KitchenSink extends JavaPlugin {
             if (sender.hasPermission("kitchensink.admin")) {
                 if (args.length > 0) {
                     switch (args[0].toLowerCase()) {
-                        case "maxtime":
-                            if (args.length < 2) {
-                                sender.sendMessage(ChatColor.RED + "Usage: /cdconfig maxTime <seconds>");
-                                return true;
-                            }
-                            try {
-                                config.setCountDownSetting(countdown.maxtime, Math.abs(Integer.parseInt(args[1])));
-                                sender.sendMessage(ChatColor.GRAY + "Countdown maxTime has been set to: " + config.COUNTDOWN_MAX_TIME + " seconds.");
-                            } catch (NumberFormatException e) {
-                                sender.sendMessage(ChatColor.GRAY + "You must provide a number of seconds when attempting to set maxTime.");
-                                return false;
-                            }
+                    case "maxtime":
+                        if (args.length < 2) {
+                            sender.sendMessage(ChatColor.RED + "Usage: /cdconfig maxTime <seconds>");
                             return true;
-                        case "format":
-                            if (args.length < 2) {
-                                sender.sendMessage(ChatColor.RED + "Usage: /cdconfig format __$s__");
-                                sender.sendMessage(ChatColor.GRAY + "A valid format is any string containing $s (seconds field) that is less than 50 characters.");
-                                return true;
-                            }
-                            if (args[1].contains("$s") && args[1].length() <= 50) {
-                                config.setCountDownSetting(countdown.format, args[1]);
-                                sender.sendMessage(ChatColor.GRAY + "Format changed to: " + ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_COLOR
-                                        + config.COUNTDOWN_STYLE + config.COUNTDOWN_FORMAT));
-                            } else {
-                                sender.sendMessage(ChatColor.GRAY + "A valid countdown format must contain $s and be 50 characters or less.");
-                                return false;
-                            }
+                        }
+                        try {
+                            config.setCountDownSetting(countdown.maxtime, Math.abs(Integer.parseInt(args[1])));
+                            sender.sendMessage(ChatColor.GRAY + "Countdown maxTime has been set to: " + config.COUNTDOWN_MAX_TIME + " seconds.");
+                        } catch (NumberFormatException e) {
+                            sender.sendMessage(ChatColor.GRAY + "You must provide a number of seconds when attempting to set maxTime.");
+                            return false;
+                        }
+                        return true;
+                    case "format":
+                        if (args.length < 2) {
+                            sender.sendMessage(ChatColor.RED + "Usage: /cdconfig format __$s__");
+                            sender.sendMessage(ChatColor.GRAY
+                                               + "A valid format is any string containing $s (seconds field) that is less than 50 characters.");
                             return true;
-                        case "color":
-                            if (args.length < 2) {
-                                sender.sendMessage(ChatColor.RED + "Usage: /cdconfig color <&a-&f> ");
-                                return true;
-                            }
-                            if (args[1].matches("&([0-9a-fA-F])")) {
-                                config.setCountDownSetting(countdown.color, args[1]);
-                                sender.sendMessage(ChatColor.GRAY + "Color changed to: " + ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_COLOR
-                                        + config.COUNTDOWN_STYLE + config.COUNTDOWN_FORMAT));
-                            } else {
-                                sender.sendMessage(ChatColor.GRAY + "Valid countdown color codes: http://minecraft.gamepedia.com/Formatting_codes.");
-                                return false;
-                            }
+                        }
+                        if (args[1].contains("$s") && args[1].length() <= 50) {
+                            config.setCountDownSetting(countdown.format, args[1]);
+                            sender.sendMessage(ChatColor.GRAY + "Format changed to: "
+                                               + ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_COLOR
+                                                                                             + config.COUNTDOWN_STYLE + config.COUNTDOWN_FORMAT));
+                        } else {
+                            sender.sendMessage(ChatColor.GRAY + "A valid countdown format must contain $s and be 50 characters or less.");
+                            return false;
+                        }
+                        return true;
+                    case "color":
+                        if (args.length < 2) {
+                            sender.sendMessage(ChatColor.RED + "Usage: /cdconfig color <&a-&f> ");
                             return true;
-                        case "style":
-                            if (args.length < 2) {
-                                sender.sendMessage(ChatColor.RED + "Usage: /cdconfig style <&m-&o> ");
-                                return true;
-                            }
-                            if (args[1].matches("&([m-oM-OrR])")) {
-                                config.setCountDownSetting(countdown.style, args[1]);
-                                sender.sendMessage(ChatColor.GRAY + "Style changed to: " + ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_COLOR
-                                        + config.COUNTDOWN_STYLE + config.COUNTDOWN_FORMAT));
-                            } else {
-                                sender.sendMessage(ChatColor.GRAY + "Valid countdown style codes: http://minecraft.gamepedia.com/Formatting_codes.");
-                                return false;
-                            }
+                        }
+                        if (args[1].matches("&([0-9a-fA-F])")) {
+                            config.setCountDownSetting(countdown.color, args[1]);
+                            sender.sendMessage(ChatColor.GRAY + "Color changed to: "
+                                               + ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_COLOR
+                                                                                             + config.COUNTDOWN_STYLE + config.COUNTDOWN_FORMAT));
+                        } else {
+                            sender.sendMessage(ChatColor.GRAY + "Valid countdown color codes: http://minecraft.gamepedia.com/Formatting_codes.");
+                            return false;
+                        }
+                        return true;
+                    case "style":
+                        if (args.length < 2) {
+                            sender.sendMessage(ChatColor.RED + "Usage: /cdconfig style <&m-&o> ");
                             return true;
-                        case "msgcolor":
-                            if (args.length < 2) {
-                                sender.sendMessage(ChatColor.RED + "Usage: /cdconfig msgColor <&a-&f> ");
-                                return true;
-                            }
-                            if (args[1].matches("&([0-9a-fA-F])")) {
-                                config.setCountDownSetting(countdown.msgcolor, args[1]);
-                                sender.sendMessage(ChatColor.GRAY + "Message color changed to: " + ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_MSG_COLOR
-                                        + config.COUNTDOWN_MSG_STYLE) + "Go!");
-                            } else {
-                                sender.sendMessage(ChatColor.GRAY + "Valid countdown color codes: http://minecraft.gamepedia.com/Formatting_codes.");
-                                return false;
-                            }
+                        }
+                        if (args[1].matches("&([m-oM-OrR])")) {
+                            config.setCountDownSetting(countdown.style, args[1]);
+                            sender.sendMessage(ChatColor.GRAY + "Style changed to: "
+                                               + ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_COLOR
+                                                                                             + config.COUNTDOWN_STYLE + config.COUNTDOWN_FORMAT));
+                        } else {
+                            sender.sendMessage(ChatColor.GRAY + "Valid countdown style codes: http://minecraft.gamepedia.com/Formatting_codes.");
+                            return false;
+                        }
+                        return true;
+                    case "msgcolor":
+                        if (args.length < 2) {
+                            sender.sendMessage(ChatColor.RED + "Usage: /cdconfig msgColor <&a-&f> ");
                             return true;
-                        case "msgstyle":
-                            if (args.length < 2) {
-                                sender.sendMessage(ChatColor.RED + "Usage: /cdconfig msgStyle <&m-&o> ");
-                                return true;
-                            }
-                            if (args[1].matches("&([m-oM-OrR])")) {
-                                config.setCountDownSetting(countdown.msgstyle, args[1]);
-                                sender.sendMessage(ChatColor.GRAY + "Message style changed to: " + ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_MSG_COLOR
-                                        + config.COUNTDOWN_MSG_STYLE) + "Go!");
-                            } else {
-                                sender.sendMessage(ChatColor.GRAY + "Valid countdown style codes: http://minecraft.gamepedia.com/Formatting_codes.");
-                                return false;
-                            }
+                        }
+                        if (args[1].matches("&([0-9a-fA-F])")) {
+                            config.setCountDownSetting(countdown.msgcolor, args[1]);
+                            sender.sendMessage(ChatColor.GRAY + "Message color changed to: "
+                                               + ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_MSG_COLOR
+                                                                                             + config.COUNTDOWN_MSG_STYLE) + "Go!");
+                        } else {
+                            sender.sendMessage(ChatColor.GRAY + "Valid countdown color codes: http://minecraft.gamepedia.com/Formatting_codes.");
+                            return false;
+                        }
+                        return true;
+                    case "msgstyle":
+                        if (args.length < 2) {
+                            sender.sendMessage(ChatColor.RED + "Usage: /cdconfig msgStyle <&m-&o> ");
                             return true;
+                        }
+                        if (args[1].matches("&([m-oM-OrR])")) {
+                            config.setCountDownSetting(countdown.msgstyle, args[1]);
+                            sender.sendMessage(ChatColor.GRAY + "Message style changed to: "
+                                               + ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_MSG_COLOR
+                                                                                             + config.COUNTDOWN_MSG_STYLE) + "Go!");
+                        } else {
+                            sender.sendMessage(ChatColor.GRAY + "Valid countdown style codes: http://minecraft.gamepedia.com/Formatting_codes.");
+                            return false;
+                        }
+                        return true;
                     }
                 }
             }
@@ -941,7 +822,7 @@ public class KitchenSink extends JavaPlugin {
 
             try {
                 note = Note.natural(octave, Note.Tone.valueOf(Character.toString(noteString.charAt(0)).toUpperCase()));
-            } catch(Exception e) {
+            } catch (Exception e) {
                 sender.sendMessage(ChatColor.RED + "The note you gave is not valid!");
                 return false;
             }
@@ -950,25 +831,24 @@ public class KitchenSink extends JavaPlugin {
                 String modifier = Character.toString(noteString.charAt(1));
 
                 switch (modifier) {
-                    case "#":
-                        note = note.sharped();
-                        break;
-                    case "b":
-                        note = note.flattened();
-                        break;
-                    default:
-                        sender.sendMessage(ChatColor.RED + "The note you gave is not valid!");
-                        return false;
+                case "#":
+                    note = note.sharped();
+                    break;
+                case "b":
+                    note = note.flattened();
+                    break;
+                default:
+                    sender.sendMessage(ChatColor.RED + "The note you gave is not valid!");
+                    return false;
                 }
             }
 
-            Player senderAsPlayer = (Player)sender;
+            Player senderAsPlayer = (Player) sender;
             senderAsPlayer.setMetadata(NOTEBLOCK_META_KEY, new FixedMetadataValue(this, note));
             sender.sendMessage(ChatColor.GOLD + "Punch the note block to apply the note.");
             return true;
 
         }
-
 
         return false;
     }
@@ -1017,8 +897,8 @@ public class KitchenSink extends JavaPlugin {
      *
      * @param player the name of the player.
      * @return a non-null string that is the corresponding prefix of the host
-     * name that the player must connect with, or the empty string if there are
-     * no restrictions.
+     *         name that the player must connect with, or the empty string if
+     *         there are no restrictions.
      */
     public String getHostKey(Player player) {
         File hostKeysDir = new File(getDataFolder(), HOST_KEYS_DIRECTORY);
@@ -1100,7 +980,8 @@ public class KitchenSink extends JavaPlugin {
                     }
                 }
             }
-        } catch (Exception ex) {}
+        } catch (Exception ex) {
+        }
         return counts;
     }
 
@@ -1167,15 +1048,15 @@ public class KitchenSink extends JavaPlugin {
         return String.format(convFormat.toString(), valueList.toArray());
     }
 
-	public static Block getTargetBlock(LivingEntity entity) {
-		BlockIterator iterator = new BlockIterator(entity.getLocation(), entity.getEyeHeight(), 20);
-		Block result;
-		while (iterator.hasNext()) {
-			result = iterator.next();
-			if (!result.getType().equals(Material.AIR)) {
-				return result;
-			}
-		}
-		return null;
-	}
+    public static Block getTargetBlock(LivingEntity entity) {
+        BlockIterator iterator = new BlockIterator(entity.getLocation(), entity.getEyeHeight(), 20);
+        Block result;
+        while (iterator.hasNext()) {
+            result = iterator.next();
+            if (!result.getType().equals(Material.AIR)) {
+                return result;
+            }
+        }
+        return null;
+    }
 }

@@ -10,3 +10,4 @@ target
 # MacOS
 .DS_Store
 /bin/
+/classes/
