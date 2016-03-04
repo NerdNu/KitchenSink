@@ -2,7 +2,6 @@ package nu.nerd.kitchensink;
 
 import java.text.Normalizer;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -25,9 +24,11 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.NoteBlock;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Ageable;
+import org.bukkit.entity.Boat;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
+import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Ocelot;
 import org.bukkit.entity.Painting;
 import org.bukkit.entity.Player;
@@ -55,7 +56,6 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
 import org.bukkit.event.entity.ExplosionPrimeEvent;
-import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
@@ -66,7 +66,6 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerEggThrowEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
@@ -182,7 +181,9 @@ class KitchenSinkListener implements Listener {
     public void onVehicleExit(VehicleExitEvent event) {
         if (plugin.config.REMOVE_ON_EXIT) {
             Vehicle vehicle = event.getVehicle();
-            vehicle.remove();
+            if (vehicle instanceof Boat || vehicle instanceof Minecart) {
+                vehicle.remove();
+            }
         }
     }
 
@@ -836,98 +837,6 @@ class KitchenSinkListener implements Listener {
             }
         }
 
-    }
-
-    // Code borrowed from erocs Humbug plugin
-    // https://github.com/erocs/Humbug
-    private final Map<Player, Double> playerLastEat_ = new HashMap<Player, Double>();
-
-    @EventHandler
-    public void setSaturationOnFoodEat(PlayerItemConsumeEvent event) {
-        // Each food sets a different saturation.
-        final Player player = event.getPlayer();
-        ItemStack item = event.getItem();
-        Material mat = item.getType();
-        double multiplier = plugin.config.SATURATION_MULTIPLIER;
-        if (multiplier <= 0.000001 && multiplier >= -0.000001) {
-            return;
-        }
-        switch (mat) {
-        case APPLE:
-            playerLastEat_.put(player, multiplier * 2.4);
-        case BAKED_POTATO:
-            playerLastEat_.put(player, multiplier * 7.2);
-        case BREAD:
-            playerLastEat_.put(player, multiplier * 6);
-        case CAKE:
-            playerLastEat_.put(player, multiplier * 0.4);
-        case CARROT_ITEM:
-            playerLastEat_.put(player, multiplier * 4.8);
-        case COOKED_FISH:
-            playerLastEat_.put(player, multiplier * 6);
-        case GRILLED_PORK:
-            playerLastEat_.put(player, multiplier * 12.8);
-        case COOKIE:
-            playerLastEat_.put(player, multiplier * 0.4);
-        case GOLDEN_APPLE:
-            playerLastEat_.put(player, multiplier * 9.6);
-        case GOLDEN_CARROT:
-            playerLastEat_.put(player, multiplier * 14.4);
-        case MELON:
-            playerLastEat_.put(player, multiplier * 1.2);
-        case MUSHROOM_SOUP:
-            playerLastEat_.put(player, multiplier * 7.2);
-        case POISONOUS_POTATO:
-            playerLastEat_.put(player, multiplier * 1.2);
-        case POTATO:
-            playerLastEat_.put(player, multiplier * 0.6);
-        case RAW_FISH:
-            playerLastEat_.put(player, multiplier * 1);
-        case PUMPKIN_PIE:
-            playerLastEat_.put(player, multiplier * 4.8);
-        case RAW_BEEF:
-            playerLastEat_.put(player, multiplier * 1.8);
-        case RAW_CHICKEN:
-            playerLastEat_.put(player, multiplier * 1.2);
-        case PORK:
-            playerLastEat_.put(player, multiplier * 1.8);
-        case ROTTEN_FLESH:
-            playerLastEat_.put(player, multiplier * 0.8);
-        case SPIDER_EYE:
-            playerLastEat_.put(player, multiplier * 3.2);
-        case COOKED_BEEF:
-            playerLastEat_.put(player, multiplier * 12.8);
-        default:
-            playerLastEat_.put(player, multiplier);
-            Bukkit.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
-                // In case the player ingested a potion, this removes the
-                // saturation from the list. Unsure if I have every item
-                // listed. There is always the other cases of like food
-                // that shares same id
-                @Override
-                public void run() {
-                    playerLastEat_.remove(player);
-                }
-            }, 80);
-        }
-    }
-
-    @EventHandler
-    public void onFoodLevelChange(FoodLevelChangeEvent event) {
-        final Player player = (Player) event.getEntity();
-        final double mod = plugin.config.HUNGER_SLOWDOWN;
-        Double saturation;
-        if (playerLastEat_.containsKey(player)) { // if the player just ate
-            saturation = playerLastEat_.get(player);
-            if (saturation == null) {
-                saturation = ((Float) player.getSaturation()).doubleValue();
-            }
-        } else {
-            saturation = Math.min(
-                player.getSaturation() + mod,
-                20.0D + (mod * 2.0D));
-        }
-        player.setSaturation(saturation.floatValue());
     }
 
     @EventHandler(ignoreCancelled = true)
