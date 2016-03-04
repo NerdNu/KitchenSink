@@ -833,7 +833,7 @@ class KitchenSinkListener implements Listener {
                 Player player = (Player) event.getPlayer();
                 player.sendMessage(ChatColor.RED + "WARNING: There will be a restart in about " + Integer.toString(time) + " seconds!");
                 player.sendMessage(ChatColor.RED + "Having an inventory open when a restart occurs may result in loss of items.");
-                player.playSound(player.getLocation(), Sound.ANVIL_LAND, 2f, 1f);
+                player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_LAND, 2f, 1f);
             }
         }
 

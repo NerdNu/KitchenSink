@@ -4,7 +4,7 @@
 	<groupId>nu.nerd</groupId>
 	<artifactId>KitchenSink</artifactId>
 	<name>KitchenSink</name>
-	<version>0.9.8</version>
+	<version>0.10.0</version>
 	<packaging>jar</packaging>
 	<description>A plugin for miscellaneous functionality that hasn't found a home elsewhere.</description>
         <url>https://github.com/NerdNu/KitchenSink</url>
@@ -35,15 +35,10 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.bukkit</groupId>
-			<artifactId>bukkit</artifactId>
-			<version>1.8.8-R0.1-SNAPSHOT</version>
+			<groupId>org.spigotmc</groupId>
+			<artifactId>spigot-api</artifactId>
+			<version>1.9-SNAPSHOT</version>
 			<type>jar</type>
-		</dependency>
-		<dependency>
-			<groupId>org.bukkit</groupId>
-			<artifactId>craftbukkit</artifactId>
-			<version>1.8.8-R0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>de.bananaco</groupId>
