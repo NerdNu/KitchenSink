@@ -536,7 +536,6 @@ class KitchenSinkListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityExplode(EntityExplodeEvent event) {
-        plugin.getLogger().info("EntityExplodeEvent");
         if (plugin.config.DISABLE_ENTITY_BLOCK_DAMAGE.contains(event.getEntityType())) {
             event.blockList().clear();
         }
