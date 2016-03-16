@@ -9,6 +9,7 @@ buff-shear-drops: 0
 disable-snowgrow: false
 disable-drops: false
 disable-tnt: false
+disable-entity-block-damage: []
 disable-invisibility-on-combat: false
 disable-golem-natural-spawn: false
 host-keys-check: true

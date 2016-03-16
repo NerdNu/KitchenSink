@@ -55,6 +55,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.ExplosionPrimeEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -530,6 +531,14 @@ class KitchenSinkListener implements Listener {
             if (event.getBlock().getType() == Material.TNT) {
                 event.setCancelled(true);
             }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onEntityExplode(EntityExplodeEvent event) {
+        plugin.getLogger().info("EntityExplodeEvent");
+        if (plugin.config.DISABLE_ENTITY_BLOCK_DAMAGE.contains(event.getEntityType())) {
+            event.blockList().clear();
         }
     }
 

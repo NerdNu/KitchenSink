@@ -73,6 +73,7 @@ public class Configuration {
     public List<Integer> DISABLE_DISPENSED;
     public List<Integer> DISABLE_BUFF;
     public Map<EntityType, Set<Material>> DISABLED_DROPS;
+    public EnumSet<EntityType> DISABLE_ENTITY_BLOCK_DAMAGE = EnumSet.noneOf(EntityType.class);
     public boolean ALLOW_EGG_HATCHING;
     public boolean DISABLE_PEARL_DROPS_IN_END;
     public boolean DISABLE_PLAYER_DAMAGE_TO_VILLAGERS;
@@ -148,6 +149,14 @@ public class Configuration {
                     plugin.getLogger().warning("disabled-drops contains invalid entity type "
                                                + key);
                 }
+            }
+        }
+        for (String entityTypeName : plugin.getConfig().getStringList("disable-entity-block-damage")) {
+            try {
+                EntityType entityType = EntityType.valueOf(entityTypeName);
+                DISABLE_ENTITY_BLOCK_DAMAGE.add(entityType);
+            } catch (IllegalArgumentException ex) {
+                plugin.getLogger().warning("disable-entity-block-damage contains invalid entity type " + entityTypeName);
             }
         }
         WARN_RESTART_ON_JOIN = plugin.getConfig().getBoolean("warn-restart-on-join");
