@@ -275,7 +275,8 @@ class KitchenSinkListener implements Listener {
                     if (tameable.isTamed()) {
                         // Warn admins when they bypass ownership.
                         if (isPetAdmin && tameable.getOwner() != player) {
-                            player.sendMessage(ChatColor.YELLOW + "That pet belongs to " + tameable.getOwner().getName() + ".");
+                            String owner = tameable.getOwner() != null ? tameable.getOwner().getName() : "nobody";
+                            player.sendMessage(ChatColor.YELLOW + "That pet belongs to " + owner + ".");
                         }
 
                         if (tameable.getOwner() == player || isPetAdmin) {
@@ -588,7 +589,8 @@ class KitchenSinkListener implements Listener {
                                 }
                             }
                         }
-                        if (tameable.isTamed()) {
+                        // 1.9 spawns skeleton horses that are tame with no owner.
+                        if (tameable.isTamed() && tameable.getOwner() != null) {
                             message += "|Owner:" + tameable.getOwner().getName();
                         }
                     }
