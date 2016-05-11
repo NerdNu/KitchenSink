@@ -57,7 +57,13 @@ public class KitchenSink extends JavaPlugin {
 
     private static final int ONE_MINUTE_TICKS = 60 * 20;
 
-    private static final long ONE_DAY_MILLIS = 24 * (60 * (60 * 1000));
+    /**
+     * Look up table mapping TreeSpecies ordinal (boat type) to corresponding
+     * dropped boat item type.
+     */
+    static final Material BOAT_DROP_TABLE[] = {Material.BOAT, Material.BOAT_SPRUCE,
+                                               Material.BOAT_BIRCH, Material.BOAT_JUNGLE,
+                                               Material.BOAT_ACACIA, Material.BOAT_DARK_OAK};
 
     private final KitchenSinkListener listener = new KitchenSinkListener(this);
     private final LagCheck lagCheck = new LagCheck();
@@ -203,27 +209,9 @@ public class KitchenSink extends JavaPlugin {
                     for (World world : getServer().getWorlds()) {
                         for (Boat boat : world.getEntitiesByClass(Boat.class)) {
                             if (boat.isEmpty()) {
-                                TreeSpecies treespecies = boat.getWoodType();
                                 boat.remove();
                                 if (config.SAFE_BOATS_DROP) {
-                                    if (treespecies.equals(TreeSpecies.REDWOOD)){
-                                        world.dropItem(boat.getLocation(), new ItemStack(Material.BOAT_SPRUCE, 1));
-                                    }
-                                    if (treespecies.equals(TreeSpecies.BIRCH)){
-                                        world.dropItem(boat.getLocation(), new ItemStack(Material.BOAT_BIRCH, 1));
-                                    }
-                                    if (treespecies.equals(TreeSpecies.JUNGLE)){
-                                        world.dropItem(boat.getLocation(), new ItemStack(Material.BOAT_JUNGLE, 1));
-                                    }
-                                    if (treespecies.equals(TreeSpecies.ACACIA)){
-                                        world.dropItem(boat.getLocation(), new ItemStack(Material.BOAT_ACACIA, 1));
-                                    }
-                                    if (treespecies.equals(TreeSpecies.DARK_OAK)){
-                                        world.dropItem(boat.getLocation(), new ItemStack(Material.BOAT_DARK_OAK, 1));
-                                    }
-                                    if (treespecies.equals(TreeSpecies.GENERIC)){
-                                        world.dropItem(boat.getLocation(), new ItemStack(Material.BOAT, 1));
-                                    }
+                                    world.dropItem(boat.getLocation(), new ItemStack(BOAT_DROP_TABLE[boat.getWoodType().ordinal()], 1));
                                 }
                             }
                         }
