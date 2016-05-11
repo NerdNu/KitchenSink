@@ -203,9 +203,27 @@ public class KitchenSink extends JavaPlugin {
                     for (World world : getServer().getWorlds()) {
                         for (Boat boat : world.getEntitiesByClass(Boat.class)) {
                             if (boat.isEmpty()) {
+                                TreeSpecies treespecies = boat.getWoodType();
                                 boat.remove();
                                 if (config.SAFE_BOATS_DROP) {
-                                    world.dropItem(boat.getLocation(), new ItemStack(Material.BOAT, 1));
+                                    if (treespecies.equals(TreeSpecies.REDWOOD)){
+                                        world.dropItem(boat.getLocation(), new ItemStack(Material.BOAT_SPRUCE, 1));
+                                    }
+                                    if (treespecies.equals(TreeSpecies.BIRCH)){
+                                        world.dropItem(boat.getLocation(), new ItemStack(Material.BOAT_BIRCH, 1));
+                                    }
+                                    if (treespecies.equals(TreeSpecies.JUNGLE)){
+                                        world.dropItem(boat.getLocation(), new ItemStack(Material.BOAT_JUNGLE, 1));
+                                    }
+                                    if (treespecies.equals(TreeSpecies.ACACIA)){
+                                        world.dropItem(boat.getLocation(), new ItemStack(Material.BOAT_ACACIA, 1));
+                                    }
+                                    if (treespecies.equals(TreeSpecies.DARK_OAK)){
+                                        world.dropItem(boat.getLocation(), new ItemStack(Material.BOAT_DARK_OAK, 1));
+                                    }
+                                    if (treespecies.equals(TreeSpecies.GENERIC)){
+                                        world.dropItem(boat.getLocation(), new ItemStack(Material.BOAT, 1));
+                                    }
                                 }
                             }
                         }
