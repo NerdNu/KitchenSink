@@ -17,6 +17,7 @@ host-keys-drop-permissions: false
 lower-strength-potion-damage: false
 health-potion-multiplier: 1.0
 regen-potion-multiplier: 1.0
+disable-lingering-potion-pvp: false
 block-caps: true
 block-villagers: false
 safe-ice: false

@@ -1,13 +1,8 @@
 package nu.nerd.kitchensink;
 
 import java.text.Normalizer;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.bukkit.Art;
 import org.bukkit.Bukkit;
@@ -23,21 +18,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.NoteBlock;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Ageable;
-import org.bukkit.entity.Boat;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Horse;
-import org.bukkit.entity.Minecart;
-import org.bukkit.entity.Ocelot;
-import org.bukkit.entity.Painting;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
-import org.bukkit.entity.Sheep;
-import org.bukkit.entity.Tameable;
-import org.bukkit.entity.Vehicle;
-import org.bukkit.entity.Villager;
-import org.bukkit.entity.Wolf;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -48,18 +29,9 @@ import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
-import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
-import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.entity.ExplosionPrimeEvent;
-import org.bukkit.event.entity.ItemSpawnEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
@@ -79,6 +51,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionType;
 import org.bukkit.util.BlockIterator;
 
 import de.bananaco.bpermissions.api.ApiLayer;
@@ -861,6 +834,28 @@ class KitchenSinkListener implements Listener {
         // Stop iron golems from spawning in villages
         if (event.getSpawnReason().equals(CreatureSpawnEvent.SpawnReason.VILLAGE_DEFENSE)) {
             event.setCancelled(plugin.config.DISABLE_GOLEM_NATURAL_SPAWN);
+        }
+    }
+
+    @EventHandler
+    public void onAreaEffectApply(AreaEffectCloudApplyEvent event) {
+        // Block lingering potions from being used for pvp
+        if (plugin.config.DISABLE_LINGERING_POTION_PVP) {
+            if (event.getEntity().getSource() instanceof Player) {
+                PotionType type = event.getEntity().getBasePotionData().getType();
+                List<PotionType> blacklist = new ArrayList<>();
+                blacklist.add(PotionType.INSTANT_DAMAGE);
+                blacklist.add(PotionType.POISON);
+                blacklist.add(PotionType.SLOWNESS);
+                blacklist.add(PotionType.WEAKNESS);
+                Iterator<LivingEntity> iterator = event.getAffectedEntities().iterator();
+                while (iterator.hasNext()) {
+                    LivingEntity ent = iterator.next();
+                    if (ent instanceof Player && blacklist.contains(type)) {
+                        iterator.remove();
+                    }
+                }
+            }
         }
     }
 
