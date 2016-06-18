@@ -43,7 +43,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
-import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.HorseInventory;
 import org.bukkit.inventory.ItemStack;
@@ -148,16 +147,6 @@ class KitchenSinkListener implements Listener {
         } catch (Exception ex) {
             plugin.getLogger().severe(ex.getClass().getName() + ": " + ex.getMessage() + " dropping permissions for " + player.getName());
             return false;
-        }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onVehicleExit(VehicleExitEvent event) {
-        if (plugin.config.REMOVE_ON_EXIT) {
-            Vehicle vehicle = event.getVehicle();
-            if (vehicle instanceof Boat || vehicle instanceof Minecart) {
-                vehicle.remove();
-            }
         }
     }
 

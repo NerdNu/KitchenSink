@@ -18,19 +18,12 @@ Configuration
 * `lower-strength-potion-damage` Reduce damage dealt with strength potions to Minecraft 1.5 levels.
 * `health-potion-multiplier` The multiplicative factor applied to health from instant health potions (splashed and drunk).
 * `regen-potion-multiplier` The multiplicative factor applied to health from regeneration potions (splashed and drunk).
+* `disable-lingering-potion-pvp` If true, disable harmful lingering potion effects.
 * `block-caps` Block people typing in caps too much.
 * `block-villagers` Prevent players from trading with villagers.
 * `safe-ice` Prevent ice from turning into water when broken.
 * `safe-dispensers` Prevent dispensers from dispensing items listed in `disabled-items.dispensed`.
-* `safe-boats` Schedule a task to clear empty boats every `safe-boats-delay` seconds.
-* `safe-boats-delay` The time between clearing empty boats.
-* `safe-boats-drop` Drop a boat item when a boat is removed due to `safe-boats`.
-* `safe-minecarts` Schedule a task to clear empty minecarts every `safe-minecarts-delay` seconds.
-* `safe-minecarts-delay` The time between clearing empty minecarts.
-* `safe-minecarts-drop` Drop a minecart item when a minecart is removed due to `safe-minecarts`.
-* `safe-special-carts` Prevent storage and powered minecarts from being affected by `safe-minecarts`.
 * `sprint-max-time` Timeout to force player to stop sprinting after the specified amount of ticks. Set to zero or less to disable.
-* `remove-on-exit` Remove a vehicle when a player exits it.
 * `safe-portals` Prevent players from creating nether portals.
 * `pearl-damage` Damage players when throwing an ender pearl.
 * `leatherless-books` Allow books to be crafted using only sugar cane.
