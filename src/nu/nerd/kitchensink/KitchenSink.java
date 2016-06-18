@@ -34,15 +34,10 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Boat;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Zombie;
-import org.bukkit.entity.minecart.HopperMinecart;
-import org.bukkit.entity.minecart.PoweredMinecart;
-import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapelessRecipe;
@@ -56,14 +51,6 @@ import org.bukkit.util.BlockIterator;
 public class KitchenSink extends JavaPlugin {
 
     private static final int ONE_MINUTE_TICKS = 60 * 20;
-
-    /**
-     * Look up table mapping TreeSpecies ordinal (boat type) to corresponding
-     * dropped boat item type.
-     */
-    static final Material BOAT_DROP_TABLE[] = {Material.BOAT, Material.BOAT_SPRUCE,
-                                               Material.BOAT_BIRCH, Material.BOAT_JUNGLE,
-                                               Material.BOAT_ACACIA, Material.BOAT_DARK_OAK};
 
     private final KitchenSinkListener listener = new KitchenSinkListener(this);
     private final LagCheck lagCheck = new LagCheck();
@@ -202,47 +189,6 @@ public class KitchenSink extends JavaPlugin {
 
         config.load();
 
-        if (config.SAFE_BOATS) {
-            getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
-                @Override
-                public void run() {
-                    for (World world : getServer().getWorlds()) {
-                        for (Boat boat : world.getEntitiesByClass(Boat.class)) {
-                            if (boat.isEmpty()) {
-                                boat.remove();
-                                if (config.SAFE_BOATS_DROP) {
-                                    world.dropItem(boat.getLocation(), new ItemStack(BOAT_DROP_TABLE[boat.getWoodType().ordinal()], 1));
-                                }
-                            }
-                        }
-                    }
-                }
-            }, config.SAFE_BOATS_DELAY, config.SAFE_BOATS_DELAY);
-        }
-
-        if (config.SAFE_MINECARTS) {
-            getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
-                @Override
-                public void run() {
-                    for (World world : getServer().getWorlds()) {
-                        for (Minecart minecart : world.getEntitiesByClass(Minecart.class)) {
-                            if (minecart.isEmpty()) {
-                                if (config.SAFE_SPECIAL_CARTS) {
-                                    if (minecart instanceof StorageMinecart || minecart instanceof PoweredMinecart
-                                        || minecart instanceof HopperMinecart) {
-                                        continue;
-                                    }
-                                }
-                                minecart.remove();
-                                if (config.SAFE_MINECARTS_DROP) {
-                                    world.dropItem(minecart.getLocation(), new ItemStack(Material.MINECART, 1));
-                                }
-                            }
-                        }
-                    }
-                }
-            }, config.SAFE_MINECARTS_DELAY, config.SAFE_MINECARTS_DELAY);
-        }
         if (config.ANIMAL_COUNT) {
             final BukkitScheduler sched = getServer().getScheduler();
             Runnable task = new Runnable() {

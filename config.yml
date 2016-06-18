@@ -22,14 +22,6 @@ block-caps: true
 block-villagers: false
 safe-ice: false
 safe-dispensers: false
-safe-boats: true
-safe-boats-delay: 6000
-safe-boats-drop: true
-safe-minecarts: true
-safe-minecarts-delay: 6000
-safe-minecarts-drop: true
-safe-special-carts: true
-remove-on-exit: false
 safe-portals: false
 pearl-damage: 0
 leatherless-books: false
