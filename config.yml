@@ -20,6 +20,7 @@ regen-potion-multiplier: 1.0
 disable-lingering-potion-pvp: false
 block-caps: true
 block-villagers: false
+block-johnny: false
 safe-ice: false
 safe-dispensers: false
 safe-portals: false

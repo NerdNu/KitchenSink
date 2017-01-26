@@ -36,6 +36,7 @@ public class Configuration {
     public boolean DISABLE_LINGERING_POTION_PVP;
     public boolean BLOCK_CAPS;
     public boolean BLOCK_VILLAGERS;
+    public boolean BLOCK_JOHNNY;
     public boolean SAFE_ICE;
     public boolean SAFE_DISPENSERS;
     public boolean SAFE_PORTALS;
@@ -96,6 +97,7 @@ public class Configuration {
         DISABLE_LINGERING_POTION_PVP = plugin.getConfig().getBoolean("disable-lingering-potion-pvp", false);
         BLOCK_CAPS = plugin.getConfig().getBoolean("block-caps");
         BLOCK_VILLAGERS = plugin.getConfig().getBoolean("block-villagers");
+        BLOCK_JOHNNY = plugin.getConfig().getBoolean("block-johnny", false);
         SAFE_ICE = plugin.getConfig().getBoolean("safe-ice");
         SAFE_DISPENSERS = plugin.getConfig().getBoolean("safe-dispensers");
         SAFE_PORTALS = plugin.getConfig().getBoolean("safe-portals");

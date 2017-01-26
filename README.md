@@ -21,6 +21,7 @@ Configuration
 * `disable-lingering-potion-pvp` If true, disable harmful lingering potion effects.
 * `block-caps` Block people typing in caps too much.
 * `block-villagers` Prevent players from trading with villagers.
+* `block-johnny` Prevent players from renaming Vindicators to be "Johnny."
 * `safe-ice` Prevent ice from turning into water when broken.
 * `safe-dispensers` Prevent dispensers from dispensing items listed in `disabled-items.dispensed`.
 * `sprint-max-time` Timeout to force player to stop sprinting after the specified amount of ticks. Set to zero or less to disable.

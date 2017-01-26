@@ -44,6 +44,7 @@ import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.event.world.PortalCreateEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.HorseInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -329,6 +330,18 @@ class KitchenSinkListener implements Listener {
                 if (event.isCancelled()) {
                     // Try to restore the player's old look angle.
                     player.teleport(oldLocation);
+                }
+            }
+        } else if (entity instanceof Vindicator) {
+            // Block players from Johnny-tagging Vindicators
+            if (plugin.config.BLOCK_JOHNNY) {
+                boolean isOffHand = event.getHand().equals(EquipmentSlot.OFF_HAND);
+                Player player = event.getPlayer();
+                ItemStack item = (isOffHand) ? player.getInventory().getItemInOffHand() : player.getInventory().getItemInMainHand();
+                if (item.getItemMeta().getDisplayName().equalsIgnoreCase("Johnny")) {
+                    event.setCancelled(true);
+                    plugin.getLogger().info(String.format("Blocked Johnny Vindicator. Player: %s (%s) Loc: %s", player.getName(), player.getUniqueId().toString(), entity.getLocation().toString()));
+                    player.sendMessage(String.format("%sYou are not allowed to do that.", ChatColor.RED));
                 }
             }
         }
