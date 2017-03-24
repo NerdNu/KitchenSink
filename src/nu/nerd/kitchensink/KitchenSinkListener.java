@@ -77,8 +77,15 @@ import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.HorseInventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.inventory.meta.SpawnEggMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
+import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
@@ -831,9 +838,8 @@ class KitchenSinkListener implements Listener {
         if (plugin.config.WARN_RESTART_ON_JOIN) {
             int time = (int) ((plugin.nextRestart - System.currentTimeMillis()) / 1000l);
             if (time < 90 && time > 0) {
-                event.getPlayer().sendMessage(
-                                              ChatColor.LIGHT_PURPLE + "Warning: There will be a restart in about " + Integer.toString(time)
-                                              + " seconds!");
+                event.getPlayer().sendMessage(ChatColor.LIGHT_PURPLE + "Warning: There will be a restart in about " +
+                                              Integer.toString(time) + " seconds!");
             }
         }
     }
@@ -842,7 +848,6 @@ class KitchenSinkListener implements Listener {
     public void onInventoryOpen(InventoryOpenEvent event) {
         if (plugin.config.WARN_RESTART_ON_INVENTORY_OPEN) {
             int time = (int) ((plugin.nextRestart - System.currentTimeMillis()) / 1000l);
-
             if (time < 90 && time > 0) {
                 if (!(event.getPlayer() instanceof Player)) {
                     return;
@@ -905,19 +910,93 @@ class KitchenSinkListener implements Listener {
      */
     public String getItemDescription(ItemStack item) {
         StringBuilder description = new StringBuilder();
-        description.append(item.getAmount()).append('x').append(item.getType().name()).append(':').append(item.getData().getData());
-
-        Map<Enchantment, Integer> enchants = item.getEnchantments();
-        if (enchants.size() > 0) {
-            description.append('(');
-            boolean first = true;
-            for (Entry<Enchantment, Integer> entry : enchants.entrySet()) {
-                if (first) {
-                    first = false;
-                } else {
-                    description.append(',');
+        description.append(item.getAmount()).append('x').append(item.getType().name()).append(':').append(item.getDurability());
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            if (meta instanceof SkullMeta) {
+                SkullMeta skullMeta = (SkullMeta) meta;
+                if (skullMeta.getOwner() != null) {
+                    description.append(" of \"").append(skullMeta.getOwner()).append("\"");
                 }
-                description.append(entry.getKey().getName()).append(':').append(entry.getValue());
+            } else if (meta instanceof SpawnEggMeta) {
+                SpawnEggMeta eggMeta = (SpawnEggMeta) meta;
+                description.append(" of ").append(eggMeta.getSpawnedType());
+            } else if (meta instanceof EnchantmentStorageMeta) {
+                EnchantmentStorageMeta bookEnchants = (EnchantmentStorageMeta) meta;
+                description.append(" with").append(enchantsToString(bookEnchants.getStoredEnchants()));
+            } else if (meta instanceof BookMeta) {
+                BookMeta bookMeta = (BookMeta) meta;
+                if (bookMeta.getTitle() != null) {
+                    description.append(" titled \"").append(bookMeta.getTitle()).append("\"");
+                }
+                if (bookMeta.getAuthor() != null) {
+                    description.append(" by ").append(bookMeta.getAuthor());
+                }
+            } else if (meta instanceof PotionMeta) {
+                PotionMeta potionMeta = (PotionMeta) meta;
+                description.append(" of ");
+                PotionData data = potionMeta.getBasePotionData();
+                description.append(data.getType());
+                if (data.isExtended()) {
+                    description.append(" extended");
+                }
+                if (data.isUpgraded()) {
+                    description.append(" upgraded");
+                }
+
+                List<PotionEffect> effects = potionMeta.getCustomEffects();
+                if (effects != null && !effects.isEmpty()) {
+                    description.append(" with ");
+                    String sep = "";
+                    for (PotionEffect effect : potionMeta.getCustomEffects()) {
+                        description.append(sep).append(potionToString(effect));
+                        sep = "+";
+                    }
+                }
+            }
+
+            if (meta.getDisplayName() != null) {
+                description.append(" named \"").append(meta.getDisplayName()).append("\"").append(ChatColor.WHITE);
+            }
+
+            List<String> lore = meta.getLore();
+            if (lore != null && !lore.isEmpty()) {
+                description.append(" lore \"").append(String.join("|", lore)).append("\"").append(ChatColor.WHITE);
+            }
+        }
+
+        description.append(enchantsToString(item.getEnchantments()));
+        return description.toString();
+    }
+
+    /**
+     * Return the string description of a potion effect.
+     *
+     * @param effect the effect.
+     * @return the description.
+     */
+    public String potionToString(PotionEffect effect) {
+        StringBuilder description = new StringBuilder();
+        description.append(effect.getType().getName()).append("/");
+        description.append(effect.getAmplifier() + 1).append("/");
+        description.append(effect.getDuration() / 20.0).append('s');
+        return description.toString();
+    }
+
+    /**
+     * Return the string description of a set of enchantments.
+     *
+     * @param enchants map from enchantment type to level, from the Bukkit API.
+     * @return the description.
+     */
+    public String enchantsToString(Map<Enchantment, Integer> enchants) {
+        StringBuilder description = new StringBuilder();
+        if (enchants.size() > 0) {
+            description.append(" (");
+            String sep = "";
+            for (Entry<Enchantment, Integer> entry : enchants.entrySet()) {
+                description.append(sep).append(entry.getKey().getName()).append(':').append(entry.getValue());
+                sep = ",";
             }
             description.append(')');
         }
