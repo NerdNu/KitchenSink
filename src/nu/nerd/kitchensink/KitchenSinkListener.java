@@ -1,8 +1,14 @@
 package nu.nerd.kitchensink;
 
 import java.text.Normalizer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.bukkit.Art;
 import org.bukkit.Bukkit;
@@ -18,7 +24,21 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.NoteBlock;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.*;
+import org.bukkit.entity.AbstractHorse;
+import org.bukkit.entity.Ageable;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Horse;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Ocelot;
+import org.bukkit.entity.Painting;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
+import org.bukkit.entity.Sheep;
+import org.bukkit.entity.Tameable;
+import org.bukkit.entity.Villager;
+import org.bukkit.entity.Vindicator;
+import org.bukkit.entity.Wolf;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -29,9 +49,19 @@ import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
-import org.bukkit.event.entity.*;
+import org.bukkit.event.entity.AreaEffectCloudApplyEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
+import org.bukkit.event.entity.ExplosionPrimeEvent;
+import org.bukkit.event.entity.ItemSpawnEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
@@ -68,7 +98,7 @@ class KitchenSinkListener implements Listener {
 
     static {
         INTERACTABLE_TYPES = new HashSet<Integer>(Arrays.asList(23, 25, 26, 54, 58, 61, 62, 64, 69, 71, 77, 84, 92, 93, 94, 95, 96, 107, 116, 117,
-            122, 130, 138, 143, 145, 146, 149, 150, 154, 158));
+                                                                122, 130, 138, 143, 145, 146, 149, 150, 154, 158));
     }
     private final KitchenSink plugin;
 
@@ -340,7 +370,8 @@ class KitchenSinkListener implements Listener {
                 ItemStack item = (isOffHand) ? player.getInventory().getItemInOffHand() : player.getInventory().getItemInMainHand();
                 if (item.getItemMeta().getDisplayName().equalsIgnoreCase("Johnny")) {
                     event.setCancelled(true);
-                    plugin.getLogger().info(String.format("Blocked Johnny Vindicator. Player: %s (%s) Loc: %s", player.getName(), player.getUniqueId().toString(), entity.getLocation().toString()));
+                    plugin.getLogger().info(String.format("Blocked Johnny Vindicator. Player: %s (%s) Loc: %s", player.getName(),
+                                                          player.getUniqueId().toString(), entity.getLocation().toString()));
                     player.sendMessage(String.format("%sYou are not allowed to do that.", ChatColor.RED));
                 }
             }
@@ -467,9 +498,7 @@ class KitchenSinkListener implements Listener {
 
                                         if (plugin.config.DEBUG_DISABLE_TNT) {
                                             Location loc = neighbour.getLocation();
-                                            plugin.getLogger().info(
-                                                "DEBUG: Arrow extenguished due to TNT at " + blockLocationToString(loc)
-                                            );
+                                            plugin.getLogger().info("DEBUG: Arrow extenguished due to TNT at " + blockLocationToString(loc));
                                         }
                                     }
                                 }
@@ -556,15 +585,17 @@ class KitchenSinkListener implements Listener {
                             Ocelot ocelot = (Ocelot) tameable;
                             message += "|" + ocelot.getCatType().name();
                         } else if (tameable instanceof Horse) {
-                            Horse horse = (Horse) tameable;
-                            message += "|" + horse.getVariant().name() + "," + horse.getColor().name() + "," + horse.getStyle().name() + "|";
-                            for (ItemStack item : horse.getInventory()) {
+                            AbstractHorse abstractHorse = (AbstractHorse) tameable;
+                            if (abstractHorse instanceof Horse) {
+                                Horse horse = (Horse) abstractHorse;
+                                message += "|" + horse.getColor().name() + "," + horse.getStyle().name() + "|";
+                            }
+                            for (ItemStack item : abstractHorse.getInventory()) {
                                 if (item != null && item.getType() != Material.AIR) {
                                     message += getItemDescription(item) + ",";
                                 }
                             }
                         }
-                        // 1.9 spawns skeleton horses that are tame with no owner.
                         if (tameable.isTamed() && tameable.getOwner() != null) {
                             message += "|Owner:" + tameable.getOwner().getName();
                         }
@@ -594,9 +625,11 @@ class KitchenSinkListener implements Listener {
     public void onPlayerDeath(PlayerDeathEvent event) {
         Player player = event.getEntity();
         if (plugin.config.LOG_PLAYER_DROPS) {
-            String loot = "[drops] " + player.getName();
+            String loot = "[drops] " + player.getName() + " at " + blockLocationToString(player.getLocation()) + ": ";
+            String sep = "";
             for (ItemStack is : event.getDrops()) {
-                loot += ", " + getItemDescription(is);
+                loot += sep + getItemDescription(is);
+                sep = ", ";
             }
             plugin.getLogger().info(loot);
         }
@@ -744,8 +777,7 @@ class KitchenSinkListener implements Listener {
                 // tell the attacker
                 Player player = (Player) event.getDamager();
                 player.sendMessage(ChatColor.DARK_RED + "Villagers are protected against damage from players.");
-            }
-            else if (event.getDamager() instanceof Projectile) {
+            } else if (event.getDamager() instanceof Projectile) {
                 Projectile damageProjectile = (Projectile) event.getDamager();
                 if (damageProjectile.getShooter() instanceof Player) {
                     // cancel the damage
@@ -800,7 +832,8 @@ class KitchenSinkListener implements Listener {
             int time = (int) ((plugin.nextRestart - System.currentTimeMillis()) / 1000l);
             if (time < 90 && time > 0) {
                 event.getPlayer().sendMessage(
-                    ChatColor.LIGHT_PURPLE + "Warning: There will be a restart in about " + Integer.toString(time) + " seconds!");
+                                              ChatColor.LIGHT_PURPLE + "Warning: There will be a restart in about " + Integer.toString(time)
+                                              + " seconds!");
             }
         }
     }
@@ -898,6 +931,6 @@ class KitchenSinkListener implements Listener {
      * @return the integer block coordinates of a Location as a String.
      */
     public String blockLocationToString(Location loc) {
-        return "(" + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + ")";
+        return "(" + loc.getWorld().getName() + ", " + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + ")";
     }
 }
