@@ -72,6 +72,7 @@ public class Configuration {
     public boolean DISABLE_PEARL_DROPS_IN_END;
     public boolean DISABLE_PLAYER_DAMAGE_TO_VILLAGERS;
     public boolean NORMALIZE_CHAT;
+    public boolean BLOCK_SLIME_MOVING_RAILS_AND_CARPETS;
 
     public Configuration(KitchenSink instance) {
         plugin = instance;
@@ -166,6 +167,7 @@ public class Configuration {
         DISABLE_PEARL_DROPS_IN_END = plugin.getConfig().getBoolean("disable-pearl-drops-in-end", false);
         DISABLE_PLAYER_DAMAGE_TO_VILLAGERS = plugin.getConfig().getBoolean("disable-player-damage-to-villagers", false);
         NORMALIZE_CHAT = plugin.getConfig().getBoolean("normalize-chat", true);
+        BLOCK_SLIME_MOVING_RAILS_AND_CARPETS = plugin.getConfig().getBoolean("block-slime-moving-rails-and-carpets", true);
     }
 
     protected void setCountDownSetting(countdown setting, Object value) {

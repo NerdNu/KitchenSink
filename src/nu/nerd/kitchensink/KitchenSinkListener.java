@@ -43,10 +43,13 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockEvent;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
+import org.bukkit.event.block.BlockPistonExtendEvent;
+import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.AreaEffectCloudApplyEvent;
@@ -687,6 +690,50 @@ class KitchenSinkListener implements Listener {
                 }
             }
         }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void BlockPistonEvent(BlockPistonExtendEvent e) {
+        if (plugin.config.BLOCK_SLIME_MOVING_RAILS_AND_CARPETS) {
+            boolean hasroc=false;
+            boolean hasslime=false;
+            for (org.bukkit.block.Block b : e.getBlocks()) {
+                if (b.getType() == Material.CARPET || b.getType() == Material.RAILS
+                    || b.getType() == Material.ACTIVATOR_RAIL || b.getType() == Material.DETECTOR_RAIL
+                    || b.getType() == Material.POWERED_RAIL) {
+                    hasroc=true;
+                }
+                if (b.getType() == Material.SLIME_BLOCK) {
+                    hasslime=true;
+                }
+                if (hasroc && hasslime) {
+                    e.setCancelled(true);
+                    break;
+                }
+            }
+        }
+    }
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void BlockPistonEvent(BlockPistonRetractEvent e) {
+        if (plugin.config.BLOCK_SLIME_MOVING_RAILS_AND_CARPETS) {
+            boolean hasroc=false;
+            boolean hasslime=false;
+            for (org.bukkit.block.Block b : e.getBlocks()) {
+                if (b.getType() == Material.CARPET || b.getType() == Material.RAILS
+                    || b.getType() == Material.ACTIVATOR_RAIL || b.getType() == Material.DETECTOR_RAIL
+                    || b.getType() == Material.POWERED_RAIL) {
+                    hasroc=true;
+                }
+                if (b.getType() == Material.SLIME_BLOCK) {
+                    hasslime=true;
+                }
+                if (hasroc && hasslime) {
+                    e.setCancelled(true);
+                    break;
+                }
+            }
+        }
+
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
