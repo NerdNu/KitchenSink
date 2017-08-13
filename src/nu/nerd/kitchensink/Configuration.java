@@ -34,9 +34,12 @@ public class Configuration {
     public double HEALTH_POTION_MULTIPLIER;
     public double REGEN_POTION_MULTIPLIER;
     public boolean DISABLE_LINGERING_POTION_PVP;
+
     public boolean BLOCK_CAPS;
     public boolean BLOCK_VILLAGERS;
     public boolean BLOCK_JOHNNY;
+    public boolean BLOCK_SLIME_MOVING_RAILS_AND_CARPETS;
+
     public boolean SAFE_ICE;
     public boolean SAFE_DISPENSERS;
     public boolean SAFE_PORTALS;
@@ -72,7 +75,6 @@ public class Configuration {
     public boolean DISABLE_PEARL_DROPS_IN_END;
     public boolean DISABLE_PLAYER_DAMAGE_TO_VILLAGERS;
     public boolean NORMALIZE_CHAT;
-    public boolean BLOCK_SLIME_MOVING_RAILS_AND_CARPETS;
 
     public Configuration(KitchenSink instance) {
         plugin = instance;
@@ -96,9 +98,12 @@ public class Configuration {
         HEALTH_POTION_MULTIPLIER = plugin.getConfig().getDouble("health-potion-multiplier", 1.0);
         REGEN_POTION_MULTIPLIER = plugin.getConfig().getDouble("regen-potion-multiplier", 1.0);
         DISABLE_LINGERING_POTION_PVP = plugin.getConfig().getBoolean("disable-lingering-potion-pvp", false);
+
         BLOCK_CAPS = plugin.getConfig().getBoolean("block-caps");
         BLOCK_VILLAGERS = plugin.getConfig().getBoolean("block-villagers");
         BLOCK_JOHNNY = plugin.getConfig().getBoolean("block-johnny", false);
+        BLOCK_SLIME_MOVING_RAILS_AND_CARPETS = plugin.getConfig().getBoolean("block-slime-moving-rails-and-carpets");
+
         SAFE_ICE = plugin.getConfig().getBoolean("safe-ice");
         SAFE_DISPENSERS = plugin.getConfig().getBoolean("safe-dispensers");
         SAFE_PORTALS = plugin.getConfig().getBoolean("safe-portals");
@@ -117,8 +122,7 @@ public class Configuration {
         DISABLE_DISPENSED = plugin.getConfig().getIntegerList("disabled-items.dispensed");
         DISABLE_BUFF = plugin.getConfig().getIntegerList("disable-buff");
         DISABLED_DROPS = new EnumMap<EntityType, Set<Material>>(EntityType.class);
-        ConfigurationSection disabledDropsSection = plugin.getConfig()
-        .getConfigurationSection("disabled-drops");
+        ConfigurationSection disabledDropsSection = plugin.getConfig().getConfigurationSection("disabled-drops");
         if (disabledDropsSection != null) {
             for (String key : disabledDropsSection.getKeys(false)) {
                 try {
@@ -129,14 +133,12 @@ public class Configuration {
                         try {
                             mats.add(Material.valueOf(matString.toUpperCase()));
                         } catch (IllegalArgumentException e) {
-                            plugin.getLogger().warning("disabled-drops." + key
-                                                       + " contains an invalid material" + matString);
+                            plugin.getLogger().warning("disabled-drops." + key + " contains an invalid material" + matString);
                         }
                     }
                     DISABLED_DROPS.put(type, mats);
                 } catch (IllegalArgumentException e) {
-                    plugin.getLogger().warning("disabled-drops contains invalid entity type "
-                                               + key);
+                    plugin.getLogger().warning("disabled-drops contains invalid entity type " + key);
                 }
             }
         }
@@ -167,7 +169,6 @@ public class Configuration {
         DISABLE_PEARL_DROPS_IN_END = plugin.getConfig().getBoolean("disable-pearl-drops-in-end", false);
         DISABLE_PLAYER_DAMAGE_TO_VILLAGERS = plugin.getConfig().getBoolean("disable-player-damage-to-villagers", false);
         NORMALIZE_CHAT = plugin.getConfig().getBoolean("normalize-chat", true);
-        BLOCK_SLIME_MOVING_RAILS_AND_CARPETS = plugin.getConfig().getBoolean("block-slime-moving-rails-and-carpets", true);
     }
 
     protected void setCountDownSetting(countdown setting, Object value) {

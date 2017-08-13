@@ -18,9 +18,12 @@ lower-strength-potion-damage: false
 health-potion-multiplier: 1.0
 regen-potion-multiplier: 1.0
 disable-lingering-potion-pvp: false
+
 block-caps: true
 block-villagers: false
 block-johnny: false
+block-slime-moving-rails-and-carpets: true
+
 safe-ice: false
 safe-dispensers: false
 safe-portals: false
