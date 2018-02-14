@@ -70,6 +70,7 @@ restart-times:
 
 warn-restart-on-join: true
 warn-restart-on-inventory-open: true
+bungee-disconnect-on-restart: false
 sprint-max-time: 40
 countdown:
   maxTime: 15

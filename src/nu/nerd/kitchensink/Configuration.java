@@ -75,6 +75,7 @@ public class Configuration {
     public boolean DISABLE_PEARL_DROPS_IN_END;
     public boolean DISABLE_PLAYER_DAMAGE_TO_VILLAGERS;
     public boolean NORMALIZE_CHAT;
+    public boolean BUNGEE_DISCONNECT_ON_RESTART;
 
     public Configuration(KitchenSink instance) {
         plugin = instance;
@@ -169,6 +170,7 @@ public class Configuration {
         DISABLE_PEARL_DROPS_IN_END = plugin.getConfig().getBoolean("disable-pearl-drops-in-end", false);
         DISABLE_PLAYER_DAMAGE_TO_VILLAGERS = plugin.getConfig().getBoolean("disable-player-damage-to-villagers", false);
         NORMALIZE_CHAT = plugin.getConfig().getBoolean("normalize-chat", true);
+        BUNGEE_DISCONNECT_ON_RESTART = plugin.getConfig().getBoolean("bungee-disconnect-on-restart", false);
     }
 
     protected void setCountDownSetting(countdown setting, Object value) {
