@@ -26,6 +26,7 @@ import org.bukkit.block.NoteBlock;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Ageable;
+import org.bukkit.entity.Animals;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
@@ -615,7 +616,7 @@ class KitchenSinkListener implements Listener {
                     }
                     plugin.getLogger().info(message);
                 }
-                if (plugin.config.BUFF_DROPS > 1 && event.getEntity() instanceof Ageable) {
+                if (plugin.config.BUFF_DROPS > 1 && event.getEntity() instanceof Animals) {
                     List<ItemStack> items = event.getDrops();
                     Location l = event.getEntity().getLocation();
                     for (ItemStack a : items) {
