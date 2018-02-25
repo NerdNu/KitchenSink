@@ -21,6 +21,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import nu.nerd.kitchensink.ServerListPing17.StatusResponse;
 
 import org.bukkit.Art;
@@ -177,6 +179,13 @@ public class KitchenSink extends JavaPlugin {
                 recipeList.remove(r);
             }
         }
+
+        if (config.BUNGEE_DISCONNECT_ON_RESTART) {
+            for (Player player : getServer().getOnlinePlayers()) {
+                proxyKick(player);
+            }
+        }
+
     }
 
     @Override
@@ -1010,5 +1019,13 @@ public class KitchenSink extends JavaPlugin {
             }
         }
         return null;
+    }
+
+    public void proxyKick(Player player) {
+        ByteArrayDataOutput out = ByteStreams.newDataOutput();
+        out.writeUTF("KickPlayer");
+        out.writeUTF(player.getName());
+        out.writeUTF("Server closed");
+        player.sendPluginMessage(this, "BungeeCord", out.toByteArray());
     }
 }
