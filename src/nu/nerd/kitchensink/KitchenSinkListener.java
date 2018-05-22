@@ -3,12 +3,15 @@ package nu.nerd.kitchensink;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.bukkit.Art;
 import org.bukkit.Bukkit;
@@ -23,6 +26,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.NoteBlock;
+import org.bukkit.block.ShulkerBox;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Ageable;
@@ -81,6 +85,7 @@ import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.HorseInventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -105,11 +110,31 @@ class KitchenSinkListener implements Listener {
     /**
      * Material types of blocks that can be interacted with on right click.
      */
-    private static final HashSet<Integer> INTERACTABLE_TYPES;
+    private static final HashSet<Material> INTERACTABLE_TYPES;
+
+    /**
+     * A set containing all materials that fall under the umbrella "Shulker Box".
+     */
+    private static final HashSet<Material> SHULKER_BOXES;
 
     static {
-        INTERACTABLE_TYPES = new HashSet<Integer>(Arrays.asList(23, 25, 26, 54, 58, 61, 62, 64, 69, 71, 77, 84, 92, 93, 94, 95, 96, 107, 116, 117,
-                                                                122, 130, 138, 143, 145, 146, 149, 150, 154, 158));
+        INTERACTABLE_TYPES = new HashSet<>(Arrays.asList(
+                Material.DISPENSER, Material.NOTE_BLOCK, Material.BED, Material.BED_BLOCK, Material.CHEST,
+                Material.SIGN, Material.WORKBENCH, Material.FURNACE, Material.BURNING_FURNACE, Material.WOOD_DOOR, Material.WOODEN_DOOR,
+                Material.ACACIA_DOOR, Material.BIRCH_DOOR, Material.DARK_OAK_DOOR, Material.JUNGLE_DOOR, Material.SPRUCE_DOOR, Material.LEVER,
+                Material.IRON_DOOR_BLOCK, Material.STONE_BUTTON, Material.JUKEBOX, Material.CAKE_BLOCK, Material.DIODE_BLOCK_OFF,
+                Material.DIODE_BLOCK_ON, Material.TRAP_DOOR, Material.ACACIA_FENCE_GATE, Material.BIRCH_FENCE_GATE, Material.DARK_OAK_FENCE_GATE,
+                Material.FENCE_GATE, Material.JUNGLE_FENCE_GATE, Material.SPRUCE_FENCE_GATE, Material.ENCHANTMENT_TABLE, Material.BREWING_STAND,
+                Material.DRAGON_EGG, Material.ENDER_CHEST, Material.BEACON, Material.WOOD_BUTTON, Material.ANVIL, Material.TRAPPED_CHEST,
+                Material.REDSTONE_COMPARATOR_OFF, Material.REDSTONE_COMPARATOR_ON, Material.HOPPER, Material.DROPPER, Material.DAYLIGHT_DETECTOR,
+                Material.DAYLIGHT_DETECTOR_INVERTED));
+
+        SHULKER_BOXES = new HashSet<>(Arrays.asList(
+                Material.BLACK_SHULKER_BOX, Material.BLUE_SHULKER_BOX, Material.BROWN_SHULKER_BOX, Material.CYAN_SHULKER_BOX, Material.GRAY_SHULKER_BOX, 
+                Material.GREEN_SHULKER_BOX, Material.LIGHT_BLUE_SHULKER_BOX, Material.LIME_SHULKER_BOX, Material.MAGENTA_SHULKER_BOX,
+                Material.ORANGE_SHULKER_BOX, Material.PINK_SHULKER_BOX, Material.PURPLE_SHULKER_BOX, Material.ORANGE_SHULKER_BOX));
+
+        INTERACTABLE_TYPES.addAll(SHULKER_BOXES);
     }
     private final KitchenSink plugin;
 
@@ -220,7 +245,7 @@ class KitchenSinkListener implements Listener {
         if (plugin.config.PEARL_DAMAGE > 0) {
             if ((event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.RIGHT_CLICK_AIR)
                 && event.getItem().getType() == Material.ENDER_PEARL) {
-                if (event.getClickedBlock() == null || !INTERACTABLE_TYPES.contains(event.getClickedBlock().getTypeId())) {
+                if (event.getClickedBlock() == null || !INTERACTABLE_TYPES.contains(event.getClickedBlock().getType())) {
                     event.getPlayer().damage(plugin.config.PEARL_DAMAGE);
                 }
             }
@@ -632,16 +657,19 @@ class KitchenSinkListener implements Listener {
         }
     }
 
+    // -------------------------------------------------------------------------
+    /**
+     * If enabled, logs the player's inventory upon death.
+     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerDeath(PlayerDeathEvent event) {
-        Player player = event.getEntity();
         if (plugin.config.LOG_PLAYER_DROPS) {
-            String loot = "[drops] " + player.getName() + " at " + blockLocationToString(player.getLocation()) + ": ";
-            String sep = "";
-            for (ItemStack is : event.getDrops()) {
-                loot += sep + getItemDescription(is);
-                sep = ", ";
-            }
+            Player player = event.getEntity();
+            String dropLoc = blockLocationToString(player.getLocation());
+            String loot = "[drops] " + player.getName() + " at " + dropLoc + ": " +
+            event.getDrops().stream()
+                            .map(this::getItemDescription)
+                            .collect(Collectors.joining(","));
             plugin.getLogger().info(loot);
         }
     }
@@ -944,6 +972,9 @@ class KitchenSinkListener implements Listener {
      * The string contains the material type name, data value and amount, as
      * well as a list of enchantments. It is used in methods that log drops.
      *
+     * If the item is a shulker box, the contents will be recursively added
+     * to the description.
+     *
      * @param item the droppped item stack.
      * @return a string describing a dropped item stack.
      */
@@ -952,7 +983,17 @@ class KitchenSinkListener implements Listener {
         description.append(item.getAmount()).append('x').append(item.getType().name()).append(':').append(item.getDurability());
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
-            if (meta instanceof SkullMeta) {
+            if (meta instanceof BlockStateMeta) {
+                BlockStateMeta blockStateMeta = (BlockStateMeta) meta;
+                if (blockStateMeta.getBlockState() instanceof ShulkerBox) {
+                    description.append(" *** Contents: ");
+                    ShulkerBox shulkerBox = (ShulkerBox) blockStateMeta.getBlockState();
+                    shulkerBox.getInventory().forEach(itemStack -> {
+                        if (itemStack != null) description.append(getItemDescription(itemStack));
+                    });
+                    description.append(" **** ");
+                }
+            } else if (meta instanceof SkullMeta) {
                 SkullMeta skullMeta = (SkullMeta) meta;
                 if (skullMeta.getOwner() != null) {
                     description.append(" of \"").append(skullMeta.getOwner()).append("\"");

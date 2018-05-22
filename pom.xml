@@ -4,7 +4,7 @@
 	<groupId>nu.nerd</groupId>
 	<artifactId>KitchenSink</artifactId>
 	<name>KitchenSink</name>
-	<version>0.14.2</version>
+	<version>0.14.3</version>
 	<packaging>jar</packaging>
 	<description>A plugin for miscellaneous functionality that hasn't found a home elsewhere.</description>
         <url>https://github.com/NerdNu/KitchenSink</url>
@@ -37,7 +37,7 @@
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
-			<version>1.11-R0.1-SNAPSHOT</version>
+			<version>1.12.2-R0.1-SNAPSHOT</version>
 			<type>jar</type>
 		</dependency>
 		<dependency>
@@ -94,8 +94,8 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>2.0.2</version>
 					<configuration>
-						<source>1.7</source>
-						<target>1.7</target>
+						<source>1.8</source>
+						<target>1.8</target>
 					</configuration>
 				</plugin>
 			</plugins>
