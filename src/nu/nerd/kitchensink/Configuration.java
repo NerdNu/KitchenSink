@@ -46,8 +46,6 @@ public class Configuration {
     public boolean SAFE_PORTALS;
     public int PEARL_DAMAGE;
     public boolean LEATHERLESS_BOOKS;
-    public boolean LOCK_HORSES;
-    public boolean INVULNERABLE_TAME_HORSES;
     public boolean UNTAME_PETS;
     public boolean HOST_KEYS_CHECK;
     public boolean HOST_KEYS_DROP_PERMISSIONS;
@@ -113,8 +111,6 @@ public class Configuration {
         SAFE_PORTALS = plugin.getConfig().getBoolean("safe-portals");
         PEARL_DAMAGE = plugin.getConfig().getInt("pearl-damage");
         LEATHERLESS_BOOKS = plugin.getConfig().getBoolean("leatherless-books");
-        LOCK_HORSES = plugin.getConfig().getBoolean("lock-horses");
-        INVULNERABLE_TAME_HORSES = plugin.getConfig().getBoolean("invulnerable-tame-horses");
         UNTAME_PETS = plugin.getConfig().getBoolean("untame-pets");
         HOST_KEYS_CHECK = plugin.getConfig().getBoolean("host-keys-check");
         HOST_KEYS_DROP_PERMISSIONS = plugin.getConfig().getBoolean("host-keys-drop-permissions");

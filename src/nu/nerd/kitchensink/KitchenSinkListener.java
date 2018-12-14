@@ -344,19 +344,8 @@ class KitchenSinkListener implements Listener {
                             // Prevent the existence of saddle-wearing
                             // untameable untamed horses.
                             if (tameable instanceof Horse) {
-                                Horse horse = (Horse) tameable;
-                                HorseInventory inventory = horse.getInventory();
-                                Location loc = horse.getLocation();
-                                for (ItemStack item : inventory.getContents()) {
-                                    if (item != null) {
-                                        loc.getWorld().dropItemNaturally(loc, item);
-                                    }
-                                }
-                                inventory.clear();
-                                if (horse.isCarryingChest()) {
-                                    horse.setCarryingChest(false);
-                                    loc.getWorld().dropItemNaturally(loc, new ItemStack(Material.CHEST));
-                                }
+                                player.sendMessage("Use EasyRider to do that!");
+                                return;
                             }
 
                             // Make sure that the pet being untamed is standing,
@@ -378,58 +367,9 @@ class KitchenSinkListener implements Listener {
                     } else {
                         player.sendMessage(ChatColor.RED + "That animal is not tame.");
                     }
-                    return;
                 }
             }
 
-            if (plugin.config.LOCK_HORSES && entity instanceof Horse) {
-                Horse horse = (Horse) entity;
-                Location oldLocation = player.getLocation();
-                if (player.hasMetadata(KitchenSink.HORSE_DO_LOCK_KEY)) {
-                    event.setCancelled(true);
-                    boolean newHorseLockState = false;
-                    for (MetadataValue meta : player.getMetadata(KitchenSink.HORSE_DO_LOCK_KEY)) {
-                        if (meta.getOwningPlugin() == plugin) {
-                            newHorseLockState = (Boolean) meta.value();
-                            break;
-                        }
-                    }
-                    player.removeMetadata(KitchenSink.HORSE_DO_LOCK_KEY, plugin);
-
-                    if (horse.isTamed()) {
-                        if (horse.getOwner() == player || isPetAdmin) {
-                            // Warn admins when they bypass ownership.
-                            if (isPetAdmin && horse.getOwner() != player) {
-                                player.sendMessage(ChatColor.YELLOW + "That horse belongs to " + horse.getOwner().getName() + ".");
-                            }
-
-                            // Default, locked horses lack the "unlocked"
-                            // metadata.
-                            if (newHorseLockState) {
-                                entity.removeMetadata(KitchenSink.HORSE_UNLOCKED_KEY, plugin);
-                                player.sendMessage(ChatColor.GOLD + "Horse locked.");
-                            } else {
-                                entity.setMetadata(KitchenSink.HORSE_UNLOCKED_KEY, new FixedMetadataValue(plugin, null));
-                                player.sendMessage(ChatColor.GOLD + "Horse unlocked.");
-                            }
-                        } else {
-                            player.sendMessage(ChatColor.RED + "You do not own that horse.");
-                        }
-                    } else {
-                        player.sendMessage(ChatColor.RED + "You do not own that horse.");
-                    }
-                } else {
-                    // Handle an attempt to mount the horse or attach a lead.
-                    if (horse.isTamed() && horse.getOwner() != player && !horse.hasMetadata(KitchenSink.HORSE_UNLOCKED_KEY)) {
-                        event.setCancelled(true);
-                        player.sendMessage(ChatColor.RED + "That horse is locked by its owner.");
-                    }
-                }
-                if (event.isCancelled()) {
-                    // Try to restore the player's old look angle.
-                    player.teleport(oldLocation);
-                }
-            }
         } else if (entity instanceof Vindicator) {
             // Block players from Johnny-tagging Vindicators
             if (plugin.config.BLOCK_JOHNNY) {
@@ -883,16 +823,6 @@ class KitchenSinkListener implements Listener {
             }
         } // config.DISABLE_PLAYER_DAMAGE_TO_VILLAGERS
     } // onEntityDamageByEntity
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onEntityDamage(EntityDamageEvent event) {
-        if (plugin.config.INVULNERABLE_TAME_HORSES && event.getEntityType() == EntityType.HORSE && event.getCause() != DamageCause.VOID) {
-            Horse horse = (Horse) event.getEntity();
-            if (horse.isTamed() && horse.getPassenger() == null) {
-                event.setCancelled(true);
-            }
-        }
-    }
 
     @EventHandler(ignoreCancelled = true)
     public void onHangingPlaceEvent(HangingPlaceEvent event) {

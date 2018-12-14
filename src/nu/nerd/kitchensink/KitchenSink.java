@@ -76,18 +76,6 @@ public class KitchenSink extends JavaPlugin {
 
     /**
      * Key of Player metadata set to signify that the next right click on a
-     * horse is an attempted lock/unlock. Value is the new boolean lock state.
-     */
-    static final String HORSE_DO_LOCK_KEY = "KitchenSink.do_lock";
-
-    /**
-     * Key of Horse metadata set to signify that the horse is unlocked for
-     * riding by players other than the owner. If absent, horse is locked.
-     */
-    static final String HORSE_UNLOCKED_KEY = "KitchenSink.unlocked";
-
-    /**
-     * Key of Player metadata set to signify that the next right click on a
      * Tameable mob owned by the player will un-tame the mob.
      */
     static final String UNTAME_KEY = "KitchenSink.untame";
@@ -352,27 +340,6 @@ public class KitchenSink extends JavaPlugin {
                 sender.sendMessage("The server will restart in " + time / 60 + " minute" + ((time == 1) ? "" : "s"));
             }
 
-            return true;
-        }
-
-        if (command.getName().equalsIgnoreCase("lock-horse")) {
-            setHorseLockState(sender, true);
-            return true;
-        } else if (command.getName().equalsIgnoreCase("unlock-horse")) {
-            setHorseLockState(sender, false);
-            return true;
-        } else if (command.getName().equalsIgnoreCase("untame")) {
-            if (config.UNTAME_PETS) {
-                if (sender instanceof Player) {
-                    Player player = (Player) sender;
-                    player.setMetadata(UNTAME_KEY, new FixedMetadataValue(this, null));
-                    sender.sendMessage(ChatColor.GOLD + "Right click on a pet that you own.");
-                } else {
-                    sender.sendMessage("You need to be in-game to untame pets.");
-                }
-            } else {
-                sender.sendMessage(ChatColor.RED + "That command is disabled.");
-            }
             return true;
         }
 
@@ -825,28 +792,6 @@ public class KitchenSink extends JavaPlugin {
             }
         } catch (IOException ex) {
             return "";
-        }
-    }
-
-    /**
-     * Handle the /lock-horse and /unlock-horse commands.
-     *
-     * The player must subsequently right click on the horse.
-     *
-     * @param sender the sender of the command.
-     * @param locked true if the request is to lock the horse; false for unlock.
-     */
-    protected void setHorseLockState(CommandSender sender, boolean locked) {
-        if (config.LOCK_HORSES) {
-            if (sender instanceof Player) {
-                Player player = (Player) sender;
-                player.setMetadata(HORSE_DO_LOCK_KEY, new FixedMetadataValue(this, locked));
-                sender.sendMessage(ChatColor.GOLD + "Right click on a horse that you own.");
-            } else {
-                sender.sendMessage("You need to be in-game to lock horses.");
-            }
-        } else {
-            sender.sendMessage(ChatColor.RED + "That command is disabled.");
         }
     }
 

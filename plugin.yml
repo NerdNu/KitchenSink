@@ -3,6 +3,7 @@ version: ${project.version}
 author: Travis Watkins
 main: nu.nerd.kitchensink.KitchenSink
 softdepend: [WorldGuard, bPermissions, ProtocolLib]
+description:
 api-version: 1.13
 
 permissions:
@@ -35,7 +36,7 @@ permissions:
         description: Edit a players inventory
         default: op
     kitchensink.petadmin:
-        description: Bypass ownership test in /unlock-horse, /lock-horse and /untame.
+        description: Bypass ownership test in /untame.
         default: op
     kitchensink.mobcount:
         default: op
@@ -47,7 +48,6 @@ permissions:
     kitchensink.noteblocks:
         description: Allows use of /note
         default: true
-description: 
 
 commands:
     ksreload:
@@ -77,14 +77,6 @@ commands:
             /ptime [day|night|<time>]
     nextrestart:
         description: Gives you the amount of time until the next restart
-    lock-horse:
-        description: Lock a horse so that only the owner can ride it.
-        usage: |
-            /lock-horse: Lock the next horse owned by you that you right click on.
-    unlock-horse:
-        description: Unlock a horse so that players other than the owner can ride it.
-        usage: |
-            /unlock-horse: Unlock the next horse owned by you that you right click on.
     untame:
         description: Untame a pet that you own.
         usage: |
