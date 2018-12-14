@@ -57,7 +57,6 @@ public class KitchenSink extends JavaPlugin {
     private final KitchenSinkListener listener = new KitchenSinkListener(this);
     private final LagCheck lagCheck = new LagCheck();
     public final Configuration config = new Configuration(this);
-    public final static Logger log = Logger.getLogger("Minecraft");
     public final List<Recipe> recipeList = new ArrayList<>();
     public int countdownTime = 0;
     public long countdownTicks = 0;
