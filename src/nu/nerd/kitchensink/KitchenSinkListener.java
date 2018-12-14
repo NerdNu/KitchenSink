@@ -1044,7 +1044,7 @@ class KitchenSinkListener implements Listener {
             description.append(" (");
             String sep = "";
             for (Entry<Enchantment, Integer> entry : enchants.entrySet()) {
-                description.append(sep).append(entry.getKey().getName()).append(':').append(entry.getValue());
+                description.append(sep).append(entry.getKey().getKey().getNamespace()).append(':').append(entry.getValue());
                 sep = ",";
             }
             description.append(')');

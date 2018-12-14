@@ -121,7 +121,7 @@ public class KitchenSink extends JavaPlugin {
     static {
         // Internal names.
         for (Enchantment enchant : Enchantment.values()) {
-            ENCHANTMENT_NAMES.put(enchant.getName().toLowerCase(), enchant);
+            ENCHANTMENT_NAMES.put(enchant.getKey().getNamespace().toLowerCase(), enchant);
         }
 
         // Common, in-game names.
@@ -143,7 +143,7 @@ public class KitchenSink extends JavaPlugin {
         ENCHANTMENT_NAMES.put("fire_protection", Enchantment.PROTECTION_FIRE);
         ENCHANTMENT_NAMES.put("projectile_protection", Enchantment.PROTECTION_PROJECTILE);
         ENCHANTMENT_NAMES.put("aqua_affinity", Enchantment.WATER_WORKER);
-    };
+    }
 
     /**
      * Return the enchantment whose internal or common name exactly matches
@@ -507,7 +507,7 @@ public class KitchenSink extends JavaPlugin {
             player.setItemInHand(item);
 
             // Log successful enchants.
-            getLogger().info(sender.getName() + " enchanted " + item.getAmount() + " book: " + enchantment.getName() + " " + level);
+            getLogger().info(sender.getName() + " enchanted " + item.getAmount() + " book: " + enchantment.getKey().getNamespace() + " " + level);
             return true;
         } // /enchant-book
 
