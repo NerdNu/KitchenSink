@@ -16,8 +16,8 @@ import java.util.List;
  *
  * @author zh32 <zh32 at zh32.de>
  */
-public class ServerListPing17
-{
+public class ServerListPing17 {
+
 	private InetSocketAddress host;
 	private int timeout = 7000;
 	private Gson gson = new Gson();

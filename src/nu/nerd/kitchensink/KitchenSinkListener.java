@@ -3,14 +3,12 @@ package nu.nerd.kitchensink;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.bukkit.Art;
@@ -100,9 +98,6 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 import org.bukkit.util.BlockIterator;
 
-import de.bananaco.bpermissions.api.ApiLayer;
-import de.bananaco.bpermissions.api.util.CalculableType;
-
 class KitchenSinkListener implements Listener {
 
     private static final String REPLACED_CHARS = "[ \\s\\u000a\\u000d\\u2028\\u2029\\u0009\\u000b\\u000c\\u000d\\u0020\\u00a0\\u1680\\u180e\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200a\\u202f\\u205f\\u3000]{2,}";
@@ -174,19 +169,15 @@ class KitchenSinkListener implements Listener {
                     plugin.getLogger().warning(player.getName() + " connected with an invalid host key.");
                     if (plugin.config.HOST_KEYS_DROP_PERMISSIONS && dropToDefaultPermissions(player)) {
                         plugin.getLogger().info(player.getName() + "'s permissions were reduced to default.");
-                        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-                            @Override
-                            public void run() {
-                                player.sendMessage(ChatColor.DARK_RED + "You have logged in with an invalid host key.");
-                                player.sendMessage(ChatColor.DARK_RED + "As a security precaution, your permissions have been reduced to default.");
-                            }
+                        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                            player.sendMessage(ChatColor.DARK_RED + "You have logged in with an invalid host key.");
+                            player.sendMessage(ChatColor.DARK_RED + "As a security precaution, your permissions have been reduced to default.");
                         });
                     } else {
                         event.disallow(PlayerLoginEvent.Result.KICK_OTHER, "Login denied: invalid host key. Please contact a tech.");
                     }
                 }
             }
-            return;
         }
     }
 
@@ -290,7 +281,6 @@ class KitchenSinkListener implements Listener {
             v.setTarget(event.getPlayer());
             event.getPlayer().damage(1, v);
             event.setCancelled(true);
-            return;
         } else if (entity instanceof Tameable) {
             Tameable tameable = (Tameable) entity;
             Player player = event.getPlayer();
@@ -516,7 +506,7 @@ class KitchenSinkListener implements Listener {
                     projectile.getLocation().toVector(),
                     projectile.getVelocity().normalize(), 0, 4);
 
-                Block hitBlock = null;
+                Block hitBlock;
                 while (iterator.hasNext()) {
                     hitBlock = iterator.next();
                     if (hitBlock.getType() != Material.AIR) {
@@ -587,24 +577,12 @@ class KitchenSinkListener implements Listener {
         if (plugin.config.DISABLE_PEARL_DROPS_IN_END) {
             Location l = event.getEntity().getLocation();
             if (l.getWorld().getEnvironment() == World.Environment.THE_END) {
-                Iterator<ItemStack> i = event.getDrops().iterator();
-                while (i.hasNext()) {
-                    ItemStack is = i.next();
-                    if (is.getType() == Material.ENDER_PEARL) {
-                        i.remove();
-                    }
-                }
+                event.getDrops().removeIf(is -> is.getType() == Material.ENDER_PEARL);
             }
         }
         if (plugin.config.DISABLED_DROPS.containsKey(event.getEntity().getType())) {
             Set<Material> mats = plugin.config.DISABLED_DROPS.get(event.getEntity().getType());
-            Iterator<ItemStack> i = event.getDrops().iterator();
-            while (i.hasNext()) {
-                ItemStack is = i.next();
-                if (mats.contains(is.getType())) {
-                    i.remove();
-                }
-            }
+            event.getDrops().removeIf(is -> mats.contains(is.getType()));
         }
         if (event.getEntity() instanceof Ageable || event.getEntity().getCustomName() != null) {
             Player killer = event.getEntity().getKiller();
@@ -622,10 +600,8 @@ class KitchenSinkListener implements Listener {
                             message += "|" + ocelot.getCatType().name();
                         } else if (tameable instanceof Horse) {
                             AbstractHorse abstractHorse = (AbstractHorse) tameable;
-                            if (abstractHorse instanceof Horse) {
-                                Horse horse = (Horse) abstractHorse;
-                                message += "|" + horse.getColor().name() + "," + horse.getStyle().name() + "|";
-                            }
+                            Horse horse = (Horse) abstractHorse;
+                            message += "|" + horse.getColor().name() + "," + horse.getStyle().name() + "|";
                             for (ItemStack item : abstractHorse.getInventory()) {
                                 if (item != null && item.getType() != Material.AIR) {
                                     message += getItemDescription(item) + ",";
@@ -903,10 +879,9 @@ class KitchenSinkListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent event) {
         if (plugin.config.WARN_RESTART_ON_JOIN) {
-            int time = (int) ((plugin.nextRestart - System.currentTimeMillis()) / 1000l);
+            int time = (int) ((plugin.nextRestart - System.currentTimeMillis()) / 1000L);
             if (time < 90 && time > 0) {
-                event.getPlayer().sendMessage(ChatColor.LIGHT_PURPLE + "Warning: There will be a restart in about " +
-                                              Integer.toString(time) + " seconds!");
+                event.getPlayer().sendMessage(ChatColor.LIGHT_PURPLE + "Warning: There will be a restart in about " + time + " seconds!");
             }
         }
     }
@@ -914,14 +889,14 @@ class KitchenSinkListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onInventoryOpen(InventoryOpenEvent event) {
         if (plugin.config.WARN_RESTART_ON_INVENTORY_OPEN) {
-            int time = (int) ((plugin.nextRestart - System.currentTimeMillis()) / 1000l);
+            int time = (int) ((plugin.nextRestart - System.currentTimeMillis()) / 1000L);
             if (time < 90 && time > 0) {
                 if (!(event.getPlayer() instanceof Player)) {
                     return;
                 }
 
                 Player player = (Player) event.getPlayer();
-                player.sendMessage(ChatColor.RED + "WARNING: There will be a restart in about " + Integer.toString(time) + " seconds!");
+                player.sendMessage(ChatColor.RED + "WARNING: There will be a restart in about " + time + " seconds!");
                 player.sendMessage(ChatColor.RED + "Having an inventory open when a restart occurs may result in loss of items.");
                 player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_LAND, 2f, 1f);
             }
@@ -955,13 +930,7 @@ class KitchenSinkListener implements Listener {
                 blacklist.add(PotionType.POISON);
                 blacklist.add(PotionType.SLOWNESS);
                 blacklist.add(PotionType.WEAKNESS);
-                Iterator<LivingEntity> iterator = event.getAffectedEntities().iterator();
-                while (iterator.hasNext()) {
-                    LivingEntity ent = iterator.next();
-                    if (ent instanceof Player && blacklist.contains(type)) {
-                        iterator.remove();
-                    }
-                }
+                event.getAffectedEntities().removeIf(ent -> ent instanceof Player && blacklist.contains(type));
             }
         }
     }

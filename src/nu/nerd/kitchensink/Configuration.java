@@ -1,14 +1,14 @@
 package nu.nerd.kitchensink;
 
+import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.EntityType;
+
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.bukkit.Material;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.EntityType;
 
 enum countdown {
     maxtime, format, color, style, msgcolor, msgstyle
@@ -122,7 +122,7 @@ public class Configuration {
         DISABLED_RIGHT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.right-click");
         DISABLE_DISPENSED = plugin.getConfig().getIntegerList("disabled-items.dispensed");
         DISABLE_BUFF = plugin.getConfig().getIntegerList("disable-buff");
-        DISABLED_DROPS = new EnumMap<EntityType, Set<Material>>(EntityType.class);
+        DISABLED_DROPS = new EnumMap<>(EntityType.class);
         ConfigurationSection disabledDropsSection = plugin.getConfig().getConfigurationSection("disabled-drops");
         if (disabledDropsSection != null) {
             for (String key : disabledDropsSection.getKeys(false)) {

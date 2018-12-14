@@ -3,10 +3,11 @@ package nu.nerd.kitchensink;
 import java.util.LinkedList;
 
 
-public class LagCheck implements Runnable
-{
+public class LagCheck implements Runnable {
+
     private long last = System.currentTimeMillis();
-    public LinkedList<Long> history = new LinkedList<Long>();
+
+    public LinkedList<Long> history = new LinkedList<>();
 
     @Override
     public void run() {
@@ -17,4 +18,5 @@ public class LagCheck implements Runnable
             history.poll();
         last = now;
     }
+
 }

@@ -58,7 +58,7 @@ public class KitchenSink extends JavaPlugin {
     private final LagCheck lagCheck = new LagCheck();
     public final Configuration config = new Configuration(this);
     public final static Logger log = Logger.getLogger("Minecraft");
-    public final List<Recipe> recipeList = new ArrayList<Recipe>();
+    public final List<Recipe> recipeList = new ArrayList<>();
     public int countdownTime = 0;
     public long countdownTicks = 0;
     public String countdownMessage = "";
@@ -117,7 +117,8 @@ public class KitchenSink extends JavaPlugin {
      *
      * Also maps the internal Bukkit Enchantment names in lower case.
      */
-    private static final TreeMap<String, Enchantment> ENCHANTMENT_NAMES = new TreeMap<String, Enchantment>();
+    private static final TreeMap<String, Enchantment> ENCHANTMENT_NAMES = new TreeMap<>();
+
     static {
         // Internal names.
         for (Enchantment enchant : Enchantment.values()) {
@@ -200,35 +201,29 @@ public class KitchenSink extends JavaPlugin {
 
         if (config.ANIMAL_COUNT) {
             final BukkitScheduler sched = getServer().getScheduler();
-            Runnable task = new Runnable() {
-                @Override
-                public void run() {
-                    System.out.println("-!- Starting Mob count");
-                    System.out.println("-!- " + getMultiworldMobCount());
-                }
+            Runnable task = () -> {
+                System.out.println("-!- Starting Mob count");
+                System.out.println("-!- " + getMultiworldMobCount());
             };
             sched.runTaskTimerAsynchronously(this, task, ONE_MINUTE_TICKS, 10 * ONE_MINUTE_TICKS);
         }
 
         if (config.CULL_ZOMBIES) {
             final BukkitScheduler sched = getServer().getScheduler();
-            Runnable task = new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        Collection<LivingEntity> livingEntities = getServer().getWorlds().get(0).getEntitiesByClass(LivingEntity.class);
-                        for (LivingEntity mob : livingEntities) {
-                            if (mob.getType() == EntityType.ZOMBIE) {
-                                Zombie zombie = (Zombie) mob;
-                                if (zombie.getTarget() != null
-                                    && zombie.getTarget().getType() == EntityType.VILLAGER
-                                    && zombie.getRemoveWhenFarAway()) {
-                                    zombie.remove();
-                                }
+            Runnable task = () -> {
+                try {
+                    Collection<LivingEntity> livingEntities = getServer().getWorlds().get(0).getEntitiesByClass(LivingEntity.class);
+                    for (LivingEntity mob : livingEntities) {
+                        if (mob.getType() == EntityType.ZOMBIE) {
+                            Zombie zombie = (Zombie) mob;
+                            if (zombie.getTarget() != null
+                                && zombie.getTarget().getType() == EntityType.VILLAGER
+                                && zombie.getRemoveWhenFarAway()) {
+                                zombie.remove();
                             }
                         }
-                    } catch (Exception ex) {
                     }
+                } catch (Exception ex) {
                 }
             };
             sched.runTaskTimerAsynchronously(this, task, config.CULL_ZOMBIES_INTERVAL, config.CULL_ZOMBIES_INTERVAL);
@@ -386,7 +381,7 @@ public class KitchenSink extends JavaPlugin {
         }
 
         if (command.getName().equalsIgnoreCase("nextrestart")) {
-            int time = (int) ((nextRestart - System.currentTimeMillis()) / 1000l);
+            int time = (int) ((nextRestart - System.currentTimeMillis()) / 1000L);
 
             if (time < 120) {
                 sender.sendMessage("The server will restart in " + time + " second" + ((time == 1) ? "" : "s"));
@@ -519,7 +514,7 @@ public class KitchenSink extends JavaPlugin {
 
         if (command.getName().equalsIgnoreCase("ping-server")) {
             String host;
-            Integer port = 25565;
+            int port = 25565;
             String parameter = "combined";
             String format = null;
 
@@ -572,7 +567,7 @@ public class KitchenSink extends JavaPlugin {
                 }
 
                 try {
-                    Hashtable<String, Object> parameters = new Hashtable<String, Object>();
+                    Hashtable<String, Object> parameters = new Hashtable<>();
                     parameters.put("DESCRIPTION", sr.getDescription());
                     parameters.put("PLAYERS_ONLINE", Integer.toString(sr.getPlayers().getOnline()));
                     parameters.put("PLAYERS_MAX", Integer.toString(sr.getPlayers().getMax()));
@@ -594,7 +589,7 @@ public class KitchenSink extends JavaPlugin {
                     sender.sendMessage(ChatColor.GRAY + "A countdown is already in progress.");
                     return true;
                 } else if (args.length > 0) {
-                    List<String> Args = new ArrayList<String>(Arrays.asList(args));
+                    List<String> Args = new ArrayList<>(Arrays.asList(args));
                     try {
                         countdownTime = Integer.parseInt(Args.get(0));
                         if (countdownTime > config.COUNTDOWN_MAX_TIME) {
@@ -615,24 +610,21 @@ public class KitchenSink extends JavaPlugin {
                     }
 
                     countdownActive = true;
-                    countdownTask = this.getServer().getScheduler().runTaskTimer(this, new Runnable() {
-                        @Override
-                        public void run() {
-                            if (countdownTime > 0) {
-                                getServer().broadcastMessage(
-                                    ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_COLOR + config.COUNTDOWN_STYLE)
-                                    + config.COUNTDOWN_FORMAT.split("\\$s")[0] + countdownTime
-                                    + (config.COUNTDOWN_FORMAT.split("\\$s").length > 1 ? config.COUNTDOWN_FORMAT.split("\\$s")[1] : ""));
-                                countdownTime--;
-                            } else {
-                                countdownActive = false;
-                                getServer().broadcastMessage(
-                                    ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_MSG_COLOR + config.COUNTDOWN_MSG_STYLE)
-                                    + countdownMessage);
-                                countdownMessage = "";
-                                countdownTask.cancel();
-                                countdownTask = null;
-                            }
+                    countdownTask = this.getServer().getScheduler().runTaskTimer(this, () -> {
+                        if (countdownTime > 0) {
+                            getServer().broadcastMessage(
+                                ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_COLOR + config.COUNTDOWN_STYLE)
+                                + config.COUNTDOWN_FORMAT.split("\\$s")[0] + countdownTime
+                                + (config.COUNTDOWN_FORMAT.split("\\$s").length > 1 ? config.COUNTDOWN_FORMAT.split("\\$s")[1] : ""));
+                            countdownTime--;
+                        } else {
+                            countdownActive = false;
+                            getServer().broadcastMessage(
+                                ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_MSG_COLOR + config.COUNTDOWN_MSG_STYLE)
+                                + countdownMessage);
+                            countdownMessage = "";
+                            countdownTask.cancel();
+                            countdownTask = null;
                         }
                     }, 0L, 20L);
                     return true;
@@ -832,25 +824,25 @@ public class KitchenSink extends JavaPlugin {
     }
 
     public void sendList(CommandSender sender) {
-        ArrayList<String> list = new ArrayList<String>();
+        ArrayList<String> list = new ArrayList<>();
         for (Player player : getServer().getOnlinePlayers()) {
             list.add(player.getName());
         }
-        Collections.sort(list, String.CASE_INSENSITIVE_ORDER);
+        list.sort(String.CASE_INSENSITIVE_ORDER);
         sender.sendMessage("Players Online: " + list.size());
         if (list.size() == 0) {
             return;
         }
-        String onlinelist = "Players:";
+        StringBuilder onlinelist = new StringBuilder("Players:");
         int index = 0;
         for (String p : list) {
             ChatColor color = ChatColor.GRAY;
             if (index++ % 2 == 0) {
                 color = ChatColor.WHITE;
             }
-            onlinelist += " " + color + p;
+            onlinelist.append(" ").append(color).append(p);
         }
-        sender.sendMessage(onlinelist);
+        sender.sendMessage(onlinelist.toString());
     }
 
     /**
@@ -865,14 +857,8 @@ public class KitchenSink extends JavaPlugin {
         File hostKeysDir = new File(getDataFolder(), HOST_KEYS_DIRECTORY);
         File hostKeyFile = new File(hostKeysDir, player.getUniqueId().toString());
         try {
-            BufferedReader reader = null;
-            try {
-                reader = new BufferedReader(new FileReader(hostKeyFile));
+            try (BufferedReader reader = new BufferedReader(new FileReader(hostKeyFile))) {
                 return reader.readLine();
-            } finally {
-                if (reader != null) {
-                    reader.close();
-                }
             }
         } catch (IOException ex) {
             return "";
@@ -905,7 +891,7 @@ public class KitchenSink extends JavaPlugin {
      * Returns counts for all mobs
      */
     public HashMap<String, Integer> getMobCount(World world) {
-        HashMap<String, Integer> counts = new HashMap<String, Integer>();
+        HashMap<String, Integer> counts = new HashMap<>();
 
         if (world == null) {
             world = getServer().getWorlds().get(0);
@@ -928,7 +914,7 @@ public class KitchenSink extends JavaPlugin {
     }
 
     public HashMap<String, Integer> getMultiworldMobCount() {
-        HashMap<String, Integer> counts = new HashMap<String, Integer>();
+        HashMap<String, Integer> counts = new HashMap<>();
         try {
             for (World world : getServer().getWorlds()) {
                 Collection<LivingEntity> livingEntities;
@@ -950,8 +936,8 @@ public class KitchenSink extends JavaPlugin {
      * Returns counts for all mobs
      */
     public void dumpMobCount() {
-        HashMap<String, Integer> counts = new HashMap<String, Integer>();
-        Map<String, ArrayList<Map<String, Integer>>> locations = new HashMap<String, ArrayList<Map<String, Integer>>>();
+        HashMap<String, Integer> counts = new HashMap<>();
+        Map<String, ArrayList<Map<String, Integer>>> locations = new HashMap<>();
 
         try {
             Collection<LivingEntity> livingEntities = getServer().getWorlds().get(0).getEntitiesByClass(LivingEntity.class);
@@ -962,13 +948,13 @@ public class KitchenSink extends JavaPlugin {
                     counts.put(animal.getType().name(), 1);
                 }
 
-                Map<String, Integer> location = new HashMap<String, Integer>();
+                Map<String, Integer> location = new HashMap<>();
                 location.put("x", animal.getLocation().getBlockX());
                 location.put("y", animal.getLocation().getBlockY());
                 location.put("z", animal.getLocation().getBlockZ());
 
                 if (!locations.containsKey(animal.getType().name())) {
-                    locations.put(animal.getType().name(), new ArrayList<Map<String, Integer>>());
+                    locations.put(animal.getType().name(), new ArrayList<>());
                 }
                 locations.get(animal.getType().name()).add(location);
             }
@@ -987,13 +973,13 @@ public class KitchenSink extends JavaPlugin {
     public String dictFormat(String format, Hashtable<String, Object> values) {
         StringBuilder convFormat = new StringBuilder(format);
         Enumeration<String> keys = values.keys();
-        ArrayList<Object> valueList = new ArrayList<Object>();
+        ArrayList<Object> valueList = new ArrayList<>();
 
         int currentPos = 1;
         while (keys.hasMoreElements()) {
             String key = keys.nextElement();
             String formatKey = "%(" + key + ")";
-            String formatPos = "%" + Integer.toString(currentPos) + "$s";
+            String formatPos = "%" + currentPos + "$s";
 
             int index = -1;
             while ((index = convFormat.indexOf(formatKey, index)) != -1) {
