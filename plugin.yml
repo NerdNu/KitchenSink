@@ -3,7 +3,7 @@ version: ${project.version}
 author: Travis Watkins
 main: nu.nerd.kitchensink.KitchenSink
 softdepend: [WorldGuard, bPermissions, ProtocolLib]
-description:
+description: Miscellaneous tweaks and fixes for Spigot servers.
 api-version: 1.13
 
 permissions:
