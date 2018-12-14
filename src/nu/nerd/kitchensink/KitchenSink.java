@@ -1,30 +1,8 @@
 package nu.nerd.kitchensink;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.logging.Logger;
-
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import nu.nerd.kitchensink.ServerListPing17.StatusResponse;
-
 import org.bukkit.Art;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -41,6 +19,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Zombie;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
@@ -49,6 +28,25 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BlockIterator;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 public class KitchenSink extends JavaPlugin {
 
@@ -239,8 +237,8 @@ public class KitchenSink extends JavaPlugin {
             Iterator<Recipe> it = getServer().recipeIterator();
             while (it.hasNext()) {
                 Recipe recipe = it.next();
-                for (int id : config.BLOCK_CRAFT) {
-                    if (recipe != null && recipe.getResult().getTypeId() == id) {
+                for (Material material : config.BLOCK_CRAFT) {
+                    if (recipe != null && recipe.getResult().getType() == material) {
                         it.remove();
                     }
                 }
@@ -295,12 +293,13 @@ public class KitchenSink extends JavaPlugin {
         }
         if (command.getName().equalsIgnoreCase("unenchant") && sender instanceof Player) {
             Player player = (Player) sender;
+            PlayerInventory inv = player.getInventory();
             try {
-                if (player.getItemInHand().getType().equals(Material.ENCHANTED_BOOK)) {
-                    player.setItemInHand(new ItemStack(Material.BOOK));
+                if (inv.getItemInMainHand().getType().equals(Material.ENCHANTED_BOOK)) {
+                    inv.setItemInMainHand(new ItemStack(Material.BOOK));
                 } else {
-                    for (Enchantment e : player.getItemInHand().getEnchantments().keySet()) {
-                        player.getItemInHand().removeEnchantment(e);
+                    for (Enchantment e : inv.getItemInMainHand().getEnchantments().keySet()) {
+                        inv.getItemInMainHand().removeEnchantment(e);
                     }
                 }
                 player.sendMessage("Enchantments removed.");
@@ -467,7 +466,7 @@ public class KitchenSink extends JavaPlugin {
                 return true;
             }
 
-            ItemStack item = player.getItemInHand();
+            ItemStack item = player.getInventory().getItemInMainHand();
             if (item.getType() != Material.BOOK && item.getType() != Material.ENCHANTED_BOOK) {
                 player.sendMessage(ChatColor.RED + "You must be holding a book or enchanted book.");
                 return true;
@@ -504,7 +503,7 @@ public class KitchenSink extends JavaPlugin {
             EnchantmentStorageMeta meta = (EnchantmentStorageMeta) item.getItemMeta();
             meta.addStoredEnchant(enchantment, level, true);
             item.setItemMeta(meta);
-            player.setItemInHand(item);
+            player.getInventory().setItemInMainHand(item);
 
             // Log successful enchants.
             getLogger().info(sender.getName() + " enchanted " + item.getAmount() + " book: " + enchantment.getKey().getNamespace() + " " + level);

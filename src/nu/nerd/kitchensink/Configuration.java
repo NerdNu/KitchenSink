@@ -6,6 +6,7 @@ import org.bukkit.entity.EntityType;
 
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -62,13 +63,15 @@ public class Configuration {
     public boolean CULL_ZOMBIES;
     public int CULL_ZOMBIES_INTERVAL;
     public List<String> RESTART_TIMES;
-    public List<Integer> ALLOW_ENCH_ITEMS;
-    public List<Integer> BLOCK_CRAFT;
-    public List<Integer> BLOCK_BREW;
-    public List<Integer> DISABLED_LEFT_ITEMS;
-    public List<Integer> DISABLED_RIGHT_ITEMS;
-    public List<Integer> DISABLE_DISPENSED;
-    public List<Integer> DISABLE_BUFF;
+
+    HashSet<Material> ALLOW_ENCH_ITEMS;
+    HashSet<Material> BLOCK_CRAFT;
+    HashSet<Material> BLOCK_BREW;
+    HashSet<Material> DISABLED_LEFT_ITEMS;
+    HashSet<Material> DISABLED_RIGHT_ITEMS;
+    HashSet<Material> DISABLE_DISPENSED;
+    HashSet<Material> DISABLE_BUFF;
+
     public Map<EntityType, Set<Material>> DISABLED_DROPS;
     public EnumSet<EntityType> DISABLE_ENTITY_BLOCK_DAMAGE = EnumSet.noneOf(EntityType.class);
     public boolean ALLOW_EGG_HATCHING;
@@ -115,13 +118,15 @@ public class Configuration {
         UNTAME_PETS = plugin.getConfig().getBoolean("untame-pets");
         HOST_KEYS_CHECK = plugin.getConfig().getBoolean("host-keys-check");
         HOST_KEYS_DROP_PERMISSIONS = plugin.getConfig().getBoolean("host-keys-drop-permissions");
-        ALLOW_ENCH_ITEMS = plugin.getConfig().getIntegerList("allow-enchant-items");
-        BLOCK_CRAFT = plugin.getConfig().getIntegerList("block-craft");
-        BLOCK_BREW = plugin.getConfig().getIntegerList("block-brew");
-        DISABLED_LEFT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.left-click");
-        DISABLED_RIGHT_ITEMS = plugin.getConfig().getIntegerList("disabled-items.right-click");
-        DISABLE_DISPENSED = plugin.getConfig().getIntegerList("disabled-items.dispensed");
-        DISABLE_BUFF = plugin.getConfig().getIntegerList("disable-buff");
+
+        ALLOW_ENCH_ITEMS = getMaterialList("allow-enchant-items");
+        BLOCK_CRAFT = getMaterialList("block-craft");
+        BLOCK_BREW = getMaterialList("block-brew");
+        DISABLED_LEFT_ITEMS = getMaterialList("disabled-items.left-click");
+        DISABLED_RIGHT_ITEMS = getMaterialList("disabled-items.right-click");
+        DISABLE_DISPENSED = getMaterialList("disabled-items.dispensed");
+        DISABLE_BUFF = getMaterialList("disable-buff");
+
         DISABLED_DROPS = new EnumMap<>(EntityType.class);
         ConfigurationSection disabledDropsSection = plugin.getConfig().getConfigurationSection("disabled-drops");
         if (disabledDropsSection != null) {
@@ -201,4 +206,24 @@ public class Configuration {
         }
         plugin.saveConfig();
     }
+
+    // ------------------------------------------------------------------------
+    /**
+     * Turns a list of Strings into a set of Materials.
+     *
+     * @param key the configuration key associated with the string list.
+     * @return a set of materials.
+     */
+    private HashSet<Material> getMaterialList(String key) {
+        HashSet<Material> materials = new HashSet<>();
+        for (String materialName : plugin.getConfig().getStringList(key)) {
+            try {
+                materials.add(Material.valueOf(materialName));
+            } catch (Exception e) {
+                plugin.getLogger().info("Bad material name in config: " + materialName + " under " + key);
+            }
+        }
+        return materials;
+    }
+
 }

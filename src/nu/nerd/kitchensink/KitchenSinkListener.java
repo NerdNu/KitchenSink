@@ -1,16 +1,5 @@
 package nu.nerd.kitchensink;
 
-import java.text.Normalizer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.bukkit.Art;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -23,8 +12,8 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.NoteBlock;
 import org.bukkit.block.ShulkerBox;
+import org.bukkit.block.data.type.NoteBlock;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Ageable;
@@ -32,7 +21,6 @@ import org.bukkit.entity.Animals;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Ocelot;
 import org.bukkit.entity.Painting;
 import org.bukkit.entity.Player;
@@ -85,11 +73,13 @@ import org.bukkit.inventory.HorseInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.inventory.meta.SpawnEggMeta;
+import org.bukkit.material.Wool;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionData;
@@ -97,6 +87,16 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 import org.bukkit.util.BlockIterator;
+
+import java.text.Normalizer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 class KitchenSinkListener implements Listener {
 
@@ -108,29 +108,73 @@ class KitchenSinkListener implements Listener {
     private static final HashSet<Material> INTERACTABLE_TYPES;
 
     /**
-     * A set containing all materials that fall under the umbrella "Shulker Box".
+     * A set containing all materials that fall under the corresponding category.
      */
     private static final HashSet<Material> SHULKER_BOXES;
+    private static final HashSet<Material> BEDS;
+    private static final HashSet<Material> DOORS;
+    private static final HashSet<Material> BUTTONS_AND_PLATES;
+    private static final HashSet<Material> FENCES_AND_GATES;
+    private static final HashSet<Material> CARPETS;
 
     static {
         INTERACTABLE_TYPES = new HashSet<>(Arrays.asList(
-                Material.DISPENSER, Material.NOTE_BLOCK, Material.BED, Material.BED_BLOCK, Material.CHEST,
-                Material.SIGN, Material.WORKBENCH, Material.FURNACE, Material.BURNING_FURNACE, Material.WOOD_DOOR, Material.WOODEN_DOOR,
-                Material.ACACIA_DOOR, Material.BIRCH_DOOR, Material.DARK_OAK_DOOR, Material.JUNGLE_DOOR, Material.SPRUCE_DOOR, Material.LEVER,
-                Material.IRON_DOOR_BLOCK, Material.STONE_BUTTON, Material.JUKEBOX, Material.CAKE_BLOCK, Material.DIODE_BLOCK_OFF,
-                Material.DIODE_BLOCK_ON, Material.TRAP_DOOR, Material.ACACIA_FENCE_GATE, Material.BIRCH_FENCE_GATE, Material.DARK_OAK_FENCE_GATE,
-                Material.FENCE_GATE, Material.JUNGLE_FENCE_GATE, Material.SPRUCE_FENCE_GATE, Material.ENCHANTMENT_TABLE, Material.BREWING_STAND,
-                Material.DRAGON_EGG, Material.ENDER_CHEST, Material.BEACON, Material.WOOD_BUTTON, Material.ANVIL, Material.TRAPPED_CHEST,
-                Material.REDSTONE_COMPARATOR_OFF, Material.REDSTONE_COMPARATOR_ON, Material.HOPPER, Material.DROPPER, Material.DAYLIGHT_DETECTOR,
-                Material.DAYLIGHT_DETECTOR_INVERTED));
+            Material.DISPENSER, Material.NOTE_BLOCK, Material.CHEST, Material.SIGN, Material.CRAFTING_TABLE,
+            Material.FURNACE, Material.FURNACE, Material.LEVER, Material.JUKEBOX, Material.CAKE,
+            Material.REPEATER, Material.ENCHANTING_TABLE, Material.BREWING_STAND, Material.DRAGON_EGG,
+            Material.ENDER_CHEST, Material.BEACON, Material.ANVIL, Material.TRAPPED_CHEST,
+            Material.COMPARATOR, Material.HOPPER, Material.DROPPER, Material.DAYLIGHT_DETECTOR
+        ));
+
+        BEDS = new HashSet<>(Arrays.asList(
+            Material.BLACK_BED, Material.BLUE_BED, Material.BROWN_BED, Material.CYAN_BED, Material.GRAY_BED,
+            Material.GREEN_BED, Material.LIGHT_BLUE_BED, Material.LIGHT_GRAY_BED, Material.LIME_BED,
+            Material.MAGENTA_BED, Material.ORANGE_BED, Material.PINK_BED, Material.PURPLE_BED,
+            Material.RED_BED, Material.WHITE_BED, Material.YELLOW_BED
+        ));
+
+        BUTTONS_AND_PLATES = new HashSet<>(Arrays.asList(
+            Material.ACACIA_BUTTON, Material.BIRCH_BUTTON, Material.DARK_OAK_BUTTON, Material.JUNGLE_BUTTON,
+            Material.OAK_BUTTON, Material.SPRUCE_BUTTON, Material.STONE_BUTTON, Material.ACACIA_PRESSURE_PLATE,
+            Material.BIRCH_PRESSURE_PLATE, Material.DARK_OAK_PRESSURE_PLATE, Material.HEAVY_WEIGHTED_PRESSURE_PLATE,
+            Material.JUNGLE_PRESSURE_PLATE, Material.LIGHT_WEIGHTED_PRESSURE_PLATE, Material.OAK_PRESSURE_PLATE,
+            Material.SPRUCE_PRESSURE_PLATE, Material.STONE_PRESSURE_PLATE
+        ));
+
+        CARPETS = new HashSet<>(Arrays.asList(
+            Material.BLACK_CARPET, Material.BLUE_CARPET, Material.BROWN_CARPET, Material.CYAN_CARPET,
+            Material.GRAY_CARPET, Material.GREEN_CARPET, Material.LIGHT_BLUE_CARPET, Material.LIGHT_GRAY_CARPET,
+            Material.LIME_CARPET, Material.MAGENTA_CARPET, Material.ORANGE_CARPET, Material.PINK_CARPET,
+            Material.PURPLE_CARPET, Material.RED_CARPET, Material.WHITE_CARPET, Material.YELLOW_CARPET
+        ));
+
+        FENCES_AND_GATES = new HashSet<>(Arrays.asList(
+            Material.ACACIA_FENCE_GATE, Material.BIRCH_FENCE_GATE, Material.DARK_OAK_FENCE_GATE,
+            Material.JUNGLE_FENCE_GATE, Material.OAK_FENCE_GATE, Material.SPRUCE_FENCE_GATE,
+            Material.ACACIA_FENCE, Material.BIRCH_FENCE, Material.DARK_OAK_FENCE, Material.JUNGLE_FENCE,
+            Material.OAK_FENCE, Material.SPRUCE_FENCE
+        ));
+
+        DOORS = new HashSet<>(Arrays.asList(
+            Material.ACACIA_DOOR, Material.ACACIA_TRAPDOOR, Material.BIRCH_DOOR, Material.BIRCH_TRAPDOOR,
+            Material.DARK_OAK_DOOR, Material.DARK_OAK_TRAPDOOR, Material.IRON_DOOR, Material.IRON_TRAPDOOR,
+            Material.JUNGLE_DOOR, Material.JUNGLE_TRAPDOOR, Material.OAK_DOOR, Material.OAK_TRAPDOOR,
+            Material.SPRUCE_DOOR, Material.SPRUCE_TRAPDOOR
+        ));
 
         SHULKER_BOXES = new HashSet<>(Arrays.asList(
-                Material.BLACK_SHULKER_BOX, Material.BLUE_SHULKER_BOX, Material.BROWN_SHULKER_BOX, Material.CYAN_SHULKER_BOX, Material.GRAY_SHULKER_BOX, 
-                Material.GREEN_SHULKER_BOX, Material.LIGHT_BLUE_SHULKER_BOX, Material.LIME_SHULKER_BOX, Material.MAGENTA_SHULKER_BOX,
-                Material.ORANGE_SHULKER_BOX, Material.PINK_SHULKER_BOX, Material.PURPLE_SHULKER_BOX, Material.ORANGE_SHULKER_BOX));
+            Material.BLACK_SHULKER_BOX, Material.BLUE_SHULKER_BOX, Material.BROWN_SHULKER_BOX, Material.CYAN_SHULKER_BOX, Material.GRAY_SHULKER_BOX,
+            Material.GREEN_SHULKER_BOX, Material.LIGHT_BLUE_SHULKER_BOX, Material.LIME_SHULKER_BOX, Material.MAGENTA_SHULKER_BOX,
+            Material.ORANGE_SHULKER_BOX, Material.PINK_SHULKER_BOX, Material.PURPLE_SHULKER_BOX, Material.ORANGE_SHULKER_BOX
+        ));
 
+        INTERACTABLE_TYPES.addAll(BEDS);
+        INTERACTABLE_TYPES.addAll(DOORS);
+        INTERACTABLE_TYPES.addAll(BUTTONS_AND_PLATES);
+        INTERACTABLE_TYPES.addAll(FENCES_AND_GATES);
         INTERACTABLE_TYPES.addAll(SHULKER_BOXES);
     }
+
     private final KitchenSink plugin;
 
     KitchenSinkListener(KitchenSink instance) {
@@ -217,12 +261,10 @@ class KitchenSinkListener implements Listener {
             && player.hasMetadata(KitchenSink.NOTEBLOCK_META_KEY)) {
 
             Note note = (Note) player.getMetadata(KitchenSink.NOTEBLOCK_META_KEY).get(0).value();
-            if (event.getClickedBlock().getState() instanceof NoteBlock) {
-                NoteBlock clicked = (NoteBlock) event.getClickedBlock().getState();
+            if (event.getClickedBlock().getBlockData() instanceof NoteBlock) {
+                NoteBlock clicked = (NoteBlock) event.getClickedBlock().getBlockData();
                 clicked.setNote(note);
-                clicked.play();
-                player.sendMessage(ChatColor.GOLD + "Note block set to note " + note.getTone().toString() + (note.isSharped() ? "#" : "")
-                                   + " successfully!");
+                player.sendMessage(ChatColor.GOLD + "Note block set to note " + note.getTone().toString() + (note.isSharped() ? "#" : "") + " successfully!");
             } else {
                 player.sendMessage(ChatColor.RED + "That block isn't a note block.");
             }
@@ -244,13 +286,13 @@ class KitchenSinkListener implements Listener {
 
         ItemStack stack = event.getItem();
         if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            if (plugin.config.DISABLED_RIGHT_ITEMS.contains(stack.getTypeId())) {
+            if (plugin.config.DISABLED_RIGHT_ITEMS.contains(stack.getType())) {
                 event.setCancelled(true);
             }
         }
 
         if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK) {
-            if (plugin.config.DISABLED_LEFT_ITEMS.contains(stack.getTypeId())) {
+            if (plugin.config.DISABLED_LEFT_ITEMS.contains(stack.getType())) {
                 event.setCancelled(true);
             }
         }
@@ -456,7 +498,7 @@ class KitchenSinkListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockDispense(BlockDispenseEvent event) {
         if (plugin.config.SAFE_DISPENSERS) {
-            if (plugin.config.DISABLE_DISPENSED.contains(event.getItem().getTypeId())) {
+            if (plugin.config.DISABLE_DISPENSED.contains(event.getItem().getType())) {
                 event.setCancelled(true);
             }
         }
@@ -621,7 +663,7 @@ class KitchenSinkListener implements Listener {
                     List<ItemStack> items = event.getDrops();
                     Location l = event.getEntity().getLocation();
                     for (ItemStack a : items) {
-                        if (!plugin.config.DISABLE_BUFF.contains(a.getTypeId())) {
+                        if (!plugin.config.DISABLE_BUFF.contains(a.getType())) {
                             // Drops already drop *once* from the event itself.
                             for (int i = 1; i < plugin.config.BUFF_DROPS; i++) {
                                 l.getWorld().dropItemNaturally(l, a);
@@ -659,7 +701,7 @@ class KitchenSinkListener implements Listener {
             // Minecraft drops 1 - 3 wool. Mutiply by BUFF_SHEAR_DROPS, minus
             // the drops dropped by the event.
             int count = (1 + (int) (3 * Math.random())) * (plugin.config.BUFF_SHEAR_DROPS - 1);
-            l.getWorld().dropItemNaturally(l, new ItemStack(Material.WOOL, count, (byte) entity.getColor().ordinal()));
+            l.getWorld().dropItemNaturally(l, new ItemStack(new Wool(entity.getColor()).getItemType(), count));
         }
     }
 
@@ -691,7 +733,8 @@ class KitchenSinkListener implements Listener {
             if (!allowed) {
                 event.setCancelled(true);
                 for (Block block : event.getBlocks()) {
-                    block.setTypeId(0);
+                    block.setType(Material.AIR);
+                    event.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(block.getType()));
                 }
             }
         }
@@ -712,11 +755,11 @@ class KitchenSinkListener implements Listener {
             boolean hasRailOrCarpet = false;
             boolean hasSlime = false;
             for (Block b : movedBlocks) {
-                if (b.getType() == Material.CARPET ||
-                    b.getType() == Material.RAILS ||
+                if (b.getType() == Material.RAIL ||
                     b.getType() == Material.POWERED_RAIL ||
                     b.getType() == Material.DETECTOR_RAIL ||
-                    b.getType() == Material.ACTIVATOR_RAIL) {
+                    b.getType() == Material.ACTIVATOR_RAIL ||
+                    CARPETS.contains(b.getType())) {
                     hasRailOrCarpet = true;
                 }
 
@@ -747,7 +790,7 @@ class KitchenSinkListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEnchantItem(PrepareItemEnchantEvent event) {
         if (!plugin.config.ALLOW_ENCH_ITEMS.isEmpty()) {
-            if (!plugin.config.ALLOW_ENCH_ITEMS.contains(event.getItem().getTypeId())) {
+            if (!plugin.config.ALLOW_ENCH_ITEMS.contains(event.getItem().getType())) {
                 event.setCancelled(true);
             }
         }
@@ -756,7 +799,7 @@ class KitchenSinkListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBrew(BrewEvent event) {
         if (!plugin.config.BLOCK_BREW.isEmpty()) {
-            if (plugin.config.BLOCK_BREW.contains(event.getContents().getIngredient().getTypeId())) {
+            if (plugin.config.BLOCK_BREW.contains(event.getContents().getIngredient().getType())) {
                 event.setCancelled(true);
             }
         }
@@ -949,7 +992,7 @@ class KitchenSinkListener implements Listener {
      */
     public String getItemDescription(ItemStack item) {
         StringBuilder description = new StringBuilder();
-        description.append(item.getAmount()).append('x').append(item.getType().name()).append(':').append(item.getDurability());
+        description.append(item.getAmount()).append('x').append(item.getType().name());
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             if (meta instanceof BlockStateMeta) {
@@ -958,21 +1001,22 @@ class KitchenSinkListener implements Listener {
                     description.append(" *** Contents: ");
                     ShulkerBox shulkerBox = (ShulkerBox) blockStateMeta.getBlockState();
                     shulkerBox.getInventory().forEach(itemStack -> {
-                        if (itemStack != null) description.append(getItemDescription(itemStack));
+                        if (itemStack != null)
+                            description.append(getItemDescription(itemStack));
                     });
                     description.append(" **** ");
                 }
+            } else if (meta instanceof Damageable) {
+                Damageable damageable = (Damageable) meta;
+                description.append("Durability: ").append(damageable.getDamage());
             } else if (meta instanceof SkullMeta) {
                 SkullMeta skullMeta = (SkullMeta) meta;
-                if (skullMeta.getOwner() != null) {
-                    description.append(" of \"").append(skullMeta.getOwner()).append("\"");
+                if (skullMeta.getOwningPlayer() != null) {
+                    description.append(" of \"").append(skullMeta.getOwningPlayer().getName()).append("\"");
                 }
-            } else if (meta instanceof SpawnEggMeta) {
-                SpawnEggMeta eggMeta = (SpawnEggMeta) meta;
-                description.append(" of ").append(eggMeta.getSpawnedType());
             } else if (meta instanceof EnchantmentStorageMeta) {
                 EnchantmentStorageMeta bookEnchants = (EnchantmentStorageMeta) meta;
-                description.append(" with").append(enchantsToString(bookEnchants.getStoredEnchants()));
+                description.append(" with ").append(enchantsToString(bookEnchants.getStoredEnchants()));
             } else if (meta instanceof BookMeta) {
                 BookMeta bookMeta = (BookMeta) meta;
                 if (bookMeta.getTitle() != null) {
