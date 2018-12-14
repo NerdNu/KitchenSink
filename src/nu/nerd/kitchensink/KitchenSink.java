@@ -21,7 +21,6 @@ import org.bukkit.entity.Zombie;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.Recipe;
-import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -55,7 +54,7 @@ public class KitchenSink extends JavaPlugin {
     private final KitchenSinkListener listener = new KitchenSinkListener(this);
     private final LagCheck lagCheck = new LagCheck();
     public final Configuration config = new Configuration(this);
-    public final List<Recipe> recipeList = new ArrayList<>();
+
     public int countdownTime = 0;
     public long countdownTicks = 0;
     public String countdownMessage = "";
@@ -73,25 +72,25 @@ public class KitchenSink extends JavaPlugin {
     /**
      * Key of Player metadata used to record most recently selected painting.
      */
-    public static final String PAINTING_META_KEY = "KitchenSink.painting";
+    static final String PAINTING_META_KEY = "KitchenSink.painting";
 
     /**
      * Key of Player metadata set to signify that the next right click on a
      * horse is an attempted lock/unlock. Value is the new boolean lock state.
      */
-    public static final String HORSE_DO_LOCK_KEY = "KitchenSink.do_lock";
+    static final String HORSE_DO_LOCK_KEY = "KitchenSink.do_lock";
 
     /**
      * Key of Horse metadata set to signify that the horse is unlocked for
      * riding by players other than the owner. If absent, horse is locked.
      */
-    public static final String HORSE_UNLOCKED_KEY = "KitchenSink.unlocked";
+    static final String HORSE_UNLOCKED_KEY = "KitchenSink.unlocked";
 
     /**
      * Key of Player metadata set to signify that the next right click on a
      * Tameable mob owned by the player will un-tame the mob.
      */
-    public static final String UNTAME_KEY = "KitchenSink.untame";
+    static final String UNTAME_KEY = "KitchenSink.untame";
 
     /**
      * The name of the subdirectory of the KitchenSink data directory containing
@@ -100,13 +99,13 @@ public class KitchenSink extends JavaPlugin {
      * http://www.sk89q.com/
      * 2012/07/fixing-the-minecraft-session-stealer-exploit/
      */
-    public static final String HOST_KEYS_DIRECTORY = "hostkeys";
+    private static final String HOST_KEYS_DIRECTORY = "hostkeys";
 
     /**
      * Key of Player metadata which, when set, indicates that the next punch of
      * a noteblock by a player should change the note of the noteblock.
      */
-    public static final String NOTEBLOCK_META_KEY = "KitchenSink.noteblock";
+    static final String NOTEBLOCK_META_KEY = "KitchenSink.noteblock";
 
     /**
      * Map from lower case in-game enchantment names to the Bukkit Enchantment
@@ -169,21 +168,11 @@ public class KitchenSink extends JavaPlugin {
     public void onDisable() {
         getServer().getScheduler().cancelTasks(this);
 
-        Iterator<Recipe> recipeIterator = getServer().recipeIterator();
-        while (recipeIterator.hasNext()) {
-            Recipe r = recipeIterator.next();
-            if (recipeList.contains(r)) {
-                recipeIterator.remove();
-                recipeList.remove(r);
-            }
-        }
-
         if (config.BUNGEE_DISCONNECT_ON_RESTART) {
             for (Player player : getServer().getOnlinePlayers()) {
                 proxyKick(player);
             }
         }
-
     }
 
     @Override
@@ -224,13 +213,6 @@ public class KitchenSink extends JavaPlugin {
                 }
             };
             sched.runTaskTimerAsynchronously(this, task, config.CULL_ZOMBIES_INTERVAL, config.CULL_ZOMBIES_INTERVAL);
-        }
-
-        if (config.LEATHERLESS_BOOKS) {
-            ShapelessRecipe cheapBook = new ShapelessRecipe(new ItemStack(Material.BOOK));
-            cheapBook.addIngredient(3, Material.PAPER);
-            getServer().addRecipe(cheapBook);
-            recipeList.add(cheapBook);
         }
 
         if (!config.BLOCK_CRAFT.isEmpty()) {
@@ -320,24 +302,7 @@ public class KitchenSink extends JavaPlugin {
                 return true;
             }
         }
-        if (command.getName().equalsIgnoreCase("ksinventory")) {
-            if (args.length >= 1) {
-                Player clearee = getServer().getPlayer(args[0]);
-                if (args.length == 2) {
-                    if (args[1].equals("clear")) {
-                        clearee.getInventory().clear();
-                        clearee.getInventory().setArmorContents(new ItemStack[clearee.getInventory().getArmorContents().length]);
-                        clearee.saveData();
-                        sender.sendMessage("Inventory Cleared.");
-                        return true;
-                    }
-                }
-                if (clearee != null && sender instanceof Player) {
-                    ((Player) sender).openInventory(clearee.getPlayer().getInventory());
-                }
-                return true;
-            }
-        }
+
         if (command.getName().equalsIgnoreCase("painting")) {
             // No arguments ==> list all painting types.
             if (args.length == 0) {

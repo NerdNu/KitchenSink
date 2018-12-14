@@ -3,6 +3,8 @@ version: ${project.version}
 author: Travis Watkins
 main: nu.nerd.kitchensink.KitchenSink
 softdepend: [WorldGuard, bPermissions, ProtocolLib]
+api-version: 1.13
+
 permissions:
     kitchensink.*:
         description: Access to all KitchenSink commands
@@ -11,7 +13,6 @@ permissions:
             kitchensink.list: true
             kitchensink.lag: true
             kitchensink.unenchant: true
-            kitchensink.ksinventory: true
             kitchensink.petadmin: true
             kitchensink.mobcount: true
             kitchensink.pingserver: true
@@ -62,11 +63,6 @@ commands:
         permission: kitchensink.list
         usage: |
            /list: Show online players
-    ksinventory:
-        description: Edit a players inventory
-        permission: kitchensink.ksinventory
-        usage: |
-           /ksinventory <player> [clear]: Edit a players inventory
     painting:
         description: Allows selection of the next painting placed.
         usage: |
