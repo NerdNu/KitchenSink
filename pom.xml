@@ -4,7 +4,7 @@
 	<groupId>nu.nerd</groupId>
 	<artifactId>KitchenSink</artifactId>
 	<name>KitchenSink</name>
-	<version>0.14.3</version>
+	<version>0.14.4-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<description>A plugin for miscellaneous functionality that hasn't found a home elsewhere.</description>
         <url>https://github.com/NerdNu/KitchenSink</url>
@@ -37,14 +37,14 @@
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
-			<version>1.12.2-R0.1-SNAPSHOT</version>
+			<version>1.13.1-R0.1-SNAPSHOT</version>
 			<type>jar</type>
 		</dependency>
 		<dependency>
-			<groupId>de.bananaco</groupId>
-			<artifactId>bPermissions</artifactId>
-			<version>2.10.9d</version>
-			<scope>compile</scope>
+			<groupId>me.lucko.LuckPerms</groupId>
+			<artifactId>luckperms-api</artifactId>
+			<version>4.3</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
@@ -56,10 +56,6 @@
 		<repository>
 			<id>spigot-repo</id>
 			<url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
-		</repository>
-		<repository>
-			<id>kitteh-repo</id>
-			<url>http://repo.kitteh.org/content/groups/public</url>
 		</repository>
 	</repositories>
 	<build>
@@ -92,7 +88,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>2.0.2</version>
+					<version>3.7.0</version>
 					<configuration>
 						<source>1.8</source>
 						<target>1.8</target>
@@ -104,7 +100,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.4.2</version>
+				<version>3.1.1</version>
 				<configuration>
 					<minimizeJar>true</minimizeJar>
 					<createDependencyReducedPom>false</createDependencyReducedPom>
