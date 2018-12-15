@@ -14,10 +14,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Zombie;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.Recipe;
@@ -48,6 +46,11 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 public class KitchenSink extends JavaPlugin {
+
+    /**
+     * This plugin, accessible as a singleton.
+     */
+    static KitchenSink PLUGIN;
 
     private static final int ONE_MINUTE_TICKS = 60 * 20;
 
@@ -165,12 +168,14 @@ public class KitchenSink extends JavaPlugin {
 
     @Override
     public void onEnable() {
+
+        PLUGIN = this;
+
         File config_file = new File(getDataFolder(), "config.yml");
         if (!config_file.exists()) {
             getConfig().options().copyDefaults(true);
             saveConfig();
         }
-
         config.load();
 
         if (config.ANIMAL_COUNT) {
@@ -183,24 +188,7 @@ public class KitchenSink extends JavaPlugin {
         }
 
         if (config.CULL_ZOMBIES) {
-            final BukkitScheduler sched = getServer().getScheduler();
-            Runnable task = () -> {
-                try {
-                    Collection<LivingEntity> livingEntities = getServer().getWorlds().get(0).getEntitiesByClass(LivingEntity.class);
-                    for (LivingEntity mob : livingEntities) {
-                        if (mob.getType() == EntityType.ZOMBIE) {
-                            Zombie zombie = (Zombie) mob;
-                            if (zombie.getTarget() != null
-                                && zombie.getTarget().getType() == EntityType.VILLAGER
-                                && zombie.getRemoveWhenFarAway()) {
-                                zombie.remove();
-                            }
-                        }
-                    }
-                } catch (Exception ex) {
-                }
-            };
-            sched.runTaskTimerAsynchronously(this, task, config.CULL_ZOMBIES_INTERVAL, config.CULL_ZOMBIES_INTERVAL);
+            getServer().getScheduler().runTaskTimer(this, new CullZombiesTask(), config.CULL_ZOMBIES_INTERVAL, config.CULL_ZOMBIES_INTERVAL);
         }
 
         if (!config.BLOCK_CRAFT.isEmpty()) {
