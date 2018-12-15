@@ -8,11 +8,9 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Note;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -22,7 +20,6 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BlockIterator;
 
@@ -34,14 +31,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -179,12 +173,7 @@ public class KitchenSink extends JavaPlugin {
         config.load();
 
         if (config.ANIMAL_COUNT) {
-            final BukkitScheduler sched = getServer().getScheduler();
-            Runnable task = () -> {
-                System.out.println("-!- Starting Mob count");
-                System.out.println("-!- " + getMultiworldMobCount());
-            };
-            sched.runTaskTimerAsynchronously(this, task, ONE_MINUTE_TICKS, 10 * ONE_MINUTE_TICKS);
+            getServer().getScheduler().runTaskTimer(this, new MobCountTask(), ONE_MINUTE_TICKS, 10 * ONE_MINUTE_TICKS);
         }
 
         if (config.CULL_ZOMBIES) {
@@ -354,26 +343,6 @@ public class KitchenSink extends JavaPlugin {
                 sender.sendMessage(ChatColor.RED + "You need to be in-game to run that.");
             }
             return true;
-        }
-
-        if (command.getName().equalsIgnoreCase("mob-count")) {
-            if (args.length == 0) {
-                if (!(sender instanceof Player)) {
-                    sender.sendMessage(getMobCount(null).toString());
-                } else {
-                    sender.sendMessage(getMobCount(((Player) sender).getWorld()).toString());
-                }
-                return true;
-            } else if (args.length == 1 && args[0].equalsIgnoreCase("dump")) {
-                sender.sendMessage("Dumping mobs");
-                dumpMobCount();
-                return true;
-            } else if (args.length == 1 && args[0].equalsIgnoreCase("all")) {
-                sender.sendMessage(getMultiworldMobCount().toString());
-                return true;
-            }
-
-            return false;
         }
 
         // Unfortunately, many plugins don't correctly apply enchantments to
@@ -780,89 +749,6 @@ public class KitchenSink extends JavaPlugin {
             }
         } catch (IOException ex) {
             return "";
-        }
-    }
-
-    /**
-     * Returns counts for all mobs
-     */
-    public HashMap<String, Integer> getMobCount(World world) {
-        HashMap<String, Integer> counts = new HashMap<>();
-
-        if (world == null) {
-            world = getServer().getWorlds().get(0);
-        }
-
-        try {
-            Collection<LivingEntity> livingEntities;
-            livingEntities = world.getEntitiesByClass(LivingEntity.class);
-            for (LivingEntity animal : livingEntities) {
-                if (counts.containsKey(animal.getType().name())) {
-                    counts.put(animal.getType().name(), counts.get(animal.getType().name()) + 1);
-                } else {
-                    counts.put(animal.getType().name(), 1);
-                }
-            }
-        } catch (Exception ex) {
-        }
-
-        return counts;
-    }
-
-    public HashMap<String, Integer> getMultiworldMobCount() {
-        HashMap<String, Integer> counts = new HashMap<>();
-        try {
-            for (World world : getServer().getWorlds()) {
-                Collection<LivingEntity> livingEntities;
-                livingEntities = world.getEntitiesByClass(LivingEntity.class);
-                for (LivingEntity animal : livingEntities) {
-                    if (counts.containsKey(animal.getType().name())) {
-                        counts.put(animal.getType().name(), counts.get(animal.getType().name()) + 1);
-                    } else {
-                        counts.put(animal.getType().name(), 1);
-                    }
-                }
-            }
-        } catch (Exception ex) {
-        }
-        return counts;
-    }
-
-    /**
-     * Returns counts for all mobs
-     */
-    public void dumpMobCount() {
-        HashMap<String, Integer> counts = new HashMap<>();
-        Map<String, ArrayList<Map<String, Integer>>> locations = new HashMap<>();
-
-        try {
-            Collection<LivingEntity> livingEntities = getServer().getWorlds().get(0).getEntitiesByClass(LivingEntity.class);
-            for (LivingEntity animal : livingEntities) {
-                if (counts.containsKey(animal.getType().name())) {
-                    counts.put(animal.getType().name(), counts.get(animal.getType().name()) + 1);
-                } else {
-                    counts.put(animal.getType().name(), 1);
-                }
-
-                Map<String, Integer> location = new HashMap<>();
-                location.put("x", animal.getLocation().getBlockX());
-                location.put("y", animal.getLocation().getBlockY());
-                location.put("z", animal.getLocation().getBlockZ());
-
-                if (!locations.containsKey(animal.getType().name())) {
-                    locations.put(animal.getType().name(), new ArrayList<>());
-                }
-                locations.get(animal.getType().name()).add(location);
-            }
-
-            File mobsFile = new File(getDataFolder(), "mobs.yml");
-            YamlConfiguration mobsConfig = new YamlConfiguration();
-            for (String mob : counts.keySet()) {
-                mobsConfig.set(mob + ".count", counts.get(mob));
-                mobsConfig.set(mob + ".locations", locations.get(mob));
-            }
-            mobsConfig.save(mobsFile);
-        } catch (Exception ex) {
         }
     }
 
