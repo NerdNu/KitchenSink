@@ -1,5 +1,8 @@
 package nu.nerd.kitchensink;
 
+import me.lucko.luckperms.LuckPerms;
+import me.lucko.luckperms.api.LuckPermsApi;
+import me.lucko.luckperms.api.Node;
 import org.bukkit.Art;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -46,8 +49,6 @@ import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.AreaEffectCloudApplyEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
@@ -69,7 +70,6 @@ import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.HorseInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.BookMeta;
@@ -78,9 +78,7 @@ import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.inventory.meta.SpawnEggMeta;
 import org.bukkit.material.Wool;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
@@ -96,6 +94,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 class KitchenSinkListener implements Listener {
@@ -234,17 +233,17 @@ class KitchenSinkListener implements Listener {
      * @param player the player to modify.
      * @return true if successfully modified, or false on error.
      */
-    protected boolean dropToDefaultPermissions(Player player) {
+    private boolean dropToDefaultPermissions(Player player) {
         try {
             player.setOp(false);
-            for (World world : Bukkit.getServer().getWorlds()) {
-                for (String group : ApiLayer.getGroups(world.getName(), CalculableType.USER, player.getName())) {
-                    if (!group.equalsIgnoreCase("default")) {
-                        ApiLayer.removeGroup(world.getName(), CalculableType.USER, player.getName(), group);
-                    }
-                }
-                ApiLayer.addGroup(world.getName(), CalculableType.USER, player.getName(), "default");
-            }
+            UUID uuid = player.getUniqueId();
+
+            LuckPermsApi API = LuckPerms.getApi();
+            API.getUserManager().loadUser(uuid).thenAccept(loadedUser ->
+                loadedUser.getAllNodes().stream()
+                                        .filter(Node::isGroupNode)
+                                        .filter(node -> !node.getGroupName().equals("default"))
+                                        .forEach(loadedUser::unsetPermission));
             return true;
         } catch (Exception ex) {
             plugin.getLogger().severe(ex.getClass().getName() + ": " + ex.getMessage() + " dropping permissions for " + player.getName());
