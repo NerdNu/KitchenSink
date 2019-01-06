@@ -1,8 +1,16 @@
 package nu.nerd.kitchensink;
 
-import me.lucko.luckperms.LuckPerms;
-import me.lucko.luckperms.api.LuckPermsApi;
-import me.lucko.luckperms.api.Node;
+import java.text.Normalizer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.bukkit.Art;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -13,6 +21,7 @@ import org.bukkit.Material;
 import org.bukkit.Note;
 import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.ShulkerBox;
@@ -86,16 +95,9 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 import org.bukkit.util.BlockIterator;
 
-import java.text.Normalizer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import me.lucko.luckperms.LuckPerms;
+import me.lucko.luckperms.api.LuckPermsApi;
+import me.lucko.luckperms.api.Node;
 
 class KitchenSinkListener implements Listener {
 
@@ -107,7 +109,8 @@ class KitchenSinkListener implements Listener {
     private static final HashSet<Material> INTERACTABLE_TYPES;
 
     /**
-     * A set containing all materials that fall under the corresponding category.
+     * A set containing all materials that fall under the corresponding
+     * category.
      */
     private static final HashSet<Material> SHULKER_BOXES;
     private static final HashSet<Material> BEDS;
@@ -118,54 +121,55 @@ class KitchenSinkListener implements Listener {
 
     static {
         INTERACTABLE_TYPES = new HashSet<>(Arrays.asList(
-            Material.DISPENSER, Material.NOTE_BLOCK, Material.CHEST, Material.SIGN, Material.CRAFTING_TABLE,
-            Material.FURNACE, Material.FURNACE, Material.LEVER, Material.JUKEBOX, Material.CAKE,
-            Material.REPEATER, Material.ENCHANTING_TABLE, Material.BREWING_STAND, Material.DRAGON_EGG,
-            Material.ENDER_CHEST, Material.BEACON, Material.ANVIL, Material.TRAPPED_CHEST,
-            Material.COMPARATOR, Material.HOPPER, Material.DROPPER, Material.DAYLIGHT_DETECTOR
-        ));
+                                                         Material.DISPENSER, Material.NOTE_BLOCK, Material.CHEST, Material.SIGN,
+                                                         Material.CRAFTING_TABLE,
+                                                         Material.FURNACE, Material.FURNACE, Material.LEVER, Material.JUKEBOX, Material.CAKE,
+                                                         Material.REPEATER, Material.ENCHANTING_TABLE, Material.BREWING_STAND, Material.DRAGON_EGG,
+                                                         Material.ENDER_CHEST, Material.BEACON, Material.ANVIL, Material.TRAPPED_CHEST,
+                                                         Material.COMPARATOR, Material.HOPPER, Material.DROPPER, Material.DAYLIGHT_DETECTOR));
 
         BEDS = new HashSet<>(Arrays.asList(
-            Material.BLACK_BED, Material.BLUE_BED, Material.BROWN_BED, Material.CYAN_BED, Material.GRAY_BED,
-            Material.GREEN_BED, Material.LIGHT_BLUE_BED, Material.LIGHT_GRAY_BED, Material.LIME_BED,
-            Material.MAGENTA_BED, Material.ORANGE_BED, Material.PINK_BED, Material.PURPLE_BED,
-            Material.RED_BED, Material.WHITE_BED, Material.YELLOW_BED
-        ));
+                                           Material.BLACK_BED, Material.BLUE_BED, Material.BROWN_BED, Material.CYAN_BED, Material.GRAY_BED,
+                                           Material.GREEN_BED, Material.LIGHT_BLUE_BED, Material.LIGHT_GRAY_BED, Material.LIME_BED,
+                                           Material.MAGENTA_BED, Material.ORANGE_BED, Material.PINK_BED, Material.PURPLE_BED,
+                                           Material.RED_BED, Material.WHITE_BED, Material.YELLOW_BED));
 
         BUTTONS_AND_PLATES = new HashSet<>(Arrays.asList(
-            Material.ACACIA_BUTTON, Material.BIRCH_BUTTON, Material.DARK_OAK_BUTTON, Material.JUNGLE_BUTTON,
-            Material.OAK_BUTTON, Material.SPRUCE_BUTTON, Material.STONE_BUTTON, Material.ACACIA_PRESSURE_PLATE,
-            Material.BIRCH_PRESSURE_PLATE, Material.DARK_OAK_PRESSURE_PLATE, Material.HEAVY_WEIGHTED_PRESSURE_PLATE,
-            Material.JUNGLE_PRESSURE_PLATE, Material.LIGHT_WEIGHTED_PRESSURE_PLATE, Material.OAK_PRESSURE_PLATE,
-            Material.SPRUCE_PRESSURE_PLATE, Material.STONE_PRESSURE_PLATE
-        ));
+                                                         Material.ACACIA_BUTTON, Material.BIRCH_BUTTON, Material.DARK_OAK_BUTTON,
+                                                         Material.JUNGLE_BUTTON,
+                                                         Material.OAK_BUTTON, Material.SPRUCE_BUTTON, Material.STONE_BUTTON,
+                                                         Material.ACACIA_PRESSURE_PLATE,
+                                                         Material.BIRCH_PRESSURE_PLATE, Material.DARK_OAK_PRESSURE_PLATE,
+                                                         Material.HEAVY_WEIGHTED_PRESSURE_PLATE,
+                                                         Material.JUNGLE_PRESSURE_PLATE, Material.LIGHT_WEIGHTED_PRESSURE_PLATE,
+                                                         Material.OAK_PRESSURE_PLATE,
+                                                         Material.SPRUCE_PRESSURE_PLATE, Material.STONE_PRESSURE_PLATE));
 
         CARPETS = new HashSet<>(Arrays.asList(
-            Material.BLACK_CARPET, Material.BLUE_CARPET, Material.BROWN_CARPET, Material.CYAN_CARPET,
-            Material.GRAY_CARPET, Material.GREEN_CARPET, Material.LIGHT_BLUE_CARPET, Material.LIGHT_GRAY_CARPET,
-            Material.LIME_CARPET, Material.MAGENTA_CARPET, Material.ORANGE_CARPET, Material.PINK_CARPET,
-            Material.PURPLE_CARPET, Material.RED_CARPET, Material.WHITE_CARPET, Material.YELLOW_CARPET
-        ));
+                                              Material.BLACK_CARPET, Material.BLUE_CARPET, Material.BROWN_CARPET, Material.CYAN_CARPET,
+                                              Material.GRAY_CARPET, Material.GREEN_CARPET, Material.LIGHT_BLUE_CARPET, Material.LIGHT_GRAY_CARPET,
+                                              Material.LIME_CARPET, Material.MAGENTA_CARPET, Material.ORANGE_CARPET, Material.PINK_CARPET,
+                                              Material.PURPLE_CARPET, Material.RED_CARPET, Material.WHITE_CARPET, Material.YELLOW_CARPET));
 
         FENCES_AND_GATES = new HashSet<>(Arrays.asList(
-            Material.ACACIA_FENCE_GATE, Material.BIRCH_FENCE_GATE, Material.DARK_OAK_FENCE_GATE,
-            Material.JUNGLE_FENCE_GATE, Material.OAK_FENCE_GATE, Material.SPRUCE_FENCE_GATE,
-            Material.ACACIA_FENCE, Material.BIRCH_FENCE, Material.DARK_OAK_FENCE, Material.JUNGLE_FENCE,
-            Material.OAK_FENCE, Material.SPRUCE_FENCE
-        ));
+                                                       Material.ACACIA_FENCE_GATE, Material.BIRCH_FENCE_GATE, Material.DARK_OAK_FENCE_GATE,
+                                                       Material.JUNGLE_FENCE_GATE, Material.OAK_FENCE_GATE, Material.SPRUCE_FENCE_GATE,
+                                                       Material.ACACIA_FENCE, Material.BIRCH_FENCE, Material.DARK_OAK_FENCE, Material.JUNGLE_FENCE,
+                                                       Material.OAK_FENCE, Material.SPRUCE_FENCE));
 
         DOORS = new HashSet<>(Arrays.asList(
-            Material.ACACIA_DOOR, Material.ACACIA_TRAPDOOR, Material.BIRCH_DOOR, Material.BIRCH_TRAPDOOR,
-            Material.DARK_OAK_DOOR, Material.DARK_OAK_TRAPDOOR, Material.IRON_DOOR, Material.IRON_TRAPDOOR,
-            Material.JUNGLE_DOOR, Material.JUNGLE_TRAPDOOR, Material.OAK_DOOR, Material.OAK_TRAPDOOR,
-            Material.SPRUCE_DOOR, Material.SPRUCE_TRAPDOOR
-        ));
+                                            Material.ACACIA_DOOR, Material.ACACIA_TRAPDOOR, Material.BIRCH_DOOR, Material.BIRCH_TRAPDOOR,
+                                            Material.DARK_OAK_DOOR, Material.DARK_OAK_TRAPDOOR, Material.IRON_DOOR, Material.IRON_TRAPDOOR,
+                                            Material.JUNGLE_DOOR, Material.JUNGLE_TRAPDOOR, Material.OAK_DOOR, Material.OAK_TRAPDOOR,
+                                            Material.SPRUCE_DOOR, Material.SPRUCE_TRAPDOOR));
 
         SHULKER_BOXES = new HashSet<>(Arrays.asList(
-            Material.BLACK_SHULKER_BOX, Material.BLUE_SHULKER_BOX, Material.BROWN_SHULKER_BOX, Material.CYAN_SHULKER_BOX, Material.GRAY_SHULKER_BOX,
-            Material.GREEN_SHULKER_BOX, Material.LIGHT_BLUE_SHULKER_BOX, Material.LIME_SHULKER_BOX, Material.MAGENTA_SHULKER_BOX,
-            Material.ORANGE_SHULKER_BOX, Material.PINK_SHULKER_BOX, Material.PURPLE_SHULKER_BOX, Material.ORANGE_SHULKER_BOX
-        ));
+                                                    Material.BLACK_SHULKER_BOX, Material.BLUE_SHULKER_BOX, Material.BROWN_SHULKER_BOX,
+                                                    Material.CYAN_SHULKER_BOX, Material.GRAY_SHULKER_BOX,
+                                                    Material.GREEN_SHULKER_BOX, Material.LIGHT_BLUE_SHULKER_BOX, Material.LIME_SHULKER_BOX,
+                                                    Material.MAGENTA_SHULKER_BOX,
+                                                    Material.ORANGE_SHULKER_BOX, Material.PINK_SHULKER_BOX, Material.PURPLE_SHULKER_BOX,
+                                                    Material.ORANGE_SHULKER_BOX));
 
         INTERACTABLE_TYPES.addAll(BEDS);
         INTERACTABLE_TYPES.addAll(DOORS);
@@ -239,11 +243,10 @@ class KitchenSinkListener implements Listener {
             UUID uuid = player.getUniqueId();
 
             LuckPermsApi API = LuckPerms.getApi();
-            API.getUserManager().loadUser(uuid).thenAccept(loadedUser ->
-                loadedUser.getAllNodes().stream()
-                                        .filter(Node::isGroupNode)
-                                        .filter(node -> !node.getGroupName().equals("default"))
-                                        .forEach(loadedUser::unsetPermission));
+            API.getUserManager().loadUser(uuid).thenAccept(loadedUser -> loadedUser.getAllNodes().stream()
+            .filter(Node::isGroupNode)
+            .filter(node -> !node.getGroupName().equals("default"))
+            .forEach(loadedUser::unsetPermission));
             return true;
         } catch (Exception ex) {
             plugin.getLogger().severe(ex.getClass().getName() + ": " + ex.getMessage() + " dropping permissions for " + player.getName());
@@ -263,7 +266,8 @@ class KitchenSinkListener implements Listener {
             if (event.getClickedBlock().getBlockData() instanceof NoteBlock) {
                 NoteBlock clicked = (NoteBlock) event.getClickedBlock().getBlockData();
                 clicked.setNote(note);
-                player.sendMessage(ChatColor.GOLD + "Note block set to note " + note.getTone().toString() + (note.isSharped() ? "#" : "") + " successfully!");
+                player.sendMessage(ChatColor.GOLD + "Note block set to note " + note.getTone().toString() + (note.isSharped() ? "#" : "")
+                                   + " successfully!");
             } else {
                 player.sendMessage(ChatColor.RED + "That block isn't a note block.");
             }
@@ -624,9 +628,9 @@ class KitchenSinkListener implements Listener {
             Player player = event.getEntity();
             String dropLoc = blockLocationToString(player.getLocation());
             String loot = "[drops] " + player.getName() + " at " + dropLoc + ": " +
-            event.getDrops().stream()
-                            .map(this::getItemDescription)
-                            .collect(Collectors.joining(","));
+                          event.getDrops().stream()
+                          .map(this::getItemDescription)
+                          .collect(Collectors.joining(","));
             plugin.getLogger().info(loot);
         }
     }
@@ -655,6 +659,11 @@ class KitchenSinkListener implements Listener {
      */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPortalCreate(PortalCreateEvent event) {
+        if (event.getWorld().getEnvironment() == Environment.THE_END) {
+            // Don't interfere with creation of the end's obsidian platform.
+            return;
+        }
+
         if (plugin.config.SAFE_PORTALS) {
             boolean allowed = false;
             if (plugin.nextPortal != null) {
@@ -672,8 +681,17 @@ class KitchenSinkListener implements Listener {
             if (!allowed) {
                 event.setCancelled(true);
                 for (Block block : event.getBlocks()) {
-                    block.setType(Material.AIR);
-                    event.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(block.getType()));
+                    if (block.getType().isSolid()) {
+                        try {
+                            event.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(block.getType()));
+                        } catch (Exception ex) {
+                            plugin.getLogger().info("Exception dropping block: " + block.getType() + " " +
+                                                    block.getLocation().getBlockX() + " " +
+                                                    block.getLocation().getBlockY() + " " +
+                                                    block.getLocation().getBlockZ() + " " + ex.getMessage());
+                        }
+                        block.setType(Material.AIR);
+                    }
                 }
             }
         }
@@ -913,8 +931,8 @@ class KitchenSinkListener implements Listener {
      * The string contains the material type name, data value and amount, as
      * well as a list of enchantments. It is used in methods that log drops.
      *
-     * If the item is a shulker box, the contents will be recursively added
-     * to the description.
+     * If the item is a shulker box, the contents will be recursively added to
+     * the description.
      *
      * @param item the droppped item stack.
      * @return a string describing a dropped item stack.
