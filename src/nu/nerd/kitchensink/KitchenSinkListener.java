@@ -1,16 +1,8 @@
 package nu.nerd.kitchensink;
 
-import java.text.Normalizer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
+import me.lucko.luckperms.LuckPerms;
+import me.lucko.luckperms.api.LuckPermsApi;
+import me.lucko.luckperms.api.Node;
 import org.bukkit.Art;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -87,7 +79,6 @@ import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.material.Wool;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
@@ -95,9 +86,16 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 import org.bukkit.util.BlockIterator;
 
-import me.lucko.luckperms.LuckPerms;
-import me.lucko.luckperms.api.LuckPermsApi;
-import me.lucko.luckperms.api.Node;
+import java.text.Normalizer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 class KitchenSinkListener implements Listener {
 
@@ -644,7 +642,66 @@ class KitchenSinkListener implements Listener {
             // Minecraft drops 1 - 3 wool. Mutiply by BUFF_SHEAR_DROPS, minus
             // the drops dropped by the event.
             int count = (1 + (int) (3 * Math.random())) * (plugin.config.BUFF_SHEAR_DROPS - 1);
-            l.getWorld().dropItemNaturally(l, new ItemStack(new Wool(entity.getColor()).getItemType(), count));
+
+            // this isn't working for some reason
+            //l.getWorld().dropItemNaturally(l, new ItemStack(new Wool(entity.getColor()).getItemType(), count));
+
+            Material wool;
+            switch (entity.getColor()) {
+                case BLACK:
+                    wool = Material.BLACK_WOOL;
+                    break;
+                case BLUE:
+                    wool = Material.BLUE_WOOL;
+                    break;
+                case BROWN:
+                    wool = Material.BROWN_WOOL;
+                    break;
+                case CYAN:
+                    wool = Material.CYAN_WOOL;
+                    break;
+                case GRAY:
+                    wool = Material.GRAY_WOOL;
+                    break;
+                case GREEN:
+                    wool = Material.GREEN_WOOL;
+                    break;
+                case LIGHT_BLUE:
+                    wool = Material.LIGHT_BLUE_WOOL;
+                    break;
+                case LIGHT_GRAY:
+                    wool = Material.LIGHT_GRAY_WOOL;
+                    break;
+                case LIME:
+                    wool = Material.LIME_WOOL;
+                    break;
+                case MAGENTA:
+                    wool = Material.MAGENTA_WOOL;
+                    break;
+                case ORANGE:
+                    wool = Material.ORANGE_WOOL;
+                    break;
+                case PINK:
+                    wool = Material.PINK_WOOL;
+                    break;
+                case PURPLE:
+                    wool = Material.PURPLE_WOOL;
+                    break;
+                case RED:
+                    wool = Material.RED_WOOL;
+                    break;
+                case WHITE:
+                    wool = Material.WHITE_WOOL;
+                    break;
+                case YELLOW:
+                    wool = Material.YELLOW_WOOL;
+                    break;
+                default:
+                    wool = Material.WHITE_WOOL;
+                    break;
+            }
+            l.getWorld().dropItemNaturally(l, new ItemStack(wool, count));
+
         }
     }
 
