@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>nu.nerd</groupId>
 	<artifactId>KitchenSink</artifactId>
@@ -7,7 +7,7 @@
 	<version>0.14.4-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<description>A plugin for miscellaneous functionality that hasn't found a home elsewhere.</description>
-        <url>https://github.com/NerdNu/KitchenSink</url>
+	<url>https://github.com/NerdNu/KitchenSink</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -41,7 +41,7 @@
 			<type>jar</type>
 		</dependency>
 		<dependency>
-			<groupId>me.lucko.LuckPerms</groupId>
+			<groupId>me.lucko.luckperms</groupId>
 			<artifactId>luckperms-api</artifactId>
 			<version>4.3</version>
 			<scope>provided</scope>
