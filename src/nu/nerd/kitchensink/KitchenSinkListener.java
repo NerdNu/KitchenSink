@@ -1,5 +1,7 @@
 package nu.nerd.kitchensink;
 
+import de.diddiz.LogBlock.Actor;
+import de.diddiz.LogBlock.EntityChange;
 import me.lucko.luckperms.LuckPerms;
 import me.lucko.luckperms.api.LuckPermsApi;
 import me.lucko.luckperms.api.Node;
@@ -25,14 +27,18 @@ import org.bukkit.entity.Animals;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Ocelot;
 import org.bukkit.entity.Painting;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Sheep;
+import org.bukkit.entity.Slime;
 import org.bukkit.entity.Tameable;
+import org.bukkit.entity.TropicalFish;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.Vindicator;
+import org.bukkit.entity.WaterMob;
 import org.bukkit.entity.Wolf;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -49,11 +55,14 @@ import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.AreaEffectCloudApplyEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
+import org.bukkit.event.entity.EntityTransformEvent;
 import org.bukkit.event.entity.ExplosionPrimeEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -79,11 +88,13 @@ import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
+import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.util.BlockIterator;
 
 import java.text.Normalizer;
@@ -555,27 +566,165 @@ class KitchenSinkListener implements Listener {
         }
     }
 
+    private boolean isEntityDeathLoggable(Entity entity) {
+        return plugin.config.FORCE_DEATH_LOG.contains(entity.getType())
+            || entity instanceof Ageable
+            || entity.getCustomName() != null;
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onEntityTransform(EntityTransformEvent e) {
+        Entity entity = e.getTransformedEntity();
+        EntityTransformEvent.TransformReason reason = e.getTransformReason();
+        if (reason == EntityTransformEvent.TransformReason.SPLIT || reason == EntityTransformEvent.TransformReason.SHEARED) {
+            return;
+        }
+        String transformReason = e.getTransformReason().toString();
+        String nearbyPlayers = getNearbyPlayers(entity.getLocation(), 4);
+        plugin.getLogger().info("[MobTransform] " + e.getEntityType().toString() + " transformed into a " +
+            e.getTransformedEntity().getType().toString() + " at " + blockLocationToString(entity.getLocation()) +
+            " due to " + transformReason + ". Nearby players: " + nearbyPlayers);
+        plugin.getLogBlockHook().getConsumer().queueKill(new Actor("LIGHTNING"), e.getEntity());
+        plugin.getLogBlockHook().getConsumer().queueEntityModification(new Actor("LIGHTNING"),
+                                                                       e.getEntity().getUniqueId(),
+                                                                       e.getEntity().getType(),
+                                                                       entity.getLocation(),
+                                                                       EntityChange.EntityChangeType.MODIFY,
+                                                                       null);
+    }
+
+    private static String getNearbyPlayers(Location location, int radius) {
+        return location.getWorld()
+            .getNearbyEntities(location, radius, radius, radius)
+            .stream()
+            .filter(Player.class::isInstance)
+            .map(Player.class::cast)
+            .map(Player::getName)
+            .collect(Collectors.joining(", "));
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void catchEntityPreDeath(EntityDamageEvent event) {
+        Entity entity = event.getEntity();
+        if (!isEntityDeathLoggable(entity)) {
+            return;
+        }
+        if (entity instanceof org.bukkit.entity.Damageable) {
+            double newHealth = ((org.bukkit.entity.Damageable) entity).getHealth() - event.getFinalDamage();
+            if (newHealth > 0) {
+                return;
+            }
+        }
+        String lastDamage = null;
+        if (event instanceof EntityDamageByBlockEvent) {
+            EntityDamageByBlockEvent e = (EntityDamageByBlockEvent) event;
+            Block block = e.getDamager();
+            lastDamage = "block " + block.getType().toString() + " ";
+            try {
+                String placedBy = plugin.getLogBlockHook().getBlockPlacer(block);
+                lastDamage += "logblock says (" + placedBy + ")";
+            } catch (Exception ex) { }
+        } else if (event instanceof EntityDamageByEntityEvent) {
+            Entity damager = ((EntityDamageByEntityEvent) event).getDamager();
+            if (damager instanceof Projectile) {
+                lastDamage = "projectile " + damager.getType().toString() + " fired by ";
+                ProjectileSource source = ((Projectile) damager).getShooter();
+                if (source instanceof Player) {
+                    lastDamage += "player " + ((Player) source).getName();
+                } else if (source instanceof LivingEntity) {
+                    lastDamage += "mob " + ((LivingEntity) source).getType().toString();
+                } else {
+                    lastDamage += "unknown " + source;
+                }
+            } else if (damager instanceof Player) {
+                lastDamage = "player " + damager.getName() + " with a " + ((Player) damager).getEquipment().getItemInMainHand().getType().name();
+            }
+        } else {
+            EntityDamageEvent.DamageCause damageCause = event.getCause();
+            double damage = event.getFinalDamage();
+            Block block = entity.getWorld().getBlockAt(entity.getLocation());
+            switch (damageCause) {
+                case SUFFOCATION:
+                    lastDamage = "suffocated by " + block.getType().toString() + " ";
+                    try {
+                        String placedBy = plugin.getLogBlockHook().getBlockPlacer(block);
+                        lastDamage += "logblock says (" + placedBy + ")";
+                    } catch (Exception ex) { }
+                    break;
+
+                case DROWNING:
+                    if (entity instanceof WaterMob) {
+                        lastDamage = "suffocated";
+                    }
+                    break;
+
+                case DRYOUT: lastDamage = "dried out"; break;
+                case FALL: lastDamage = "fell ~" + damage + " blocks"; break;
+                case CRAMMING: lastDamage = "crammed"; break;
+                case ENTITY_SWEEP_ATTACK: lastDamage = "sweeping edge"; break;
+                default: lastDamage = damageCause.toString(); break;
+            }
+        }
+        if (lastDamage == null) {
+            lastDamage = "uncaught";
+        }
+        entity.setMetadata("last-damage-cause", new FixedMetadataValue(KitchenSink.PLUGIN, lastDamage));
+    }
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onEntityDeath(EntityDeathEvent event) {
+        Entity entity = event.getEntity();
         if (plugin.config.DISABLE_PEARL_DROPS_IN_END) {
-            Location l = event.getEntity().getLocation();
+            Location l = entity.getLocation();
             if (l.getWorld().getEnvironment() == World.Environment.THE_END) {
                 event.getDrops().removeIf(is -> is.getType() == Material.ENDER_PEARL);
             }
         }
-        if (plugin.config.DISABLED_DROPS.containsKey(event.getEntity().getType())) {
-            Set<Material> mats = plugin.config.DISABLED_DROPS.get(event.getEntity().getType());
+        EntityType type = entity.getType();
+        if (plugin.config.DISABLED_DROPS.containsKey(type)) {
+            Set<Material> mats = plugin.config.DISABLED_DROPS.get(type);
             event.getDrops().removeIf(is -> mats.contains(is.getType()));
         }
-        if (event.getEntity() instanceof Ageable || event.getEntity().getCustomName() != null) {
+        if (plugin.config.BUFF_DROPS > 1 && event.getEntity() instanceof Animals) {
+            List<ItemStack> items = event.getDrops();
+            Location l = event.getEntity().getLocation();
+            for (ItemStack a : items) {
+                if (!plugin.config.DISABLE_BUFF.contains(a.getType())) {
+                    // Drops already drop *once* from the event itself.
+                    for (int i = 1; i < plugin.config.BUFF_DROPS; i++) {
+                        l.getWorld().dropItemNaturally(l, a);
+                    }
+                }
+            }
+        }
+        if (isEntityDeathLoggable(entity)) {
+            String caughtDamageCause = null;
+            if (entity.hasMetadata("last-damage-cause")) {
+                caughtDamageCause = entity.getMetadata("last-damage-cause")
+                    .stream()
+                    .map(MetadataValue::asString)
+                    .reduce(String::concat)
+                    .orElse("");
+            }
             Player killer = event.getEntity().getKiller();
-            if (killer != null) {
+            if (killer != null || caughtDamageCause != null) {
                 if (plugin.config.LOG_ANIMAL_DEATH) {
                     Location l = event.getEntity().getLocation();
                     Chunk c = l.getChunk();
-                    String message = "[MobKill] " + killer.getName() + "|" + event.getEntityType().name()
+                    String killerInfo = (caughtDamageCause != null) ? caughtDamageCause : event.getEntity().getLastDamageCause().getCause().toString();
+                    if (killer != null) {
+                        killerInfo += "|killer: " + killer.getName();
+                    }
+                    String message = "[MobKill] " + event.getEntityType().name() + "|" + killerInfo
                                      + "|" + l.getWorld().getName() + "|" + l.getBlockX() + "|" + l.getBlockY() + "|" + l.getBlockZ()
                                      + "|C[" + c.getX() + "," + c.getZ() + "]";
+                    if (entity instanceof Slime) {
+                        message += "|slime size = " + ((Slime) entity).getSize();
+                    } else if (entity instanceof TropicalFish) {
+                        TropicalFish fish = (TropicalFish) entity;
+                        message += "|body = " + fish.getBodyColor().name() + ", pattern = " + fish.getPattern().name()
+                            + ", pattern color = " + fish.getPatternColor().name();
+                    }
                     if (event.getEntity() instanceof Tameable) {
                         Tameable tameable = (Tameable) event.getEntity();
                         if (tameable instanceof Ocelot) {
@@ -599,18 +748,6 @@ class KitchenSinkListener implements Listener {
                         message += "|named " + event.getEntity().getCustomName();
                     }
                     plugin.getLogger().info(message);
-                }
-                if (plugin.config.BUFF_DROPS > 1 && event.getEntity() instanceof Animals) {
-                    List<ItemStack> items = event.getDrops();
-                    Location l = event.getEntity().getLocation();
-                    for (ItemStack a : items) {
-                        if (!plugin.config.DISABLE_BUFF.contains(a.getType())) {
-                            // Drops already drop *once* from the event itself.
-                            for (int i = 1; i < plugin.config.BUFF_DROPS; i++) {
-                                l.getWorld().dropItemNaturally(l, a);
-                            }
-                        }
-                    }
                 }
             }
         }

@@ -1,6 +1,11 @@
 debug:
   disable-tnt: false
 
+log-entity-deaths:
+  - DOLPHIN
+  - TROPICAL_FISH
+  - TURTLE
+
 animal-count: false
 log-animals: false
 log-player-drops: false

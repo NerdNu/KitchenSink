@@ -9,7 +9,9 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 enum countdown {
     maxtime, format, color, style, msgcolor, msgstyle
@@ -20,6 +22,8 @@ public class Configuration {
     private final KitchenSink plugin;
 
     public boolean DEBUG_DISABLE_TNT;
+
+    public HashSet<EntityType> FORCE_DEATH_LOG;
 
     public boolean ANIMAL_COUNT;
     public boolean LOG_ANIMAL_DEATH;
@@ -105,6 +109,12 @@ public class Configuration {
         BLOCK_VILLAGERS = plugin.getConfig().getBoolean("block-villagers");
         BLOCK_JOHNNY = plugin.getConfig().getBoolean("block-johnny", false);
         BLOCK_SLIME_MOVING_RAILS_AND_CARPETS = plugin.getConfig().getBoolean("block-slime-moving-rails-and-carpets");
+
+        FORCE_DEATH_LOG = plugin.getConfig().getStringList("log-entity-deaths")
+            .stream()
+            .map(Configuration::getEntityType)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toCollection(HashSet::new));
 
         SAFE_ICE = plugin.getConfig().getBoolean("safe-ice");
         SAFE_DISPENSERS = plugin.getConfig().getBoolean("safe-dispensers");
@@ -201,6 +211,23 @@ public class Configuration {
             plugin.getConfig().set("countdown.msgstyle", value);
         }
         plugin.saveConfig();
+    }
+
+    // ------------------------------------------------------------------------
+    /**
+     * Returns the EntityType corresponding to the given string, or null if one
+     * does not exist.
+     *
+     * @param typeAsString the entity type as a string.
+     * @return the corresponding EntityType.
+     */
+    private static EntityType getEntityType(String typeAsString) {
+        try {
+            return EntityType.valueOf(typeAsString.toUpperCase());
+        } catch (Exception e) {
+            KitchenSink.PLUGIN.getLogger().info("Invalid EntityType in config.yml: " + typeAsString);
+            return null;
+        }
     }
 
     // ------------------------------------------------------------------------

@@ -2,8 +2,10 @@ package nu.nerd.kitchensink;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
+import de.diddiz.LogBlock.LogBlock;
 import nu.nerd.kitchensink.ServerListPing17.StatusResponse;
 import org.bukkit.Art;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -19,6 +21,7 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BlockIterator;
@@ -45,6 +48,11 @@ public class KitchenSink extends JavaPlugin {
      * This plugin, accessible as a singleton.
      */
     static KitchenSink PLUGIN;
+
+    /**
+     * Reference to the LogBlock plugin, or null if not found.
+     */
+    private LogBlockHook _logBlockHook;
 
     private static final int ONE_MINUTE_TICKS = 60 * 20;
 
@@ -149,6 +157,16 @@ public class KitchenSink extends JavaPlugin {
         return enchantment;
     }
 
+    // ------------------------------------------------------------------------
+    /**
+     * Returns a reference to the LogBlock plugin hook.
+     *
+     * @return a reference to the LogBlock plugin hook.
+     */
+    LogBlockHook getLogBlockHook() {
+        return _logBlockHook;
+    }
+
     @Override
     public void onDisable() {
         getServer().getScheduler().cancelTasks(this);
@@ -171,6 +189,14 @@ public class KitchenSink extends JavaPlugin {
             saveConfig();
         }
         config.load();
+
+        Plugin plugin = Bukkit.getPluginManager().getPlugin("LogBlock");
+        if (plugin instanceof LogBlock) {
+            _logBlockHook = new LogBlockHook((LogBlock) plugin);
+            getLogger().info("Hooked LogBlock successfully.");
+        } else {
+            getLogger().info("LogBlock not found.");
+        }
 
         if (config.ANIMAL_COUNT) {
             getServer().getScheduler().runTaskTimer(this, new MobCountTask(), ONE_MINUTE_TICKS, 10 * ONE_MINUTE_TICKS);
