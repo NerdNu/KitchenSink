@@ -101,9 +101,10 @@ import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -736,7 +737,7 @@ class KitchenSinkListener implements Listener {
                             message += "|" + horse.getColor().name() + "," + horse.getStyle().name() + "|";
                             for (ItemStack item : abstractHorse.getInventory()) {
                                 if (item != null && item.getType() != Material.AIR) {
-                                    message += getItemDescription(item) + ",";
+                                    message += String.join(", ", getItemDescription(item));
                                 }
                             }
                         }
@@ -761,12 +762,15 @@ class KitchenSinkListener implements Listener {
     public void onPlayerDeath(PlayerDeathEvent event) {
         if (plugin.config.LOG_PLAYER_DROPS) {
             Player player = event.getEntity();
-            String dropLoc = blockLocationToString(player.getLocation());
-            String loot = "[drops] " + player.getName() + " at " + dropLoc + ": " +
-                          event.getDrops().stream()
-                          .map(this::getItemDescription)
-                          .collect(Collectors.joining(","));
+            String loot = String.format("[drops] %s | Location: %s:",
+                player.getName(),
+                blockLocationToString(player.getLocation()));
             plugin.getLogger().info(loot);
+            event.getDrops().stream()
+                .map(this::getItemDescription)
+                .forEach(descriptors -> descriptors.stream()
+                    .map(s -> "[drops] " + player.getName() + " | " + s)
+                    .forEach(plugin.getLogger()::info));
         }
     }
 
@@ -1131,76 +1135,91 @@ class KitchenSinkListener implements Listener {
      * @param item the droppped item stack.
      * @return a string describing a dropped item stack.
      */
-    public String getItemDescription(ItemStack item) {
-        StringBuilder description = new StringBuilder();
-        description.append(item.getAmount()).append('x').append(item.getType().name());
+    public LinkedHashSet<String> getItemDescription(ItemStack item) {
+        LinkedHashSet<String> descriptors = new LinkedHashSet<>();
+        if (item == null) {
+            return descriptors;
+        }
+        String description = String.format("%dx %s ", item.getAmount(), item.getType().toString());
         ItemMeta meta = item.getItemMeta();
+        short maxDurability = item.getType().getMaxDurability();
+        if (maxDurability> 0) {
+            int durability = Math.round(maxDurability - ((Damageable) meta).getDamage());
+            description += String.format("[durability: %d/%d] ", durability, maxDurability);
+        }
+
         if (meta != null) {
-            if (meta instanceof BlockStateMeta) {
-                BlockStateMeta blockStateMeta = (BlockStateMeta) meta;
-                if (blockStateMeta.getBlockState() instanceof ShulkerBox) {
-                    description.append(" *** Contents: ");
-                    ShulkerBox shulkerBox = (ShulkerBox) blockStateMeta.getBlockState();
-                    shulkerBox.getInventory().forEach(itemStack -> {
-                        if (itemStack != null)
-                            description.append(getItemDescription(itemStack));
-                    });
-                    description.append(" **** ");
-                }
-            } else if (meta instanceof Damageable) {
-                Damageable damageable = (Damageable) meta;
-                description.append("Durability: ").append(damageable.getDamage());
-            } else if (meta instanceof SkullMeta) {
-                SkullMeta skullMeta = (SkullMeta) meta;
-                if (skullMeta.getOwningPlayer() != null) {
-                    description.append(" of \"").append(skullMeta.getOwningPlayer().getName()).append("\"");
-                }
-            } else if (meta instanceof EnchantmentStorageMeta) {
-                EnchantmentStorageMeta bookEnchants = (EnchantmentStorageMeta) meta;
-                description.append(" with ").append(enchantsToString(bookEnchants.getStoredEnchants()));
-            } else if (meta instanceof BookMeta) {
-                BookMeta bookMeta = (BookMeta) meta;
-                if (bookMeta.getTitle() != null) {
-                    description.append(" titled \"").append(bookMeta.getTitle()).append("\"");
-                }
-                if (bookMeta.getAuthor() != null) {
-                    description.append(" by ").append(bookMeta.getAuthor());
-                }
-            } else if (meta instanceof PotionMeta) {
-                PotionMeta potionMeta = (PotionMeta) meta;
-                description.append(" of ");
-                PotionData data = potionMeta.getBasePotionData();
-                description.append(data.getType());
-                if (data.isExtended()) {
-                    description.append(" extended");
-                }
-                if (data.isUpgraded()) {
-                    description.append(" upgraded");
-                }
-
-                List<PotionEffect> effects = potionMeta.getCustomEffects();
-                if (effects != null && !effects.isEmpty()) {
-                    description.append(" with ");
-                    String sep = "";
-                    for (PotionEffect effect : potionMeta.getCustomEffects()) {
-                        description.append(sep).append(potionToString(effect));
-                        sep = "+";
-                    }
-                }
+            if (meta.hasDisplayName()) {
+                description += String.format("[custom name: \"%s\"] %s", meta.getDisplayName(), ChatColor.RESET);
             }
-
-            if (meta.getDisplayName() != null) {
-                description.append(" named \"").append(meta.getDisplayName()).append("\"").append(ChatColor.WHITE);
-            }
-
             List<String> lore = meta.getLore();
             if (lore != null && !lore.isEmpty()) {
-                description.append(" lore \"").append(String.join("|", lore)).append("\"").append(ChatColor.WHITE);
+                description += String.format("[lore: \"%s\"] %s", String.join(" / ", lore), ChatColor.RESET);
             }
         }
 
-        description.append(enchantsToString(item.getEnchantments()));
-        return description.toString();
+        if (meta instanceof SkullMeta) {
+            SkullMeta skullMeta = (SkullMeta) meta;
+            if (skullMeta.getOwningPlayer() != null) {
+                description += String.format("[skull of %s] ", skullMeta.getOwningPlayer().getName());
+            }
+        }
+
+        if (meta instanceof EnchantmentStorageMeta) {
+            EnchantmentStorageMeta bookEnchants = (EnchantmentStorageMeta) meta;
+            description += String.format("[applyable enchants: %s] ", enchantsToString(bookEnchants.getStoredEnchants()));
+        }
+
+        if (meta instanceof BookMeta) {
+            BookMeta bookMeta = (BookMeta) meta;
+            if (bookMeta.getTitle() != null) {
+                description += String.format("[book title: \"%s\" ", bookMeta.getTitle());
+            }
+            if (bookMeta.getAuthor() != null) {
+                description += String.format(", author: \"%s\"] ", bookMeta.getAuthor());
+            } else {
+                description += "] ";
+            }
+        }
+
+        if (meta instanceof PotionMeta) {
+            PotionMeta potionMeta = (PotionMeta) meta;
+            PotionData data = potionMeta.getBasePotionData();
+            description += String.format("[base potion: %s, level: %s%s] ", data.getType().toString(),
+                data.isUpgraded() ? "2" : "1",
+                data.isExtended() ? ", extended" : "");
+
+            List<PotionEffect> effects = potionMeta.getCustomEffects();
+            if (effects != null && !effects.isEmpty()) {
+                description += String.format("[effects: %s] ", potionMeta.getCustomEffects()
+                    .stream()
+                    .map(p -> String.format("[type: %s, amplifier: %d, duration: %d] ", p.getType().toString(),
+                        p.getAmplifier(), p.getDuration()))
+                    .collect(Collectors.joining(", ")));
+            }
+        }
+
+        if (item.getEnchantments().size() > 0) {
+            description += String.format("[enchants: %s] ", enchantsToString(item.getEnchantments()));
+        }
+
+        descriptors.add(description);
+
+        if (meta instanceof BlockStateMeta) {
+            BlockStateMeta blockStateMeta = (BlockStateMeta) meta;
+            if (blockStateMeta.getBlockState() instanceof ShulkerBox) {
+                ShulkerBox shulkerBox = (ShulkerBox) blockStateMeta.getBlockState();
+                Arrays.stream(shulkerBox.getInventory().getContents())
+                    .filter(Objects::nonNull)
+                    .filter(itemStack -> itemStack.getType() != Material.AIR)
+                    .map(this::getItemDescription)
+                    .map(s -> "" + s)
+                    .map(s -> "---> " + s.substring(1, s.length() - 1))
+                    .forEach(descriptors::add);
+            }
+        }
+
+        return descriptors;
     }
 
     /**
@@ -1224,17 +1243,9 @@ class KitchenSinkListener implements Listener {
      * @return the description.
      */
     public String enchantsToString(Map<Enchantment, Integer> enchants) {
-        StringBuilder description = new StringBuilder();
-        if (enchants.size() > 0) {
-            description.append(" (");
-            String sep = "";
-            for (Entry<Enchantment, Integer> entry : enchants.entrySet()) {
-                description.append(sep).append(entry.getKey().getKey().getNamespace()).append(':').append(entry.getValue());
-                sep = ",";
-            }
-            description.append(')');
-        }
-        return description.toString();
+        return enchants.entrySet().stream()
+            .map(e -> String.format("%s %d", e.getKey().getKey().getKey(), e.getValue()))
+            .collect(Collectors.joining(", "));
     }
 
     /**
