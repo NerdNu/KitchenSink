@@ -111,7 +111,7 @@ public class KitchenSink extends JavaPlugin {
     static {
         // Internal names.
         for (Enchantment enchant : Enchantment.values()) {
-            ENCHANTMENT_NAMES.put(enchant.getKey().getNamespace().toLowerCase(), enchant);
+            ENCHANTMENT_NAMES.put(enchant.getKey().getKey().toLowerCase(), enchant);
         }
 
         // Common, in-game names.
