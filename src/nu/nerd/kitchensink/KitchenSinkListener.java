@@ -585,7 +585,7 @@ class KitchenSinkListener implements Listener {
         }
         String transformReason = e.getTransformReason().toString();
         String nearbyPlayers = getNearbyPlayers(entity.getLocation(), 4);
-        plugin.getLogger().info("[MobTransform] " + e.getEntityType().toString() + " transformed into a " +
+        plugin.getLogger().info("[MobKill] [MobTransform] " + e.getEntityType().toString() + " transformed into a " +
             e.getTransformedEntity().getType().toString() + " at " + blockLocationToString(entity.getLocation()) +
             " due to " + transformReason + ". Nearby players: " + nearbyPlayers);
         plugin.getLogBlockHook().logKill(entity.getLocation(), new Actor("LIGHTNING"),
