@@ -118,6 +118,11 @@ public class Configuration {
             .map(Configuration::getEntityType)
             .filter(Objects::nonNull)
             .collect(Collectors.toCollection(HashSet::new));
+        IGNORE_DEATH_LOG = plugin.getConfig().getStringList("ignore-entity-deaths")
+            .stream()
+            .map(Configuration::getEntityType)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toCollection(HashSet::new));
 
         SAFE_ICE = plugin.getConfig().getBoolean("safe-ice");
         SAFE_DISPENSERS = plugin.getConfig().getBoolean("safe-dispensers");

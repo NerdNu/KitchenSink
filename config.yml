@@ -6,6 +6,8 @@ log-entity-deaths:
   - DOLPHIN
   - TROPICAL_FISH
   - TURTLE
+ignore-entity-deaths:
+  - IRON_GOLEM
 
 animal-count: false
 log-animals: false
