@@ -190,12 +190,16 @@ public class KitchenSink extends JavaPlugin {
         }
         config.load();
 
-        Plugin plugin = Bukkit.getPluginManager().getPlugin("LogBlock");
-        if (plugin instanceof LogBlock) {
-            _logBlockHook = new LogBlockHook((LogBlock) plugin);
-            getLogger().info("Hooked LogBlock successfully.");
+        if (config.HOOK_LOGBLOCK) {
+            Plugin plugin = Bukkit.getPluginManager().getPlugin("LogBlock");
+            if (plugin instanceof LogBlock) {
+                _logBlockHook = new LogBlockHook((LogBlock) plugin);
+                getLogger().info("Hooked LogBlock successfully.");
+            } else {
+                getLogger().info("LogBlock not found.");
+            }
         } else {
-            getLogger().info("LogBlock not found.");
+            _logBlockHook = new LogBlockHook(null);
         }
 
         if (config.ANIMAL_COUNT) {

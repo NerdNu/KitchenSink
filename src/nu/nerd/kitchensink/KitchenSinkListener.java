@@ -568,6 +568,9 @@ class KitchenSinkListener implements Listener {
     }
 
     private boolean isEntityDeathLoggable(Entity entity) {
+        if (entity == null || plugin.config.IGNORE_DEATH_LOG.contains(entity.getType())) {
+            return false;
+        }
         return plugin.config.FORCE_DEATH_LOG.contains(entity.getType())
             || entity instanceof Ageable
             || entity.getCustomName() != null;
@@ -585,13 +588,8 @@ class KitchenSinkListener implements Listener {
         plugin.getLogger().info("[MobTransform] " + e.getEntityType().toString() + " transformed into a " +
             e.getTransformedEntity().getType().toString() + " at " + blockLocationToString(entity.getLocation()) +
             " due to " + transformReason + ". Nearby players: " + nearbyPlayers);
-        plugin.getLogBlockHook().getConsumer().queueKill(new Actor("LIGHTNING"), e.getEntity());
-        plugin.getLogBlockHook().getConsumer().queueEntityModification(new Actor("LIGHTNING"),
-                                                                       e.getEntity().getUniqueId(),
-                                                                       e.getEntity().getType(),
-                                                                       entity.getLocation(),
-                                                                       EntityChange.EntityChangeType.MODIFY,
-                                                                       null);
+        plugin.getLogBlockHook().logKill(entity.getLocation(), new Actor("LIGHTNING"),
+            new Actor(e.getEntity().getType().toString()), null);
     }
 
     private static String getNearbyPlayers(Location location, int radius) {
@@ -623,7 +621,9 @@ class KitchenSinkListener implements Listener {
             lastDamage = "block " + block.getType().toString() + " ";
             try {
                 String placedBy = plugin.getLogBlockHook().getBlockPlacer(block);
-                lastDamage += "logblock says (" + placedBy + ")";
+                if (placedBy != null) {
+                    lastDamage += "logblock says (" + placedBy + ")";
+                }
             } catch (Exception ex) { }
         } else if (event instanceof EntityDamageByEntityEvent) {
             Entity damager = ((EntityDamageByEntityEvent) event).getDamager();
@@ -649,7 +649,9 @@ class KitchenSinkListener implements Listener {
                     lastDamage = "suffocated by " + block.getType().toString() + " ";
                     try {
                         String placedBy = plugin.getLogBlockHook().getBlockPlacer(block);
-                        lastDamage += "logblock says (" + placedBy + ")";
+                        if (placedBy != null) {
+                            lastDamage += "logblock says (" + placedBy + ")";
+                        }
                     } catch (Exception ex) { }
                     break;
 

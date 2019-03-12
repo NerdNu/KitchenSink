@@ -1,6 +1,7 @@
 debug:
   disable-tnt: false
 
+hook-logblock: false
 log-entity-deaths:
   - DOLPHIN
   - TROPICAL_FISH

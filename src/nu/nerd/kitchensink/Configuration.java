@@ -23,7 +23,9 @@ public class Configuration {
 
     public boolean DEBUG_DISABLE_TNT;
 
+    public boolean HOOK_LOGBLOCK;
     public HashSet<EntityType> FORCE_DEATH_LOG;
+    public HashSet<EntityType> IGNORE_DEATH_LOG;
 
     public boolean ANIMAL_COUNT;
     public boolean LOG_ANIMAL_DEATH;
@@ -110,6 +112,7 @@ public class Configuration {
         BLOCK_JOHNNY = plugin.getConfig().getBoolean("block-johnny", false);
         BLOCK_SLIME_MOVING_RAILS_AND_CARPETS = plugin.getConfig().getBoolean("block-slime-moving-rails-and-carpets");
 
+        HOOK_LOGBLOCK = plugin.getConfig().getBoolean("use-logblock", false);
         FORCE_DEATH_LOG = plugin.getConfig().getStringList("log-entity-deaths")
             .stream()
             .map(Configuration::getEntityType)
