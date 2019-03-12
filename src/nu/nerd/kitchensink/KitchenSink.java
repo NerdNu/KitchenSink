@@ -346,6 +346,21 @@ public class KitchenSink extends JavaPlugin {
             return true;
         }
 
+        if (command.getName().equalsIgnoreCase("untame")) {
+            if (config.UNTAME_PETS) {
+                if (sender instanceof Player) {
+                    Player player = (Player) sender;
+                    player.setMetadata(UNTAME_KEY, new FixedMetadataValue(this, null));
+                    sender.sendMessage(ChatColor.GOLD + "Right click on a pet that you own.");
+                } else {
+                    sender.sendMessage("You need to be in-game to untame pets.");
+                }
+            } else {
+                sender.sendMessage(ChatColor.RED + "That command is disabled.");
+            }
+            return true;
+        }
+
         if (command.getName().equalsIgnoreCase("allow-portal")) {
             // Running /allow-portal while looking at some invalid location
             // invalidates the previously set allowed portal location:
