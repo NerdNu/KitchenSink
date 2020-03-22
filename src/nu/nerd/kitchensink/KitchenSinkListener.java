@@ -1,10 +1,17 @@
 package nu.nerd.kitchensink;
 
-import de.diddiz.LogBlock.Actor;
-import de.diddiz.LogBlock.EntityChange;
-import me.lucko.luckperms.LuckPerms;
-import me.lucko.luckperms.api.LuckPermsApi;
-import me.lucko.luckperms.api.Node;
+import java.text.Normalizer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.bukkit.Art;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -14,16 +21,19 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Note;
 import org.bukkit.Sound;
+import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.block.data.type.NoteBlock;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Ageable;
 import org.bukkit.entity.Animals;
+import org.bukkit.entity.Cat;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
@@ -90,6 +100,7 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -97,17 +108,10 @@ import org.bukkit.potion.PotionType;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.util.BlockIterator;
 
-import java.text.Normalizer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import de.diddiz.LogBlock.Actor;
+import net.luckperms.api.LuckPerms;
+import net.luckperms.api.node.NodeType;
+import net.luckperms.api.node.types.InheritanceNode;
 
 class KitchenSinkListener implements Listener {
 
@@ -123,67 +127,57 @@ class KitchenSinkListener implements Listener {
      * category.
      */
     private static final HashSet<Material> SHULKER_BOXES;
-    private static final HashSet<Material> BEDS;
     private static final HashSet<Material> DOORS;
-    private static final HashSet<Material> BUTTONS_AND_PLATES;
+    private static final HashSet<Material> PLATES;
     private static final HashSet<Material> FENCES_AND_GATES;
     private static final HashSet<Material> CARPETS;
 
     static {
-        INTERACTABLE_TYPES = new HashSet<>(Arrays.asList(
-                                                         Material.DISPENSER, Material.NOTE_BLOCK, Material.CHEST, Material.SIGN,
+        INTERACTABLE_TYPES = new HashSet<>(Arrays.asList(Material.DISPENSER, Material.NOTE_BLOCK, Material.CHEST,
                                                          Material.CRAFTING_TABLE,
                                                          Material.FURNACE, Material.FURNACE, Material.LEVER, Material.JUKEBOX, Material.CAKE,
                                                          Material.REPEATER, Material.ENCHANTING_TABLE, Material.BREWING_STAND, Material.DRAGON_EGG,
                                                          Material.ENDER_CHEST, Material.BEACON, Material.ANVIL, Material.TRAPPED_CHEST,
                                                          Material.COMPARATOR, Material.HOPPER, Material.DROPPER, Material.DAYLIGHT_DETECTOR));
 
-        BEDS = new HashSet<>(Arrays.asList(
-                                           Material.BLACK_BED, Material.BLUE_BED, Material.BROWN_BED, Material.CYAN_BED, Material.GRAY_BED,
-                                           Material.GREEN_BED, Material.LIGHT_BLUE_BED, Material.LIGHT_GRAY_BED, Material.LIME_BED,
-                                           Material.MAGENTA_BED, Material.ORANGE_BED, Material.PINK_BED, Material.PURPLE_BED,
-                                           Material.RED_BED, Material.WHITE_BED, Material.YELLOW_BED));
+        PLATES = new HashSet<>(Arrays.asList(Material.ACACIA_BUTTON, Material.BIRCH_BUTTON, Material.DARK_OAK_BUTTON,
+                                             Material.JUNGLE_BUTTON,
+                                             Material.OAK_BUTTON, Material.SPRUCE_BUTTON, Material.STONE_BUTTON,
+                                             Material.ACACIA_PRESSURE_PLATE,
+                                             Material.BIRCH_PRESSURE_PLATE, Material.DARK_OAK_PRESSURE_PLATE,
+                                             Material.HEAVY_WEIGHTED_PRESSURE_PLATE,
+                                             Material.JUNGLE_PRESSURE_PLATE, Material.LIGHT_WEIGHTED_PRESSURE_PLATE,
+                                             Material.OAK_PRESSURE_PLATE,
+                                             Material.SPRUCE_PRESSURE_PLATE, Material.STONE_PRESSURE_PLATE));
 
-        BUTTONS_AND_PLATES = new HashSet<>(Arrays.asList(
-                                                         Material.ACACIA_BUTTON, Material.BIRCH_BUTTON, Material.DARK_OAK_BUTTON,
-                                                         Material.JUNGLE_BUTTON,
-                                                         Material.OAK_BUTTON, Material.SPRUCE_BUTTON, Material.STONE_BUTTON,
-                                                         Material.ACACIA_PRESSURE_PLATE,
-                                                         Material.BIRCH_PRESSURE_PLATE, Material.DARK_OAK_PRESSURE_PLATE,
-                                                         Material.HEAVY_WEIGHTED_PRESSURE_PLATE,
-                                                         Material.JUNGLE_PRESSURE_PLATE, Material.LIGHT_WEIGHTED_PRESSURE_PLATE,
-                                                         Material.OAK_PRESSURE_PLATE,
-                                                         Material.SPRUCE_PRESSURE_PLATE, Material.STONE_PRESSURE_PLATE));
-
-        CARPETS = new HashSet<>(Arrays.asList(
-                                              Material.BLACK_CARPET, Material.BLUE_CARPET, Material.BROWN_CARPET, Material.CYAN_CARPET,
+        CARPETS = new HashSet<>(Arrays.asList(Material.BLACK_CARPET, Material.BLUE_CARPET, Material.BROWN_CARPET, Material.CYAN_CARPET,
                                               Material.GRAY_CARPET, Material.GREEN_CARPET, Material.LIGHT_BLUE_CARPET, Material.LIGHT_GRAY_CARPET,
                                               Material.LIME_CARPET, Material.MAGENTA_CARPET, Material.ORANGE_CARPET, Material.PINK_CARPET,
                                               Material.PURPLE_CARPET, Material.RED_CARPET, Material.WHITE_CARPET, Material.YELLOW_CARPET));
 
-        FENCES_AND_GATES = new HashSet<>(Arrays.asList(
-                                                       Material.ACACIA_FENCE_GATE, Material.BIRCH_FENCE_GATE, Material.DARK_OAK_FENCE_GATE,
+        FENCES_AND_GATES = new HashSet<>(Arrays.asList(Material.ACACIA_FENCE_GATE, Material.BIRCH_FENCE_GATE, Material.DARK_OAK_FENCE_GATE,
                                                        Material.JUNGLE_FENCE_GATE, Material.OAK_FENCE_GATE, Material.SPRUCE_FENCE_GATE,
                                                        Material.ACACIA_FENCE, Material.BIRCH_FENCE, Material.DARK_OAK_FENCE, Material.JUNGLE_FENCE,
                                                        Material.OAK_FENCE, Material.SPRUCE_FENCE));
 
-        DOORS = new HashSet<>(Arrays.asList(
-                                            Material.ACACIA_DOOR, Material.ACACIA_TRAPDOOR, Material.BIRCH_DOOR, Material.BIRCH_TRAPDOOR,
+        DOORS = new HashSet<>(Arrays.asList(Material.ACACIA_DOOR, Material.ACACIA_TRAPDOOR, Material.BIRCH_DOOR, Material.BIRCH_TRAPDOOR,
                                             Material.DARK_OAK_DOOR, Material.DARK_OAK_TRAPDOOR, Material.IRON_DOOR, Material.IRON_TRAPDOOR,
                                             Material.JUNGLE_DOOR, Material.JUNGLE_TRAPDOOR, Material.OAK_DOOR, Material.OAK_TRAPDOOR,
                                             Material.SPRUCE_DOOR, Material.SPRUCE_TRAPDOOR));
 
-        SHULKER_BOXES = new HashSet<>(Arrays.asList(
-                                                    Material.BLACK_SHULKER_BOX, Material.BLUE_SHULKER_BOX, Material.BROWN_SHULKER_BOX,
-                                                    Material.CYAN_SHULKER_BOX, Material.GRAY_SHULKER_BOX,
-                                                    Material.GREEN_SHULKER_BOX, Material.LIGHT_BLUE_SHULKER_BOX, Material.LIME_SHULKER_BOX,
-                                                    Material.MAGENTA_SHULKER_BOX,
-                                                    Material.ORANGE_SHULKER_BOX, Material.PINK_SHULKER_BOX, Material.PURPLE_SHULKER_BOX,
-                                                    Material.ORANGE_SHULKER_BOX));
+        SHULKER_BOXES = new HashSet<>(Arrays.asList(Material.BLACK_SHULKER_BOX, Material.BLUE_SHULKER_BOX,
+                                                    Material.BROWN_SHULKER_BOX, Material.CYAN_SHULKER_BOX,
+                                                    Material.GRAY_SHULKER_BOX, Material.GREEN_SHULKER_BOX,
+                                                    Material.LIGHT_BLUE_SHULKER_BOX, Material.LIGHT_GRAY_SHULKER_BOX,
+                                                    Material.LIME_SHULKER_BOX, Material.MAGENTA_SHULKER_BOX,
+                                                    Material.ORANGE_SHULKER_BOX, Material.PINK_SHULKER_BOX,
+                                                    Material.PURPLE_SHULKER_BOX, Material.ORANGE_SHULKER_BOX,
+                                                    Material.SHULKER_BOX));
 
-        INTERACTABLE_TYPES.addAll(BEDS);
+        INTERACTABLE_TYPES.addAll(Tag.BEDS.getValues());
+        INTERACTABLE_TYPES.addAll(Tag.BUTTONS.getValues());
         INTERACTABLE_TYPES.addAll(DOORS);
-        INTERACTABLE_TYPES.addAll(BUTTONS_AND_PLATES);
+        INTERACTABLE_TYPES.addAll(PLATES);
         INTERACTABLE_TYPES.addAll(FENCES_AND_GATES);
         INTERACTABLE_TYPES.addAll(SHULKER_BOXES);
     }
@@ -252,11 +246,26 @@ class KitchenSinkListener implements Listener {
             player.setOp(false);
             UUID uuid = player.getUniqueId();
 
-            LuckPermsApi API = LuckPerms.getApi();
-            API.getUserManager().loadUser(uuid).thenAccept(loadedUser -> loadedUser.getAllNodes().stream()
-            .filter(Node::isGroupNode)
-            .filter(node -> !node.getGroupName().equals("default"))
-            .forEach(loadedUser::unsetPermission));
+            RegisteredServiceProvider<LuckPerms> svcProvider = Bukkit.getServer().getServicesManager().getRegistration(LuckPerms.class);
+
+            LuckPerms api = svcProvider.getProvider();
+            api.getUserManager().loadUser(uuid).thenAccept((user) -> {
+                List<String> groupNames = user.getNodes().stream()
+                .filter(NodeType.INHERITANCE::matches)
+                .map(NodeType.INHERITANCE::cast)
+                .map(InheritanceNode::getGroupName)
+                .collect(Collectors.toList());
+
+                // Need to add the default group, because Luckperms won't
+                // allow a player to below to 0 groups.
+                user.setPrimaryGroup("default");
+                for (String groupName : groupNames) {
+                    if (!groupName.equalsIgnoreCase("default")) {
+                        user.data().remove(InheritanceNode.builder(groupName).build());
+                    }
+                }
+                api.getUserManager().saveUser(user);
+            });
             return true;
         } catch (Exception ex) {
             plugin.getLogger().severe(ex.getClass().getName() + ": " + ex.getMessage() + " dropping permissions for " + player.getName());
@@ -367,8 +376,8 @@ class KitchenSinkListener implements Listener {
                             if (tameable instanceof Wolf && ((Wolf) entity).isSitting()) {
                                 ((Wolf) entity).setSitting(false);
                             }
-                            if (tameable instanceof Ocelot && ((Ocelot) entity).isSitting()) {
-                                ((Ocelot) entity).setSitting(false);
+                            if (tameable instanceof Cat && ((Cat) entity).isSitting()) {
+                                ((Cat) entity).setSitting(false);
                             }
 
                             tameable.setTamed(false);
@@ -572,8 +581,8 @@ class KitchenSinkListener implements Listener {
             return false;
         }
         return plugin.config.FORCE_DEATH_LOG.contains(entity.getType())
-            || entity instanceof Ageable
-            || entity.getCustomName() != null;
+               || entity instanceof Ageable
+               || entity.getCustomName() != null;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -586,20 +595,20 @@ class KitchenSinkListener implements Listener {
         String transformReason = e.getTransformReason().toString();
         String nearbyPlayers = getNearbyPlayers(entity.getLocation(), 4);
         plugin.getLogger().info("[MobKill] [MobTransform] " + e.getEntityType().toString() + " transformed into a " +
-            e.getTransformedEntity().getType().toString() + " at " + blockLocationToString(entity.getLocation()) +
-            " due to " + transformReason + ". Nearby players: " + nearbyPlayers);
+                                e.getTransformedEntity().getType().toString() + " at " + blockLocationToString(entity.getLocation()) +
+                                " due to " + transformReason + ". Nearby players: " + nearbyPlayers);
         plugin.getLogBlockHook().logKill(entity.getLocation(), new Actor("LIGHTNING"),
-            new Actor(e.getEntity().getType().toString()), null);
+                                         new Actor(e.getEntity().getType().toString()), null);
     }
 
     private static String getNearbyPlayers(Location location, int radius) {
         return location.getWorld()
-            .getNearbyEntities(location, radius, radius, radius)
-            .stream()
-            .filter(Player.class::isInstance)
-            .map(Player.class::cast)
-            .map(Player::getName)
-            .collect(Collectors.joining(", "));
+        .getNearbyEntities(location, radius, radius, radius)
+        .stream()
+        .filter(Player.class::isInstance)
+        .map(Player.class::cast)
+        .map(Player::getName)
+        .collect(Collectors.joining(", "));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -619,12 +628,6 @@ class KitchenSinkListener implements Listener {
             EntityDamageByBlockEvent e = (EntityDamageByBlockEvent) event;
             Block block = e.getDamager();
             lastDamage = "block " + block.getType().toString() + " ";
-            try {
-                String placedBy = plugin.getLogBlockHook().getBlockPlacer(block);
-                if (placedBy != null) {
-                    lastDamage += "logblock says (" + placedBy + ")";
-                }
-            } catch (Exception ex) { }
         } else if (event instanceof EntityDamageByEntityEvent) {
             Entity damager = ((EntityDamageByEntityEvent) event).getDamager();
             if (damager instanceof Projectile) {
@@ -645,27 +648,31 @@ class KitchenSinkListener implements Listener {
             double damage = event.getFinalDamage();
             Block block = entity.getWorld().getBlockAt(entity.getLocation());
             switch (damageCause) {
-                case SUFFOCATION:
-                    lastDamage = "suffocated by " + block.getType().toString() + " ";
-                    try {
-                        String placedBy = plugin.getLogBlockHook().getBlockPlacer(block);
-                        if (placedBy != null) {
-                            lastDamage += "logblock says (" + placedBy + ")";
-                        }
-                    } catch (Exception ex) { }
-                    break;
+            case SUFFOCATION:
+                lastDamage = "suffocated by " + block.getType().toString() + " ";
+                break;
 
-                case DROWNING:
-                    if (entity instanceof WaterMob) {
-                        lastDamage = "suffocated";
-                    }
-                    break;
+            case DROWNING:
+                if (entity instanceof WaterMob) {
+                    lastDamage = "suffocated";
+                }
+                break;
 
-                case DRYOUT: lastDamage = "dried out"; break;
-                case FALL: lastDamage = "fell ~" + damage + " blocks"; break;
-                case CRAMMING: lastDamage = "crammed"; break;
-                case ENTITY_SWEEP_ATTACK: lastDamage = "sweeping edge"; break;
-                default: lastDamage = damageCause.toString(); break;
+            case DRYOUT:
+                lastDamage = "dried out";
+                break;
+            case FALL:
+                lastDamage = "fell ~" + damage + " blocks";
+                break;
+            case CRAMMING:
+                lastDamage = "crammed";
+                break;
+            case ENTITY_SWEEP_ATTACK:
+                lastDamage = "sweeping edge";
+                break;
+            default:
+                lastDamage = damageCause.toString();
+                break;
             }
         }
         if (lastDamage == null) {
@@ -704,17 +711,18 @@ class KitchenSinkListener implements Listener {
             String caughtDamageCause = null;
             if (entity.hasMetadata("last-damage-cause")) {
                 caughtDamageCause = entity.getMetadata("last-damage-cause")
-                    .stream()
-                    .map(MetadataValue::asString)
-                    .reduce(String::concat)
-                    .orElse("");
+                .stream()
+                .map(MetadataValue::asString)
+                .reduce(String::concat)
+                .orElse("");
             }
             Player killer = event.getEntity().getKiller();
             if (killer != null || caughtDamageCause != null) {
                 if (plugin.config.LOG_ANIMAL_DEATH) {
                     Location l = event.getEntity().getLocation();
                     Chunk c = l.getChunk();
-                    String killerInfo = (caughtDamageCause != null) ? caughtDamageCause : event.getEntity().getLastDamageCause().getCause().toString();
+                    String killerInfo = (caughtDamageCause != null) ? caughtDamageCause
+                                                                    : event.getEntity().getLastDamageCause().getCause().toString();
                     if (killer != null) {
                         killerInfo += "|killer: " + killer.getName();
                     }
@@ -726,7 +734,7 @@ class KitchenSinkListener implements Listener {
                     } else if (entity instanceof TropicalFish) {
                         TropicalFish fish = (TropicalFish) entity;
                         message += "|body = " + fish.getBodyColor().name() + ", pattern = " + fish.getPattern().name()
-                            + ", pattern color = " + fish.getPatternColor().name();
+                                   + ", pattern color = " + fish.getPatternColor().name();
                     }
                     if (event.getEntity() instanceof Tameable) {
                         Tameable tameable = (Tameable) event.getEntity();
@@ -765,14 +773,14 @@ class KitchenSinkListener implements Listener {
         if (plugin.config.LOG_PLAYER_DROPS) {
             Player player = event.getEntity();
             String loot = String.format("[drops] %s | Location: %s:",
-                player.getName(),
-                blockLocationToString(player.getLocation()));
+                                        player.getName(),
+                                        blockLocationToString(player.getLocation()));
             plugin.getLogger().info(loot);
             event.getDrops().stream()
-                .map(this::getItemDescription)
-                .forEach(descriptors -> descriptors.stream()
-                    .map(s -> "[drops] " + player.getName() + " | " + s)
-                    .forEach(plugin.getLogger()::info));
+            .map(this::getItemDescription)
+            .forEach(descriptors -> descriptors.stream()
+            .map(s -> "[drops] " + player.getName() + " | " + s)
+            .forEach(plugin.getLogger()::info));
         }
     }
 
@@ -787,61 +795,62 @@ class KitchenSinkListener implements Listener {
             int count = (1 + (int) (3 * Math.random())) * (plugin.config.BUFF_SHEAR_DROPS - 1);
 
             // this isn't working for some reason
-            //l.getWorld().dropItemNaturally(l, new ItemStack(new Wool(entity.getColor()).getItemType(), count));
+            // l.getWorld().dropItemNaturally(l, new ItemStack(new
+            // Wool(entity.getColor()).getItemType(), count));
 
             Material wool;
             switch (entity.getColor()) {
-                case BLACK:
-                    wool = Material.BLACK_WOOL;
-                    break;
-                case BLUE:
-                    wool = Material.BLUE_WOOL;
-                    break;
-                case BROWN:
-                    wool = Material.BROWN_WOOL;
-                    break;
-                case CYAN:
-                    wool = Material.CYAN_WOOL;
-                    break;
-                case GRAY:
-                    wool = Material.GRAY_WOOL;
-                    break;
-                case GREEN:
-                    wool = Material.GREEN_WOOL;
-                    break;
-                case LIGHT_BLUE:
-                    wool = Material.LIGHT_BLUE_WOOL;
-                    break;
-                case LIGHT_GRAY:
-                    wool = Material.LIGHT_GRAY_WOOL;
-                    break;
-                case LIME:
-                    wool = Material.LIME_WOOL;
-                    break;
-                case MAGENTA:
-                    wool = Material.MAGENTA_WOOL;
-                    break;
-                case ORANGE:
-                    wool = Material.ORANGE_WOOL;
-                    break;
-                case PINK:
-                    wool = Material.PINK_WOOL;
-                    break;
-                case PURPLE:
-                    wool = Material.PURPLE_WOOL;
-                    break;
-                case RED:
-                    wool = Material.RED_WOOL;
-                    break;
-                case WHITE:
-                    wool = Material.WHITE_WOOL;
-                    break;
-                case YELLOW:
-                    wool = Material.YELLOW_WOOL;
-                    break;
-                default:
-                    wool = Material.WHITE_WOOL;
-                    break;
+            case BLACK:
+                wool = Material.BLACK_WOOL;
+                break;
+            case BLUE:
+                wool = Material.BLUE_WOOL;
+                break;
+            case BROWN:
+                wool = Material.BROWN_WOOL;
+                break;
+            case CYAN:
+                wool = Material.CYAN_WOOL;
+                break;
+            case GRAY:
+                wool = Material.GRAY_WOOL;
+                break;
+            case GREEN:
+                wool = Material.GREEN_WOOL;
+                break;
+            case LIGHT_BLUE:
+                wool = Material.LIGHT_BLUE_WOOL;
+                break;
+            case LIGHT_GRAY:
+                wool = Material.LIGHT_GRAY_WOOL;
+                break;
+            case LIME:
+                wool = Material.LIME_WOOL;
+                break;
+            case MAGENTA:
+                wool = Material.MAGENTA_WOOL;
+                break;
+            case ORANGE:
+                wool = Material.ORANGE_WOOL;
+                break;
+            case PINK:
+                wool = Material.PINK_WOOL;
+                break;
+            case PURPLE:
+                wool = Material.PURPLE_WOOL;
+                break;
+            case RED:
+                wool = Material.RED_WOOL;
+                break;
+            case WHITE:
+                wool = Material.WHITE_WOOL;
+                break;
+            case YELLOW:
+                wool = Material.YELLOW_WOOL;
+                break;
+            default:
+                wool = Material.WHITE_WOOL;
+                break;
             }
             l.getWorld().dropItemNaturally(l, new ItemStack(wool, count));
 
@@ -867,11 +876,11 @@ class KitchenSinkListener implements Listener {
         if (plugin.config.SAFE_PORTALS) {
             boolean allowed = false;
             if (plugin.nextPortal != null) {
-                for (Block block : event.getBlocks()) {
-                    if (block != null
-                        && block.getLocation().getBlockX() == plugin.nextPortal.getBlockX()
-                        && block.getLocation().getBlockY() == plugin.nextPortal.getBlockY()
-                        && block.getLocation().getBlockZ() == plugin.nextPortal.getBlockZ()) {
+                for (BlockState blockState : event.getBlocks()) {
+                    if (blockState != null
+                        && blockState.getLocation().getBlockX() == plugin.nextPortal.getBlockX()
+                        && blockState.getLocation().getBlockY() == plugin.nextPortal.getBlockY()
+                        && blockState.getLocation().getBlockZ() == plugin.nextPortal.getBlockZ()) {
                         allowed = true;
                         plugin.nextPortal = null;
                         break;
@@ -879,20 +888,33 @@ class KitchenSinkListener implements Listener {
                 }
             }
             if (!allowed) {
+                int dropCount = 0;
+                Location loc = null;
+
                 event.setCancelled(true);
-                for (Block block : event.getBlocks()) {
-                    if (block.getType().isSolid()) {
+                for (BlockState blockState : event.getBlocks()) {
+                    if (blockState.getType().isSolid()) {
+                        blockState.getBlock().setType(Material.AIR);
                         try {
-                            event.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(block.getType()));
+                            event.getWorld().dropItemNaturally(blockState.getLocation(), new ItemStack(blockState.getType()));
+                            if (loc == null) {
+                                loc = blockState.getLocation();
+                            }
+                            ++dropCount;
                         } catch (Exception ex) {
-                            plugin.getLogger().info("Exception dropping block: " + block.getType() + " " +
-                                                    block.getLocation().getBlockX() + " " +
-                                                    block.getLocation().getBlockY() + " " +
-                                                    block.getLocation().getBlockZ() + " " + ex.getMessage());
+                            plugin.getLogger().info("Exception dropping block: " + blockState.getType() + " " +
+                                                    blockState.getLocation().getBlockX() + " " +
+                                                    blockState.getLocation().getBlockY() + " " +
+                                                    blockState.getLocation().getBlockZ() + " " + ex.getMessage());
                         }
-                        block.setType(Material.AIR);
                     }
                 }
+
+                plugin.getLogger().info("Portal ignition prevented at (" +
+                                        loc.getWorld().getName() + ", " +
+                                        loc.getBlockX() + ", " +
+                                        loc.getBlockY() + ", " +
+                                        loc.getBlockZ() + "), dropping " + dropCount + " portal frame blocks.");
             }
         }
     }
@@ -1145,7 +1167,7 @@ class KitchenSinkListener implements Listener {
         String description = String.format("%dx %s ", item.getAmount(), item.getType().toString());
         ItemMeta meta = item.getItemMeta();
         short maxDurability = item.getType().getMaxDurability();
-        if (maxDurability> 0) {
+        if (maxDurability > 0) {
             int durability = Math.round(maxDurability - ((Damageable) meta).getDamage());
             description += String.format("[durability: %d/%d] ", durability, maxDurability);
         }
@@ -1188,16 +1210,16 @@ class KitchenSinkListener implements Listener {
             PotionMeta potionMeta = (PotionMeta) meta;
             PotionData data = potionMeta.getBasePotionData();
             description += String.format("[base potion: %s, level: %s%s] ", data.getType().toString(),
-                data.isUpgraded() ? "2" : "1",
-                data.isExtended() ? ", extended" : "");
+                                         data.isUpgraded() ? "2" : "1",
+                                         data.isExtended() ? ", extended" : "");
 
             List<PotionEffect> effects = potionMeta.getCustomEffects();
             if (effects != null && !effects.isEmpty()) {
                 description += String.format("[effects: %s] ", potionMeta.getCustomEffects()
-                    .stream()
-                    .map(p -> String.format("[type: %s, amplifier: %d, duration: %d] ", p.getType().toString(),
-                        p.getAmplifier(), p.getDuration()))
-                    .collect(Collectors.joining(", ")));
+                .stream()
+                .map(p -> String.format("[type: %s, amplifier: %d, duration: %d] ", p.getType().toString(),
+                                        p.getAmplifier(), p.getDuration()))
+                .collect(Collectors.joining(", ")));
             }
         }
 
@@ -1212,12 +1234,12 @@ class KitchenSinkListener implements Listener {
             if (blockStateMeta.getBlockState() instanceof ShulkerBox) {
                 ShulkerBox shulkerBox = (ShulkerBox) blockStateMeta.getBlockState();
                 Arrays.stream(shulkerBox.getInventory().getContents())
-                    .filter(Objects::nonNull)
-                    .filter(itemStack -> itemStack.getType() != Material.AIR)
-                    .map(this::getItemDescription)
-                    .map(s -> "" + s)
-                    .map(s -> "---> " + s.substring(1, s.length() - 1))
-                    .forEach(descriptors::add);
+                .filter(Objects::nonNull)
+                .filter(itemStack -> itemStack.getType() != Material.AIR)
+                .map(this::getItemDescription)
+                .map(s -> "" + s)
+                .map(s -> "---> " + s.substring(1, s.length() - 1))
+                .forEach(descriptors::add);
             }
         }
 
@@ -1246,8 +1268,8 @@ class KitchenSinkListener implements Listener {
      */
     public String enchantsToString(Map<Enchantment, Integer> enchants) {
         return enchants.entrySet().stream()
-            .map(e -> String.format("%s %d", e.getKey().getKey().getKey(), e.getValue()))
-            .collect(Collectors.joining(", "));
+        .map(e -> String.format("%s %d", e.getKey().getKey().getKey(), e.getValue()))
+        .collect(Collectors.joining(", "));
     }
 
     /**

@@ -1,16 +1,15 @@
 package nu.nerd.kitchensink;
 
-import de.diddiz.LogBlock.Actor;
-import de.diddiz.LogBlock.BlockChange;
-import de.diddiz.LogBlock.Consumer;
-import de.diddiz.LogBlock.LogBlock;
-import de.diddiz.LogBlock.QueryParams;
+import java.sql.SQLException;
 
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 
-import java.sql.SQLException;
+import de.diddiz.LogBlock.Actor;
+import de.diddiz.LogBlock.BlockChange;
+import de.diddiz.LogBlock.LogBlock;
+import de.diddiz.LogBlock.QueryParams;
 
 public class LogBlockHook {
 
@@ -43,10 +42,10 @@ public class LogBlockHook {
         query.limit = 1;
         try {
             return _logBlockPlugin.getBlockChanges(query)
-                .stream()
-                .map(BlockChange::toString)
-                .reduce(String::concat)
-                .orElse("no result");
+            .stream()
+            .map(BlockChange::toString)
+            .reduce(String::concat)
+            .orElse("no result");
         } catch (SQLException e) {
             e.printStackTrace();
             return "no result";

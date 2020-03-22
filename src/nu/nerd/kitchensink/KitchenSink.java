@@ -1,9 +1,21 @@
 package nu.nerd.kitchensink;
 
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
-import de.diddiz.LogBlock.LogBlock;
-import nu.nerd.kitchensink.ServerListPing17.StatusResponse;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
 import org.bukkit.Art;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -26,21 +38,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BlockIterator;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
+
+import de.diddiz.LogBlock.LogBlock;
+import nu.nerd.kitchensink.ServerListPing17.StatusResponse;
 
 public class KitchenSink extends JavaPlugin {
 
@@ -119,6 +121,7 @@ public class KitchenSink extends JavaPlugin {
         ENCHANTMENT_NAMES.put("flame", Enchantment.ARROW_FIRE);
         ENCHANTMENT_NAMES.put("infinity", Enchantment.ARROW_INFINITE);
         ENCHANTMENT_NAMES.put("punch", Enchantment.ARROW_KNOCKBACK);
+        ENCHANTMENT_NAMES.put("curse_of_binding", Enchantment.BINDING_CURSE);
         ENCHANTMENT_NAMES.put("sharpness", Enchantment.DAMAGE_ALL);
         ENCHANTMENT_NAMES.put("bane_of_arthropods", Enchantment.DAMAGE_ARTHROPODS);
         ENCHANTMENT_NAMES.put("smite", Enchantment.DAMAGE_UNDEAD);
@@ -132,6 +135,7 @@ public class KitchenSink extends JavaPlugin {
         ENCHANTMENT_NAMES.put("feather_falling", Enchantment.PROTECTION_FALL);
         ENCHANTMENT_NAMES.put("fire_protection", Enchantment.PROTECTION_FIRE);
         ENCHANTMENT_NAMES.put("projectile_protection", Enchantment.PROTECTION_PROJECTILE);
+        ENCHANTMENT_NAMES.put("curse_of_vanishing", Enchantment.VANISHING_CURSE);
         ENCHANTMENT_NAMES.put("aqua_affinity", Enchantment.WATER_WORKER);
     }
 
@@ -376,8 +380,9 @@ public class KitchenSink extends JavaPlugin {
                     if (block != null && block.getType() == Material.OBSIDIAN) {
                         nextPortal = block.getLocation();
                         sender.sendMessage(
-                        String.format("%sYou can now light a single portal containing the block at (%d, %d, %d).",
-                            ChatColor.GOLD.toString(), nextPortal.getBlockX(), nextPortal.getBlockY(), nextPortal.getBlockZ()));
+                                           String.format("%sYou can now light a single portal containing the block at (%d, %d, %d).",
+                                                         ChatColor.GOLD.toString(), nextPortal.getBlockX(), nextPortal.getBlockY(),
+                                                         nextPortal.getBlockZ()));
                     } else {
                         sender.sendMessage(ChatColor.RED + "You need to be looking at the non-corner parts of an obsidian portal frame.");
                     }
@@ -545,15 +550,19 @@ public class KitchenSink extends JavaPlugin {
                     countdownTask = this.getServer().getScheduler().runTaskTimer(this, () -> {
                         if (countdownTime > 0) {
                             getServer().broadcastMessage(
-                                ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_COLOR + config.COUNTDOWN_STYLE)
-                                + config.COUNTDOWN_FORMAT.split("\\$s")[0] + countdownTime
-                                + (config.COUNTDOWN_FORMAT.split("\\$s").length > 1 ? config.COUNTDOWN_FORMAT.split("\\$s")[1] : ""));
+                                                         ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_COLOR + config.COUNTDOWN_STYLE)
+                                                         + config.COUNTDOWN_FORMAT.split("\\$s")[0] + countdownTime
+                                                         + (config.COUNTDOWN_FORMAT.split("\\$s").length > 1
+                                                                                                             ? config.COUNTDOWN_FORMAT
+                                                                                                             .split("\\$s")[1]
+                                                                                                             : ""));
                             countdownTime--;
                         } else {
                             countdownActive = false;
                             getServer().broadcastMessage(
-                                ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_MSG_COLOR + config.COUNTDOWN_MSG_STYLE)
-                                + countdownMessage);
+                                                         ChatColor
+                                                         .translateAlternateColorCodes('&', config.COUNTDOWN_MSG_COLOR + config.COUNTDOWN_MSG_STYLE)
+                                                         + countdownMessage);
                             countdownMessage = "";
                             countdownTask.cancel();
                             countdownTask = null;
@@ -652,7 +661,8 @@ public class KitchenSink extends JavaPlugin {
                             config.setCountDownSetting(countdown.msgcolor, args[1]);
                             sender.sendMessage(ChatColor.GRAY + "Message color changed to: "
                                                + ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_MSG_COLOR
-                                                                                             + config.COUNTDOWN_MSG_STYLE) + "Go!");
+                                                                                             + config.COUNTDOWN_MSG_STYLE)
+                                               + "Go!");
                         } else {
                             sender.sendMessage(ChatColor.GRAY + "Valid countdown color codes: http://minecraft.gamepedia.com/Formatting_codes.");
                             return false;
@@ -667,7 +677,8 @@ public class KitchenSink extends JavaPlugin {
                             config.setCountDownSetting(countdown.msgstyle, args[1]);
                             sender.sendMessage(ChatColor.GRAY + "Message style changed to: "
                                                + ChatColor.translateAlternateColorCodes('&', config.COUNTDOWN_MSG_COLOR
-                                                                                             + config.COUNTDOWN_MSG_STYLE) + "Go!");
+                                                                                             + config.COUNTDOWN_MSG_STYLE)
+                                               + "Go!");
                         } else {
                             sender.sendMessage(ChatColor.GRAY + "Valid countdown style codes: http://minecraft.gamepedia.com/Formatting_codes.");
                             return false;
