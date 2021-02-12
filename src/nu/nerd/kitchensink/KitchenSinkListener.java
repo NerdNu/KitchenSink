@@ -627,7 +627,7 @@ class KitchenSinkListener implements Listener {
         if (event instanceof EntityDamageByBlockEvent) {
             EntityDamageByBlockEvent e = (EntityDamageByBlockEvent) event;
             Block block = e.getDamager();
-            lastDamage = "block " + block.getType().toString() + " ";
+            lastDamage = "block " + (block != null ? block.getType().toString() : "?") + " ";
         } else if (event instanceof EntityDamageByEntityEvent) {
             Entity damager = ((EntityDamageByEntityEvent) event).getDamager();
             if (damager instanceof Projectile) {
