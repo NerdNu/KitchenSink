@@ -67,14 +67,6 @@ commands:
         description: Allows selection of the next painting placed.
         usage: |
             /painting [<name>]: Choose the painting you will place next.
-    prain:
-        description: Turns client-side weather on or off.
-        usage: |
-            /prain [on|off]
-    ptime:
-        description: Sets the player's client-side time. If using a number, the given time should be between 0 and 24000.
-        usage: |
-            /ptime [day|night|<time>]
     nextrestart:
         description: Gives you the amount of time until the next restart
     untame:
