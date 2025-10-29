@@ -1,17 +1,11 @@
 package nu.nerd.kitchensink;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -33,7 +27,6 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
@@ -184,28 +177,8 @@ public class KitchenSink extends JavaPlugin {
         }
         config.load();
 
-        if (config.HOOK_LOGBLOCK) {
+        if (config.HOOK_COREPROTECT) {
             coreProtectHook = new CoreProtectHook(PLUGIN, getCoreProtect());
-        }
-
-        if (config.ANIMAL_COUNT) {
-            getServer().getScheduler().runTaskTimer(this, new MobCountTask(), ONE_MINUTE_TICKS, 10 * ONE_MINUTE_TICKS);
-        }
-
-        if (config.CULL_ZOMBIES) {
-            getServer().getScheduler().runTaskTimer(this, new CullZombiesTask(), config.CULL_ZOMBIES_INTERVAL, config.CULL_ZOMBIES_INTERVAL);
-        }
-
-        if (!config.BLOCK_CRAFT.isEmpty()) {
-            Iterator<Recipe> it = getServer().recipeIterator();
-            while (it.hasNext()) {
-                Recipe recipe = it.next();
-                for (Material material : config.BLOCK_CRAFT) {
-                    if (recipe != null && recipe.getResult().getType() == material) {
-                        it.remove();
-                    }
-                }
-            }
         }
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("HH-mm");
@@ -242,7 +215,6 @@ public class KitchenSink extends JavaPlugin {
             }
         }
 
-        getServer().getScheduler().scheduleSyncRepeatingTask(this, lagCheck, 20, 20);
         getServer().getPluginManager().registerEvents(listener, this);
 
     }
@@ -293,18 +265,18 @@ public class KitchenSink extends JavaPlugin {
             }
             return true;
         }
-        // TODO fix this shit
-        if(command.getName().equalsIgnoreCase("trace")) {
-            if(sender.hasPermission("kitchensink.trace")) {
+
+        if(command.getName().equalsIgnoreCase("trace") &&
+                sender.hasPermission("kitchensink.trace")) {
                 coreProtectHook.trace(sender, args[0]);
             }
-        }
 
-        if(command.getName().equalsIgnoreCase("xray-top")) {
-            if(sender.hasPermission("kitchensink.xraytop")) {
+
+        if(command.getName().equalsIgnoreCase("xray-top") &&
+                sender.hasPermission("kitchensink.xraytop")) {
                 coreProtectHook.xrayTop(sender);
             }
-        }
+
 
         if (command.getName().equalsIgnoreCase("painting")) {
             // No arguments ==> list all painting types.
@@ -355,21 +327,6 @@ public class KitchenSink extends JavaPlugin {
                 sender.sendMessage("The server will restart in " + time / 60 + " minute" + ((time == 1) ? "" : "s"));
             }
 
-            return true;
-        }
-
-        if (command.getName().equalsIgnoreCase("untame")) {
-            if (config.UNTAME_PETS) {
-                if (sender instanceof Player) {
-                    Player player = (Player) sender;
-                    player.setMetadata(UNTAME_KEY, new FixedMetadataValue(this, null));
-                    sender.sendMessage(ChatColor.GOLD + "Right click on a pet that you own.");
-                } else {
-                    sender.sendMessage("You need to be in-game to untame pets.");
-                }
-            } else {
-                sender.sendMessage(ChatColor.RED + "That command is disabled.");
-            }
             return true;
         }
 
@@ -680,73 +637,6 @@ public class KitchenSink extends JavaPlugin {
         }
 
         return false;
-    }
-
-    public void sendList(CommandSender sender) {
-        ArrayList<String> list = new ArrayList<>();
-        for (Player player : getServer().getOnlinePlayers()) {
-            list.add(player.getName());
-        }
-        list.sort(String.CASE_INSENSITIVE_ORDER);
-        sender.sendMessage("Players Online: " + list.size());
-        if (list.size() == 0) {
-            return;
-        }
-        StringBuilder onlinelist = new StringBuilder("Players:");
-        int index = 0;
-        for (String p : list) {
-            ChatColor color = ChatColor.GRAY;
-            if (index++ % 2 == 0) {
-                color = ChatColor.WHITE;
-            }
-            onlinelist.append(" ").append(color).append(p);
-        }
-        sender.sendMessage(onlinelist.toString());
-    }
-
-    /**
-     * Load the contents of the host key file for the specified player.
-     *
-     * @param player the name of the player.
-     * @return a non-null string that is the corresponding prefix of the host
-     *         name that the player must connect with, or the empty string if
-     *         there are no restrictions.
-     */
-    public String getHostKey(Player player) {
-        File hostKeysDir = new File(getDataFolder(), HOST_KEYS_DIRECTORY);
-        File hostKeyFile = new File(hostKeysDir, player.getUniqueId().toString());
-        try {
-            try (BufferedReader reader = new BufferedReader(new FileReader(hostKeyFile))) {
-                return reader.readLine();
-            }
-        } catch (IOException ex) {
-            return "";
-        }
-    }
-
-    public String dictFormat(String format, Hashtable<String, Object> values) {
-        StringBuilder convFormat = new StringBuilder(format);
-        Enumeration<String> keys = values.keys();
-        ArrayList<Object> valueList = new ArrayList<>();
-
-        int currentPos = 1;
-        while (keys.hasMoreElements()) {
-            String key = keys.nextElement();
-            String formatKey = "%(" + key + ")";
-            String formatPos = "%" + currentPos + "$s";
-
-            int index = -1;
-            while ((index = convFormat.indexOf(formatKey, index)) != -1) {
-                convFormat.replace(index, index + formatKey.length(), formatPos);
-                index += formatPos.length();
-            }
-
-            valueList.add(values.get(key));
-
-            ++currentPos;
-        }
-
-        return String.format(convFormat.toString(), valueList.toArray());
     }
 
     public static Block getTargetBlock(LivingEntity entity) {

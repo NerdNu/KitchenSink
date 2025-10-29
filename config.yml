@@ -9,21 +9,14 @@ log-entity-deaths:
 ignore-entity-deaths:
   - IRON_GOLEM
 
-animal-count: false
-log-animals: false
-log-player-drops: false
 buff-drops: 0
 buff-shear-drops: 0
 disable-snowgrow: false
 disable-drops: false
 disable-tnt: false
 disable-entity-block-damage: []
-disable-invisibility-on-combat: false
 disable-golem-natural-spawn: false
-lower-strength-potion-damage: false
-health-potion-multiplier: 1.0
-regen-potion-multiplier: 1.0
-disable-lingering-potion-pvp: false
+enable-spigot-item-merging: true
 
 block-caps: true
 block-villagers: false
@@ -33,11 +26,6 @@ block-slime-moving-rails-and-carpets: true
 safe-ice: false
 safe-dispensers: false
 safe-portals: false
-pearl-damage: 0
-leatherless-books: false
-lock-horses: false
-invulnerable-tame-horses: false
-untame-pets: false
 allow-egg-hatching: true
 disabled-items:
     left-click: []
@@ -51,14 +39,6 @@ disabled-items:
     dispensed:
     - 326
     - 327
-allow-enchant-items: []
-block-craft: []
-block-brew:
-- 348
-- 376
-- 375
-disable-buff:
-- 329
 
 restart-times:
 - "00-00"

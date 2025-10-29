@@ -11,36 +11,20 @@ permissions:
         description: Access to all KitchenSink commands
         children:
             kitchensink.admin: true
-            kitchensink.list: true
-            kitchensink.lag: true
             kitchensink.unenchant: true
-            kitchensink.petadmin: true
-            kitchensink.mobcount: true
-            kitchensink.pingserver: true
             kitchensink.countdown: true
     kitchensink.admin:
         description: A marker permission that signifies that the player has Admin privileges of various kinds.
         default: op
         children:
             kitchensink.pingserver: true
-    kitchensink.list:
-        description: List online players
-        default: true
-    kitchensink.lag:
-        description: Show lag stats
-        default: op
     kitchensink.unenchant:
         description: Remove enchants from current item
         default: op
     kitchensink.ksinventory:
         description: Edit a players inventory
         default: op
-    kitchensink.petadmin:
-        description: Bypass ownership test in /untame.
-        default: op
     kitchensink.mobcount:
-        default: op
-    kitchensink.pingserver:
         default: op
     kitchensink.countdown:
         description: Allows access to /countdown, /cdcancel, and /cdconfig.
@@ -62,43 +46,22 @@ commands:
     xray-top:
         description: idk rn
         permission: kitchensink.xraytop
-    lag:
-        description: Get current TPS and memory stats
-    list:
-        description: List currently online players
-        permission: kitchensink.list
-        usage: |
-           /list: Show online players
     painting:
         description: Allows selection of the next painting placed.
         usage: |
             /painting [<name>]: Choose the painting you will place next.
     nextrestart:
         description: Gives you the amount of time until the next restart
-    untame:
-        description: Untame a pet that you own.
-        usage: |
-            /untame: Untame the next pet owned by you that you right click on.
     allow-portal:
         description: An admin can bypass the safe-portals check by looking at the frame of a portal (excluding the corners) and running this command before lighting the portal.
         permission: kitchensink.admin
         usage: |
-            /<command>: Look at a portal frame and run this before lighting it to bypass safe portals protections. 
-    mob-count:
-        description: Get a count of all loaded mobs
-        permission: kitchensink.admin
-        usage: |
-            /mob-count: Get a count of all loaded mobs
+            /<command>: Look at a portal frame and run this before lighting it to bypass safe portals protections.
     enchant-book:        
         description: Enchant the book(s) in your hand with the specified enchantment.
         permission: kitchensink.admin
         usage: |
             /<command> <enchantment> <level>: Enchant the held book(s) with the specified enchantment.
-    ping-server:
-        description: Pings another minecraft server and displays returned information
-        permission: kitchensink.pingserver
-        usage: |
-            /ping-server <server[:port]> [parameter]
     countdown:
         description: Runs a countdown from the specified time and displays message when done.
         permission: kitchensink.countdown

@@ -16,7 +16,6 @@ Configuration
 * `safe-ice` Prevent ice from turning into water when broken.
 * `safe-dispensers` Prevent dispensers from dispensing items listed in `disabled-items.dispensed`.
 * `safe-portals` Prevent players from creating nether portals.
-* `untame-pets` Allow players to untame a pet by typing /untame and right clicking on a pet they own.
 * `allow-egg-hatching` Allow or deny the spawning of chickens using eggs.
 * `disabled-items`
 	- `left-click` Prevent players from left clicking with specified items.
@@ -57,3 +56,4 @@ Being removed:
 * `disable-entity-block-damage` A list of [EntityType](https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/entity/EntityType.html) names for which block damage is disabled if they explode.
 * `disable-invisibility-on-combat` Remove invisibility potion effects when a player PvPs.
 * `sprint-max-time` Timeout to force player to stop sprinting after the specified amount of ticks. Set to zero or less to disable.
+* `untame-pets` Allow players to untame a pet by typing /untame and right clicking on a pet they own.

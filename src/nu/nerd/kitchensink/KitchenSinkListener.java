@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import net.kyori.adventure.text.Component;
@@ -32,53 +33,14 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.block.data.type.NoteBlock;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.AbstractHorse;
-import org.bukkit.entity.Ageable;
-import org.bukkit.entity.Animals;
-import org.bukkit.entity.Cat;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Horse;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Ocelot;
-import org.bukkit.entity.Painting;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
-import org.bukkit.entity.Sheep;
-import org.bukkit.entity.Slime;
-import org.bukkit.entity.Tameable;
-import org.bukkit.entity.TropicalFish;
-import org.bukkit.entity.Villager;
-import org.bukkit.entity.Vindicator;
-import org.bukkit.entity.WaterMob;
-import org.bukkit.entity.Wolf;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockBurnEvent;
-import org.bukkit.event.block.BlockDispenseEvent;
-import org.bukkit.event.block.BlockPhysicsEvent;
-import org.bukkit.event.block.BlockPistonEvent;
-import org.bukkit.event.block.BlockPistonExtendEvent;
-import org.bukkit.event.block.BlockPistonRetractEvent;
-import org.bukkit.event.block.EntityBlockFormEvent;
+import org.bukkit.event.block.*;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
-import org.bukkit.event.entity.AreaEffectCloudApplyEvent;
-import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.event.entity.EntityDamageByBlockEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.entity.EntityRegainHealthEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
-import org.bukkit.event.entity.EntityTransformEvent;
-import org.bukkit.event.entity.ExplosionPrimeEvent;
-import org.bukkit.event.entity.ItemSpawnEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
@@ -201,80 +163,6 @@ class KitchenSinkListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPlayerLogin(PlayerLoginEvent event) {
-        final Player player = event.getPlayer();
-        if (player.hasPermission("kitchensink.admin")) {
-            // By default, always allow admins to log in.
-            event.allow();
-
-            if (plugin.config.HOST_KEYS_CHECK) {
-                String hostPrefix = event.getHostname();
-                int colonIndex = hostPrefix.indexOf('.');
-                if (colonIndex != -1) {
-                    hostPrefix = hostPrefix.substring(0, colonIndex);
-                }
-
-                String hostKey = plugin.getHostKey(player);
-                if (!hostPrefix.equals(hostKey)) {
-                    // The host key check failed.
-                    // Do not leak host key details into the server log.
-                    plugin.getLogger().warning(player.getName() + " connected with an invalid host key.");
-                    if (plugin.config.HOST_KEYS_DROP_PERMISSIONS && dropToDefaultPermissions(player)) {
-                        plugin.getLogger().info(player.getName() + "'s permissions were reduced to default.");
-                        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-                            player.sendMessage(ChatColor.DARK_RED + "You have logged in with an invalid host key.");
-                            player.sendMessage(ChatColor.DARK_RED + "As a security precaution, your permissions have been reduced to default.");
-                        });
-                    } else {
-                        event.disallow(PlayerLoginEvent.Result.KICK_OTHER, "Login denied: invalid host key. Please contact a tech.");
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Remove all top level permissions groups of the player and ensure that
-     * they are in the default group only.
-     *
-     * If a player happens to be Op, they are deopped too.
-     *
-     * @param player the player to modify.
-     * @return true if successfully modified, or false on error.
-     */
-    private boolean dropToDefaultPermissions(Player player) {
-        try {
-            player.setOp(false);
-            UUID uuid = player.getUniqueId();
-
-            RegisteredServiceProvider<LuckPerms> svcProvider = Bukkit.getServer().getServicesManager().getRegistration(LuckPerms.class);
-
-            LuckPerms api = svcProvider.getProvider();
-            api.getUserManager().loadUser(uuid).thenAccept((user) -> {
-                List<String> groupNames = user.getNodes().stream()
-                .filter(NodeType.INHERITANCE::matches)
-                .map(NodeType.INHERITANCE::cast)
-                .map(InheritanceNode::getGroupName)
-                .collect(Collectors.toList());
-
-                // Need to add the default group, because Luckperms won't
-                // allow a player to below to 0 groups.
-                user.setPrimaryGroup("default");
-                for (String groupName : groupNames) {
-                    if (!groupName.equalsIgnoreCase("default")) {
-                        user.data().remove(InheritanceNode.builder(groupName).build());
-                    }
-                }
-                api.getUserManager().saveUser(user);
-            });
-            return true;
-        } catch (Exception ex) {
-            plugin.getLogger().severe(ex.getClass().getName() + ": " + ex.getMessage() + " dropping permissions for " + player.getName());
-            return false;
-        }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerInteract(PlayerInteractEvent event) {
 
         Player player = event.getPlayer();
@@ -286,10 +174,10 @@ class KitchenSinkListener implements Listener {
             if (event.getClickedBlock().getBlockData() instanceof NoteBlock) {
                 NoteBlock clicked = (NoteBlock) event.getClickedBlock().getBlockData();
                 clicked.setNote(note);
-                player.sendMessage(ChatColor.GOLD + "Note block set to note " + note.getTone().toString() + (note.isSharped() ? "#" : "")
-                                   + " successfully!");
+                player.sendMessage(Component.text("Note block set to note " + note.getTone() +
+                        (note.isSharped() ? "#" : "") + " successfully!", NamedTextColor.GOLD));
             } else {
-                player.sendMessage(ChatColor.RED + "That block isn't a note block.");
+                player.sendMessage(Component.text("That block isn't a note block.", NamedTextColor.RED));
             }
             event.setCancelled(true);
             player.removeMetadata(KitchenSink.NOTEBLOCK_META_KEY, plugin);
@@ -298,44 +186,32 @@ class KitchenSinkListener implements Listener {
         if (!event.hasItem()) {
             return;
         }
-        if (plugin.config.PEARL_DAMAGE > 0) {
-            if ((event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.RIGHT_CLICK_AIR)
-                && event.getItem().getType() == Material.ENDER_PEARL) {
-                if (event.getClickedBlock() == null || !INTERACTABLE_TYPES.contains(event.getClickedBlock().getType())) {
-                    event.getPlayer().damage(plugin.config.PEARL_DAMAGE);
-                }
-            }
-        }
 
         ItemStack stack = event.getItem();
-        if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            if (plugin.config.DISABLED_RIGHT_ITEMS.contains(stack.getType())) {
+        if ((event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) &&
+                plugin.config.DISABLED_RIGHT_ITEMS.contains(stack.getType())) {
                 event.setCancelled(true);
             }
-        }
 
-        if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK) {
-            if (plugin.config.DISABLED_LEFT_ITEMS.contains(stack.getType())) {
+
+        if ((event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK) &&
+                plugin.config.DISABLED_LEFT_ITEMS.contains(stack.getType())) {
                 event.setCancelled(true);
             }
-        }
 
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            if (plugin.config.DISABLE_TNT) {
-                if (stack.getType() == Material.FLINT_AND_STEEL && event.getClickedBlock().getType() == Material.TNT) {
+
+        if (event.getAction() == Action.RIGHT_CLICK_BLOCK && plugin.config.DISABLE_TNT &&
+                stack.getType() == Material.FLINT_AND_STEEL && event.getClickedBlock().getType() == Material.TNT) {
                     event.setCancelled(true);
                 }
-            }
-        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockBurn(BlockBurnEvent event) {
-        if (plugin.config.DISABLE_TNT) {
-            if (event.getBlock().getType() == Material.TNT) {
+        if (plugin.config.DISABLE_TNT && event.getBlock().getType() == Material.TNT) {
                 event.setCancelled(true);
             }
-        }
+
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
@@ -346,56 +222,7 @@ class KitchenSinkListener implements Listener {
             v.setTarget(event.getPlayer());
             event.getPlayer().damage(1, v);
             event.setCancelled(true);
-        } else if (entity instanceof Tameable) {
-            Tameable tameable = (Tameable) entity;
-            Player player = event.getPlayer();
-            boolean isPetAdmin = player.hasPermission("KitchenSink.petadmin");
-
-            if (plugin.config.UNTAME_PETS) {
-                if (player.hasMetadata(KitchenSink.UNTAME_KEY)) {
-                    player.removeMetadata(KitchenSink.UNTAME_KEY, plugin);
-                    event.setCancelled(true);
-
-                    if (tameable.isTamed()) {
-                        // Warn admins when they bypass ownership.
-                        if (isPetAdmin && tameable.getOwner() != player) {
-                            String owner = tameable.getOwner() != null ? tameable.getOwner().getName() : "nobody";
-                            player.sendMessage(ChatColor.YELLOW + "That pet belongs to " + owner + ".");
-                        }
-
-                        if (tameable.getOwner() == player || isPetAdmin) {
-                            // Prevent the existence of saddle-wearing
-                            // untameable untamed horses.
-                            if (tameable instanceof Horse) {
-                                player.sendMessage("Use EasyRider to do that!");
-                                return;
-                            }
-
-                            // Make sure that the pet being untamed is standing,
-                            // as sitting mobs
-                            // without an owner can not be made to stand
-                            if (tameable instanceof Wolf && ((Wolf) entity).isSitting()) {
-                                ((Wolf) entity).setSitting(false);
-                            }
-                            if (tameable instanceof Cat && ((Cat) entity).isSitting()) {
-                                ((Cat) entity).setSitting(false);
-                            }
-
-                            tameable.setTamed(false);
-                            tameable.setOwner(null);
-                            player.sendMessage(ChatColor.GOLD + "Pet untamed.");
-                        } else {
-                            player.sendMessage(ChatColor.RED + "You do not own that pet.");
-                        }
-                    } else {
-                        player.sendMessage(ChatColor.RED + "That animal is not tame.");
-                    }
-                }
-            }
-
-        } else if (entity instanceof Vindicator) {
-            // Block players from Johnny-tagging Vindicators
-            if (plugin.config.BLOCK_JOHNNY) {
+        } else if (entity instanceof Vindicator && plugin.config.BLOCK_JOHNNY) {
                 boolean isOffHand = event.getHand().equals(EquipmentSlot.OFF_HAND);
                 Player player = event.getPlayer();
                 ItemStack item = (isOffHand) ? player.getInventory().getItemInOffHand() : player.getInventory().getItemInMainHand();
@@ -403,10 +230,10 @@ class KitchenSinkListener implements Listener {
                     event.setCancelled(true);
                     plugin.getLogger().info(String.format("Blocked Johnny Vindicator. Player: %s (%s) Loc: %s", player.getName(),
                                                           player.getUniqueId().toString(), entity.getLocation().toString()));
-                    player.sendMessage(String.format("%sYou are not allowed to do that.", ChatColor.RED));
+                    player.sendMessage(Component.text("You are not allowed to do that.", NamedTextColor.RED));
                 }
             }
-        }
+
     }
 
     @EventHandler
@@ -562,11 +389,9 @@ class KitchenSinkListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onBlockPhysics(BlockPhysicsEvent event) {
+    public void onTNTPrime(TNTPrimeEvent event) {
         if (plugin.config.DISABLE_TNT) {
-            if (event.getBlock().getType() == Material.TNT) {
                 event.setCancelled(true);
-            }
         }
     }
 
@@ -577,118 +402,9 @@ class KitchenSinkListener implements Listener {
         }
     }
 
-    private boolean isEntityDeathLoggable(Entity entity) {
-        if (entity == null || plugin.config.IGNORE_DEATH_LOG.contains(entity.getType())) {
-            return false;
-        }
-        return plugin.config.FORCE_DEATH_LOG.contains(entity.getType())
-               || entity instanceof Ageable
-               || entity.getCustomName() != null;
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onEntityTransform(EntityTransformEvent e) {
-        Entity entity = e.getTransformedEntity();
-        EntityTransformEvent.TransformReason reason = e.getTransformReason();
-        if (reason == EntityTransformEvent.TransformReason.SPLIT || reason == EntityTransformEvent.TransformReason.SHEARED) {
-            return;
-        }
-        String transformReason = e.getTransformReason().toString();
-        String nearbyPlayers = getNearbyPlayers(entity.getLocation(), 4);
-        plugin.getLogger().info("[MobKill] [MobTransform] " + e.getEntityType().toString() + " transformed into a " +
-                                e.getTransformedEntity().getType().toString() + " at " + blockLocationToString(entity.getLocation()) +
-                                " due to " + transformReason + ". Nearby players: " + nearbyPlayers);
-    }
-
-    private static String getNearbyPlayers(Location location, int radius) {
-        return location.getWorld()
-        .getNearbyEntities(location, radius, radius, radius)
-        .stream()
-        .filter(Player.class::isInstance)
-        .map(Player.class::cast)
-        .map(Player::getName)
-        .collect(Collectors.joining(", "));
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void catchEntityPreDeath(EntityDamageEvent event) {
-        Entity entity = event.getEntity();
-        if (!isEntityDeathLoggable(entity)) {
-            return;
-        }
-        if (entity instanceof org.bukkit.entity.Damageable) {
-            double newHealth = ((org.bukkit.entity.Damageable) entity).getHealth() - event.getFinalDamage();
-            if (newHealth > 0) {
-                return;
-            }
-        }
-        String lastDamage = null;
-        if (event instanceof EntityDamageByBlockEvent) {
-            EntityDamageByBlockEvent e = (EntityDamageByBlockEvent) event;
-            Block block = e.getDamager();
-            lastDamage = "block " + (block != null ? block.getType().toString() : "?") + " ";
-        } else if (event instanceof EntityDamageByEntityEvent) {
-            Entity damager = ((EntityDamageByEntityEvent) event).getDamager();
-            if (damager instanceof Projectile) {
-                lastDamage = "projectile " + damager.getType().toString() + " fired by ";
-                ProjectileSource source = ((Projectile) damager).getShooter();
-                if (source instanceof Player) {
-                    lastDamage += "player " + ((Player) source).getName();
-                } else if (source instanceof LivingEntity) {
-                    lastDamage += "mob " + ((LivingEntity) source).getType().toString();
-                } else {
-                    lastDamage += "unknown " + source;
-                }
-            } else if (damager instanceof Player) {
-                lastDamage = "player " + damager.getName() + " with a " + ((Player) damager).getEquipment().getItemInMainHand().getType().name();
-            }
-        } else {
-            EntityDamageEvent.DamageCause damageCause = event.getCause();
-            double damage = event.getFinalDamage();
-            Block block = entity.getWorld().getBlockAt(entity.getLocation());
-            switch (damageCause) {
-            case SUFFOCATION:
-                lastDamage = "suffocated by " + block.getType().toString() + " ";
-                break;
-
-            case DROWNING:
-                if (entity instanceof WaterMob) {
-                    lastDamage = "suffocated";
-                }
-                break;
-
-            case DRYOUT:
-                lastDamage = "dried out";
-                break;
-            case FALL:
-                lastDamage = "fell ~" + damage + " blocks";
-                break;
-            case CRAMMING:
-                lastDamage = "crammed";
-                break;
-            case ENTITY_SWEEP_ATTACK:
-                lastDamage = "sweeping edge";
-                break;
-            default:
-                lastDamage = damageCause.toString();
-                break;
-            }
-        }
-        if (lastDamage == null) {
-            lastDamage = "uncaught";
-        }
-        entity.setMetadata("last-damage-cause", new FixedMetadataValue(KitchenSink.PLUGIN, lastDamage));
-    }
-
     @EventHandler(priority = EventPriority.MONITOR)
     public void onEntityDeath(EntityDeathEvent event) {
         Entity entity = event.getEntity();
-        if (plugin.config.DISABLE_PEARL_DROPS_IN_END) {
-            Location l = entity.getLocation();
-            if (l.getWorld().getEnvironment() == World.Environment.THE_END) {
-                event.getDrops().removeIf(is -> is.getType() == Material.ENDER_PEARL);
-            }
-        }
         EntityType type = entity.getType();
         if (plugin.config.DISABLED_DROPS.containsKey(type)) {
             Set<Material> mats = plugin.config.DISABLED_DROPS.get(type);
@@ -705,81 +421,6 @@ class KitchenSinkListener implements Listener {
                     }
                 }
             }
-        }
-        if (isEntityDeathLoggable(entity)) {
-            String caughtDamageCause = null;
-            if (entity.hasMetadata("last-damage-cause")) {
-                caughtDamageCause = entity.getMetadata("last-damage-cause")
-                .stream()
-                .map(MetadataValue::asString)
-                .reduce(String::concat)
-                .orElse("");
-            }
-            Player killer = event.getEntity().getKiller();
-            if (killer != null || caughtDamageCause != null) {
-                if (plugin.config.LOG_ANIMAL_DEATH) {
-                    Location l = event.getEntity().getLocation();
-                    Chunk c = l.getChunk();
-                    String killerInfo = (caughtDamageCause != null) ? caughtDamageCause
-                                                                    : event.getEntity().getLastDamageCause().getCause().toString();
-                    if (killer != null) {
-                        killerInfo += "|killer: " + killer.getName();
-                    }
-                    String message = "[MobKill] " + event.getEntityType().name() + "|" + killerInfo
-                                     + "|" + l.getWorld().getName() + "|" + l.getBlockX() + "|" + l.getBlockY() + "|" + l.getBlockZ()
-                                     + "|C[" + c.getX() + "," + c.getZ() + "]";
-                    if (entity instanceof Slime) {
-                        message += "|slime size = " + ((Slime) entity).getSize();
-                    } else if (entity instanceof TropicalFish) {
-                        TropicalFish fish = (TropicalFish) entity;
-                        message += "|body = " + fish.getBodyColor().name() + ", pattern = " + fish.getPattern().name()
-                                   + ", pattern color = " + fish.getPatternColor().name();
-                    }
-                    if (event.getEntity() instanceof Tameable) {
-                        Tameable tameable = (Tameable) event.getEntity();
-                        if (tameable instanceof Ocelot) {
-                            Ocelot ocelot = (Ocelot) tameable;
-                            message += "|" + ocelot.getCatType().name();
-                        } else if (tameable instanceof Horse) {
-                            AbstractHorse abstractHorse = (AbstractHorse) tameable;
-                            Horse horse = (Horse) abstractHorse;
-                            message += "|" + horse.getColor().name() + "," + horse.getStyle().name() + "|";
-                            for (ItemStack item : abstractHorse.getInventory()) {
-                                if (item != null && item.getType() != Material.AIR) {
-                                    message += String.join(", ", getItemDescription(item));
-                                }
-                            }
-                        }
-                        if (tameable.isTamed() && tameable.getOwner() != null) {
-                            message += "|Owner:" + tameable.getOwner().getName();
-                        }
-                    }
-                    if (event.getEntity().getCustomName() != null) {
-                        message += "|named " + event.getEntity().getCustomName();
-                    }
-                    plugin.getLogger().info(message);
-                }
-            }
-        }
-    }
-
-    // -------------------------------------------------------------------------
-    /**
-     * If enabled, logs the player's inventory upon death.
-     */
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlayerDeath(PlayerDeathEvent event) {
-        if (plugin.config.LOG_PLAYER_DROPS) {
-            Player player = event.getEntity();
-            String loot = String.format("[drops] %s | Location: %s:",
-                                        player.getName(),
-                                        blockLocationToString(player.getLocation()));
-            plugin.getLogger().info(loot);
-            event.getDrops().stream()
-            .map(this::getItemDescription)
-            .forEach(descriptors -> descriptors.stream()
-            .map(s -> "[drops] " + player.getName() + " | " + s)
-            .forEach(plugin.getLogger()::info));
         }
     }
 
@@ -854,12 +495,10 @@ class KitchenSinkListener implements Listener {
                         }
                     }
                 }
-
-                plugin.getLogger().info("Portal ignition prevented at (" +
-                                        loc.getWorld().getName() + ", " +
-                                        loc.getBlockX() + ", " +
-                                        loc.getBlockY() + ", " +
-                                        loc.getBlockZ() + "), dropping " + dropCount + " portal frame blocks.");
+                if(loc != null) {
+                    plugin.getLogger().info("Portal ignition prevented at " + blockLocationToString(loc) +
+                            ", dropping " + dropCount + " portal frame blocks.");
+                }
             }
         }
     }
@@ -907,17 +546,6 @@ class KitchenSinkListener implements Listener {
         if (plugin.config.SAFE_ICE) {
             if (event.getBlock().getType() == Material.ICE && !event.getPlayer().getGameMode().equals(GameMode.CREATIVE)) {
                 event.getBlock().setType(Material.AIR);
-            }
-        }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onEntityRegainHealth(EntityRegainHealthEvent event) {
-        if (event.getEntity() instanceof Player) {
-            if (event.getRegainReason() == RegainReason.MAGIC) {
-                event.setAmount(event.getAmount() * plugin.config.HEALTH_POTION_MULTIPLIER);
-            } else if (event.getRegainReason() == RegainReason.MAGIC_REGEN) {
-                event.setAmount(event.getAmount() * plugin.config.REGEN_POTION_MULTIPLIER);
             }
         }
     }
@@ -1015,131 +643,46 @@ class KitchenSinkListener implements Listener {
         }
     }
 
-    @EventHandler
-    public void onAreaEffectApply(AreaEffectCloudApplyEvent event) {
-        // Block lingering potions from being used for pvp
-        if (plugin.config.DISABLE_LINGERING_POTION_PVP) {
-            if (event.getEntity().getSource() instanceof Player) {
-                PotionType type = event.getEntity().getBasePotionData().getType();
-                List<PotionType> blacklist = new ArrayList<>();
-                blacklist.add(PotionType.INSTANT_DAMAGE);
-                blacklist.add(PotionType.POISON);
-                blacklist.add(PotionType.SLOWNESS);
-                blacklist.add(PotionType.WEAKNESS);
-                event.getAffectedEntities().removeIf(ent -> ent instanceof Player && blacklist.contains(type));
-            }
-        }
-    }
-
     /**
-     * Return a string describing a dropped item stack.
+     * This is an attempt to mostly replicate the pre-1.21 item merge behaviour.
      *
-     * The string contains the material type name, data value and amount, as
-     * well as a list of enchantments. It is used in methods that log drops.
-     *
-     * If the item is a shulker box, the contents will be recursively added to
-     * the description.
-     *
-     * @param item the droppped item stack.
-     * @return a string describing a dropped item stack.
+     * In Spigot, the item would always merge into the item that ticked first in that tick.
+     * This is not exposed to the PaperMC API, so the next best idea I could come up with was to
+     * just randomize the merge 50/50. That's because, with Spigot, the target was either ticked first
+     * or it wasn't, and there didn't seem to be a pattern with it.
      */
-    public LinkedHashSet<String> getItemDescription(ItemStack item) {
-        LinkedHashSet<String> descriptors = new LinkedHashSet<>();
-        if (item == null) {
-            return descriptors;
-        }
-        String description = String.format("%dx %s ", item.getAmount(), item.getType().toString());
-        ItemMeta meta = item.getItemMeta();
-        short maxDurability = item.getType().getMaxDurability();
-        if (maxDurability > 0) {
-            int durability = Math.round(maxDurability - ((Damageable) meta).getDamage());
-            description += String.format("[durability: %d/%d] ", durability, maxDurability);
-        }
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onItemMerge(ItemMergeEvent event) {
 
-        if (meta != null) {
-            if (meta.hasDisplayName()) {
-                description += String.format("[custom name: \"%s\"] %s", meta.getDisplayName(), ChatColor.RESET);
-            }
-            List<String> lore = meta.getLore();
-            if (lore != null && !lore.isEmpty()) {
-                description += String.format("[lore: \"%s\"] %s", String.join(" / ", lore), ChatColor.RESET);
-            }
-        }
+        // 50/50 chance to swap merge direction.
+        if (ThreadLocalRandom.current().nextBoolean()) {
 
-        if (meta instanceof SkullMeta) {
-            SkullMeta skullMeta = (SkullMeta) meta;
-            if (skullMeta.getOwningPlayer() != null) {
-                description += String.format("[skull of %s] ", skullMeta.getOwningPlayer().getName());
-            }
-        }
+            Item targetItem = event.getTarget();
+            Item sourceItem = event.getEntity();
 
-        if (meta instanceof EnchantmentStorageMeta) {
-            EnchantmentStorageMeta bookEnchants = (EnchantmentStorageMeta) meta;
-            description += String.format("[applyable enchants: %s] ", enchantsToString(bookEnchants.getStoredEnchants()));
-        }
+            event.setCancelled(true);
 
-        if (meta instanceof BookMeta) {
-            BookMeta bookMeta = (BookMeta) meta;
-            if (bookMeta.getTitle() != null) {
-                description += String.format("[book title: \"%s\" ", bookMeta.getTitle());
+            ItemStack targetStack = targetItem.getItemStack();
+            ItemStack sourceStack = sourceItem.getItemStack();
+
+            int spaceLeft = sourceStack.getMaxStackSize() - sourceStack.getAmount();
+            int toTransfer = Math.min(spaceLeft, targetStack.getAmount());
+
+            // Merge items.
+            if (toTransfer > 0) {
+                ItemStack combined = sourceStack.clone();
+                combined.setAmount(sourceStack.getAmount() + toTransfer);
+                sourceItem.setItemStack(combined);
+
+                targetStack.setAmount(targetStack.getAmount() - toTransfer);
+                targetItem.setItemStack(targetStack);
             }
-            if (bookMeta.getAuthor() != null) {
-                description += String.format(", author: \"%s\"] ", bookMeta.getAuthor());
-            } else {
-                description += "] ";
+
+            // Delete merging item if it merged completely.
+            if (targetItem.getItemStack().getAmount() <= 0) {
+                targetItem.remove();
             }
         }
-
-        if (meta instanceof PotionMeta) {
-            PotionMeta potionMeta = (PotionMeta) meta;
-            PotionData data = potionMeta.getBasePotionData();
-            description += String.format("[base potion: %s, level: %s%s] ", data.getType().toString(),
-                                         data.isUpgraded() ? "2" : "1",
-                                         data.isExtended() ? ", extended" : "");
-
-            List<PotionEffect> effects = potionMeta.getCustomEffects();
-            if (effects != null && !effects.isEmpty()) {
-                description += String.format("[effects: %s] ", potionMeta.getCustomEffects()
-                .stream()
-                .map(p -> String.format("[type: %s, amplifier: %d, duration: %d] ", p.getType().toString(),
-                                        p.getAmplifier(), p.getDuration()))
-                .collect(Collectors.joining(", ")));
-            }
-        }
-
-        if (item.getEnchantments().size() > 0) {
-            description += String.format("[enchants: %s] ", enchantsToString(item.getEnchantments()));
-        }
-
-        descriptors.add(description);
-
-        if (meta instanceof BlockStateMeta) {
-            BlockStateMeta blockStateMeta = (BlockStateMeta) meta;
-            if (blockStateMeta.getBlockState() instanceof ShulkerBox) {
-                ShulkerBox shulkerBox = (ShulkerBox) blockStateMeta.getBlockState();
-                Arrays.stream(shulkerBox.getInventory().getContents())
-                .filter(Objects::nonNull)
-                .filter(itemStack -> itemStack.getType() != Material.AIR)
-                .map(this::getItemDescription)
-                .map(s -> "" + s)
-                .map(s -> "---> " + s.substring(1, s.length() - 1))
-                .forEach(descriptors::add);
-            }
-        }
-
-        return descriptors;
-    }
-
-    /**
-     * Return the string description of a set of enchantments.
-     *
-     * @param enchants map from enchantment type to level, from the Bukkit API.
-     * @return the description.
-     */
-    public String enchantsToString(Map<Enchantment, Integer> enchants) {
-        return enchants.entrySet().stream()
-        .map(e -> String.format("%s %d", e.getKey().getKey().getKey(), e.getValue()))
-        .collect(Collectors.joining(", "));
     }
 
     /**

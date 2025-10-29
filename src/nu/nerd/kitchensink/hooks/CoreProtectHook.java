@@ -92,6 +92,12 @@ public class CoreProtectHook {
         });
     }
 
+    /**
+     * Outputs the top 10 x-ray suspects based on diamond ore and ancient debris placed/broken
+     * in the last 7 days.
+     *
+     * @param commandSender the thing running the command.
+     */
     public void xrayTop(CommandSender commandSender) {
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
@@ -239,10 +245,10 @@ public class CoreProtectHook {
      * Performs a CoreProtect lookup through the API. Has some pre-filled arguments.
      *
      * @param time the amount of time to check, in seconds.
-     * @param nameToCheck
-     * @param blocksToCheck
-     * @param actions
-     * @return
+     * @param nameToCheck the name of the player being checked
+     * @param blocksToCheck the list of blocks to be checked
+     * @param actions the actions to be considered in the lookup
+     * @return a list of incidents
      */
     private List<String[]> lookupTrace(int time, String nameToCheck, List<Object> blocksToCheck, List<Integer> actions) {
         return coreProtectAPI.performLookup(
@@ -256,6 +262,12 @@ public class CoreProtectHook {
                 null);
     }
 
+    /**
+     * Counts the number of blocks in the lookup results.
+     *
+     * @param results the results from the lookup
+     * @return a map of block types to counts
+     */
     private Map<Material, Integer> countBlocks(List<String[]> results) {
         Map<Material, Integer> mapResults = new HashMap<>();
         for(String[] entry : results) {
@@ -268,6 +280,12 @@ public class CoreProtectHook {
         return getTopTen(mapResults);
     }
 
+    /**
+     * Gets the top ten entries from a map sorted by value in descending order.
+     *
+     * @param originalMap the original map
+     * @return a new map with the top ten entries
+     */
     private Map<Material, Integer> getTopTen(Map<Material, Integer> originalMap) {
         return originalMap.entrySet()
                 .stream()
@@ -285,20 +303,43 @@ public class CoreProtectHook {
     Xray-top methods
      */
 
+    /**
+     * Class to hold placed and broken stats for a player.
+     */
     private static class PlayerStats {
         int placed;
         int broken;
 
+        /**
+         * Constructor for PlayerStats.
+         *
+         * @param placed number of blocks placed
+         * @param broken number of blocks broken
+         */
         PlayerStats(int placed, int broken) {
             this.placed = placed;
             this.broken = broken;
         }
 
+        /**
+         * Gets the total number of blocks placed and broken.
+         *
+         * @return total blocks
+         */
         int getTotal() {
             return placed + broken;
         }
     }
 
+    /**
+     * Performs a CoreProtect lookup through the API for xray-top.
+     *
+     * @param time the amount of time to check, in seconds.
+     * @param blocksToCheck the list of blocks to be checked
+     * @param actions the actions to be considered in the lookup
+     * @param location the location to perform the lookup at
+     * @return a list of incidents
+     */
     private List<String[]> lookupXrayTop(int time, List<Object> blocksToCheck, List<Integer> actions, Location location) {
         return coreProtectAPI.performLookup(
                 time,
@@ -311,6 +352,12 @@ public class CoreProtectHook {
                 location);
     }
 
+    /**
+     * Counts the number of blocks by player in the lookup results.
+     *
+     * @param results the results from the lookup
+     * @return a map of player names to counts
+     */
     private Map<String, Integer> countBlocksByPlayer(List<String[]> results) {
         Map<String, Integer> playerCounts = new HashMap<>();
         for(String[] entry : results) {
@@ -323,6 +370,12 @@ public class CoreProtectHook {
         return playerCounts;
     }
 
+    /**
+     * Gets the top ten players from a map sorted by value in descending order.
+     *
+     * @param originalMap the original map
+     * @return a new map with the top ten players
+     */
     private Map<String, Integer> getTopTenPlayers(Map<String, Integer> originalMap) {
         return originalMap.entrySet()
                 .stream()
@@ -336,6 +389,13 @@ public class CoreProtectHook {
                 ));
     }
 
+    /**
+     * Combines placed and broken stats into a single map.
+     *
+     * @param placedMap map of players to placed counts
+     * @param brokenMap map of players to broken counts
+     * @return a map of players to PlayerStats
+     */
     private Map<String, PlayerStats> combinePlayerStats(Map<String, Integer> placedMap, Map<String, Integer> brokenMap) {
         Map<String, PlayerStats> combined = new HashMap<>();
 
@@ -359,6 +419,12 @@ public class CoreProtectHook {
         return combined;
     }
 
+    /**
+     * Gets the top ten players based on total activity (placed + broken).
+     *
+     * @param originalMap the original map of players to PlayerStats
+     * @return a new map with the top ten players
+     */
     private Map<String, PlayerStats> getTopTenPlayerStats(Map<String, PlayerStats> originalMap) {
         return originalMap.entrySet()
                 .stream()
@@ -377,6 +443,14 @@ public class CoreProtectHook {
     General methods
      */
 
+    /**
+     * Parses time components into total seconds.
+     * @param days number of days
+     * @param hours number of hours
+     * @param minutes number of minutes
+     * @param seconds number of seconds
+     * @return total time in seconds
+     */
     private int parseTime(int days, int hours, int minutes, int seconds) {
         return (days * 24 * 60 * 60) + (hours * 60 * 60) + (minutes * 60) + seconds;
     }
