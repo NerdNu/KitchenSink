@@ -1,6 +1,6 @@
 name: KitchenSink
 version: ${project.version}
-author: Travis Watkins
+author: [Travis Watkins, PPGOME]
 main: nu.nerd.kitchensink.KitchenSink
 softdepend: [WorldGuard, LuckPerms, LogBlock, ProtocolLib]
 description: Miscellaneous tweaks and fixes for Spigot servers.
@@ -56,6 +56,12 @@ commands:
     unenchant:
         description: Remove enchants from current item
         permission: kitchensink.unenchant
+    trace:
+        description: idk rn
+        permission: kitchensink.trace
+    xray-top:
+        description: idk rn
+        permission: kitchensink.xraytop
     lag:
         description: Get current TPS and memory stats
     list:

@@ -20,8 +20,6 @@ disable-tnt: false
 disable-entity-block-damage: []
 disable-invisibility-on-combat: false
 disable-golem-natural-spawn: false
-host-keys-check: true
-host-keys-drop-permissions: false
 lower-strength-potion-damage: false
 health-potion-multiplier: 1.0
 regen-potion-multiplier: 1.0
@@ -78,7 +76,6 @@ restart-times:
 
 warn-restart-on-join: true
 warn-restart-on-inventory-open: true
-bungee-disconnect-on-restart: false
 sprint-max-time: 40
 countdown:
   maxTime: 15

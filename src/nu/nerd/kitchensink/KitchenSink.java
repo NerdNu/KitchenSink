@@ -16,6 +16,9 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import net.coreprotect.CoreProtect;
+import net.coreprotect.CoreProtectAPI;
+import nu.nerd.kitchensink.hooks.CoreProtectHook;
 import org.bukkit.Art;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -38,12 +41,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BlockIterator;
 
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
-
-import de.diddiz.LogBlock.LogBlock;
-import nu.nerd.kitchensink.ServerListPing17.StatusResponse;
-
 public class KitchenSink extends JavaPlugin {
 
     /**
@@ -52,14 +49,13 @@ public class KitchenSink extends JavaPlugin {
     static KitchenSink PLUGIN;
 
     /**
-     * Reference to the LogBlock plugin, or null if not found.
+     * Reference to the CoreProtect plugin, or null if not found.
      */
-    private LogBlockHook _logBlockHook;
+    private CoreProtectHook coreProtectHook;
 
     private static final int ONE_MINUTE_TICKS = 60 * 20;
 
     private final KitchenSinkListener listener = new KitchenSinkListener(this);
-    private final LagCheck lagCheck = new LagCheck();
     public final Configuration config = new Configuration(this);
 
     public int countdownTime = 0;
@@ -167,19 +163,13 @@ public class KitchenSink extends JavaPlugin {
      *
      * @return a reference to the LogBlock plugin hook.
      */
-    LogBlockHook getLogBlockHook() {
-        return _logBlockHook;
+    CoreProtectHook getCoreProtectHook() {
+        return coreProtectHook;
     }
 
     @Override
     public void onDisable() {
         getServer().getScheduler().cancelTasks(this);
-
-        if (config.BUNGEE_DISCONNECT_ON_RESTART) {
-            for (Player player : getServer().getOnlinePlayers()) {
-                proxyKick(player);
-            }
-        }
     }
 
     @Override
@@ -195,15 +185,7 @@ public class KitchenSink extends JavaPlugin {
         config.load();
 
         if (config.HOOK_LOGBLOCK) {
-            Plugin plugin = Bukkit.getPluginManager().getPlugin("LogBlock");
-            if (plugin instanceof LogBlock) {
-                _logBlockHook = new LogBlockHook((LogBlock) plugin);
-                getLogger().info("Hooked LogBlock successfully.");
-            } else {
-                getLogger().info("LogBlock not found.");
-            }
-        } else {
-            _logBlockHook = new LogBlockHook(null);
+            coreProtectHook = new CoreProtectHook(PLUGIN, getCoreProtect());
         }
 
         if (config.ANIMAL_COUNT) {
@@ -265,6 +247,28 @@ public class KitchenSink extends JavaPlugin {
 
     }
 
+    private CoreProtectAPI getCoreProtect() {
+        Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("CoreProtect");
+
+        // Check that CoreProtect is loaded
+        if (!(plugin instanceof CoreProtect)) {
+            return null;
+        }
+
+        // Check that the API is enabled
+        CoreProtectAPI CoreProtect = ((CoreProtect) plugin).getAPI();
+        if (!CoreProtect.isEnabled()) {
+            return null;
+        }
+
+        // Check that a compatible version of the API is loaded
+        if (CoreProtect.APIVersion() < 10) {
+            return null;
+        }
+
+        return CoreProtect;
+    }
+
     @Override
     public boolean onCommand(CommandSender sender, Command command, String name, String[] args) {
         if (command.getName().equalsIgnoreCase("ksreload")) {
@@ -289,16 +293,16 @@ public class KitchenSink extends JavaPlugin {
             }
             return true;
         }
-        if (command.getName().equalsIgnoreCase("lag")) {
-            if (sender.hasPermission("kitchensink.lag")) {
-                sendLagStats(sender);
-                return true;
+        // TODO fix this shit
+        if(command.getName().equalsIgnoreCase("trace")) {
+            if(sender.hasPermission("kitchensink.trace")) {
+                coreProtectHook.trace(sender, args[0]);
             }
         }
-        if (command.getName().equalsIgnoreCase("list")) {
-            if (sender.hasPermission("kitchensink.list")) {
-                sendList(sender);
-                return true;
+
+        if(command.getName().equalsIgnoreCase("xray-top")) {
+            if(sender.hasPermission("kitchensink.xraytop")) {
+                coreProtectHook.xrayTop(sender);
             }
         }
 
@@ -448,77 +452,6 @@ public class KitchenSink extends JavaPlugin {
             getLogger().info(sender.getName() + " enchanted " + item.getAmount() + " book: " + enchantment.getKey().getNamespace() + " " + level);
             return true;
         } // /enchant-book
-
-        if (command.getName().equalsIgnoreCase("ping-server")) {
-            String host;
-            int port = 25565;
-            String parameter = "combined";
-            String format = null;
-
-            if (args.length >= 1) {
-                if (args[0].contains(":")) {
-                    String[] host_parts = args[0].split(":");
-                    host = host_parts[0];
-                    port = Integer.parseInt(host_parts[1]);
-                } else {
-                    host = args[0];
-                }
-
-                if (args.length >= 2) {
-                    parameter = args[1];
-                }
-
-                ServerListPing17 pinger = new ServerListPing17();
-                pinger.setAddress(host, port);
-
-                StatusResponse sr = null;
-                try {
-                    if (parameter.equalsIgnoreCase("combined")) {
-                        format = "%(DESCRIPTION) | %(PLAYERS_ONLINE) of %(PLAYERS_MAX) players online";
-                    } else if (parameter.equalsIgnoreCase("description")) {
-                        format = "%(DESCRIPTION)";
-                    } else if (parameter.equalsIgnoreCase("players_online") || parameter.equalsIgnoreCase("online")) {
-                        format = "%(PLAYERS_ONLINE)";
-                    } else if (parameter.equalsIgnoreCase("players_max") || parameter.equalsIgnoreCase("max")) {
-                        format = "%(PLAYERS_MAX)";
-                    } else if (parameter.equalsIgnoreCase("version_name")) {
-                        format = "%(VERSION_NAME)";
-                    } else if (parameter.equalsIgnoreCase("version_protocol")) {
-                        format = "%(VERSION_PROTOCOL)";
-                    } else if (parameter.equalsIgnoreCase("custom") && args.length >= 3) {
-                        StringBuilder sb = new StringBuilder();
-                        for (int i = 2; i < args.length; i++) {
-                            sb.append(args[i]);
-                            if (i < args.length - 1) {
-                                sb.append(" ");
-                            }
-                        }
-                        format = sb.toString();
-                    } else {
-                        return false;
-                    }
-
-                    sr = pinger.fetchData();
-                } catch (Exception e) {
-                    sender.sendMessage("Unable to ping server");
-                }
-
-                try {
-                    Hashtable<String, Object> parameters = new Hashtable<>();
-                    parameters.put("DESCRIPTION", sr.getDescription());
-                    parameters.put("PLAYERS_ONLINE", Integer.toString(sr.getPlayers().getOnline()));
-                    parameters.put("PLAYERS_MAX", Integer.toString(sr.getPlayers().getMax()));
-                    parameters.put("VERSION_NAME", sr.getVersion().getName());
-                    parameters.put("VERSION_PROTOCOL", sr.getVersion().getProtocol());
-
-                    sender.sendMessage(this.dictFormat(format, parameters));
-                } catch (Exception e) {
-                    sender.sendMessage("Invalid format string: \"" + format + "\"");
-                }
-
-                return true;
-            }
-        }
 
         if (command.getName().equalsIgnoreCase("countdown")) {
             if (sender.hasPermission("kitchensink.countdown")) {
@@ -749,23 +682,6 @@ public class KitchenSink extends JavaPlugin {
         return false;
     }
 
-    public void sendLagStats(CommandSender sender) {
-        float tps = 0;
-        for (Long l : lagCheck.history) {
-            if (l != null) {
-                tps += 20 / (l / (float) 1000);
-            }
-        }
-        tps = tps / lagCheck.history.size();
-        if (tps > 20) {
-            tps = 20;
-        }
-        long memUsed = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576;
-        long memMax = Runtime.getRuntime().maxMemory() / 1048576;
-
-        sender.sendMessage(String.format("TPS: %5.2f Mem: %dM/%dM", tps, memUsed, memMax));
-    }
-
     public void sendList(CommandSender sender) {
         ArrayList<String> list = new ArrayList<>();
         for (Player player : getServer().getOnlinePlayers()) {
@@ -843,13 +759,5 @@ public class KitchenSink extends JavaPlugin {
             }
         }
         return null;
-    }
-
-    public void proxyKick(Player player) {
-        ByteArrayDataOutput out = ByteStreams.newDataOutput();
-        out.writeUTF("KickPlayer");
-        out.writeUTF(player.getName());
-        out.writeUTF("Server closed");
-        player.sendPluginMessage(this, "BungeeCord", out.toByteArray());
     }
 }

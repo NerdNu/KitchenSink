@@ -4,7 +4,7 @@
 	<groupId>nu.nerd</groupId>
 	<artifactId>KitchenSink</artifactId>
 	<name>KitchenSink</name>
-	<version>0.15.2</version>
+	<version>0.16.0</version>
 	<packaging>jar</packaging>
 	<description>A plugin for miscellaneous functionality that hasn't found a home elsewhere.</description>
 	<url>https://github.com/NerdNu/KitchenSink</url>
@@ -35,15 +35,16 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.spigotmc</groupId>
-			<artifactId>spigot-api</artifactId>
-			<version>1.14.4-R0.1-SNAPSHOT</version>
-			<type>jar</type>
+			<groupId>io.papermc.paper</groupId>
+			<artifactId>paper-api</artifactId>
+			<version>1.20.4-R0.1-SNAPSHOT</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>de.diddiz</groupId>
-			<artifactId>logblock</artifactId>
-			<version>1.14.1-SNAPSHOT</version>
+			<groupId>net.coreprotect</groupId>
+			<artifactId>coreprotect</artifactId>
+			<version>22.4</version>
+			<scope>provided</scope>
 		</dependency>
         <dependency>
             <groupId>net.luckperms</groupId>
@@ -59,12 +60,16 @@
 	</dependencies>
 	<repositories>
 		<repository>
-			<id>spigot-repo</id>
-			<url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
+			<id>papermc</id>
+			<url>https://repo.papermc.io/repository/maven-public/</url>
 		</repository>
 		<repository>
 			<id>md_5-snapshots</id>
 			<url>https://repo.md-5.net/content/repositories/snapshots/</url>
+		</repository>
+		<repository>
+			<id>playpro-repo</id>
+			<url>https://maven.playpro.com</url>
 		</repository>
 	</repositories>
 	<build>
@@ -137,6 +142,14 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>9</source>
+					<target>9</target>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Art;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -108,7 +110,6 @@ import org.bukkit.potion.PotionType;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.util.BlockIterator;
 
-import de.diddiz.LogBlock.Actor;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.node.NodeType;
 import net.luckperms.api.node.types.InheritanceNode;
@@ -597,8 +598,6 @@ class KitchenSinkListener implements Listener {
         plugin.getLogger().info("[MobKill] [MobTransform] " + e.getEntityType().toString() + " transformed into a " +
                                 e.getTransformedEntity().getType().toString() + " at " + blockLocationToString(entity.getLocation()) +
                                 " due to " + transformReason + ". Nearby players: " + nearbyPlayers);
-        plugin.getLogBlockHook().logKill(entity.getLocation(), new Actor("LIGHTNING"),
-                                         new Actor(e.getEntity().getType().toString()), null);
     }
 
     private static String getNearbyPlayers(Location location, int radius) {
@@ -787,73 +786,19 @@ class KitchenSinkListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerShearEntity(PlayerShearEntityEvent event) {
         if (plugin.config.BUFF_SHEAR_DROPS > 1 && event.getEntity() instanceof Sheep) {
-            Sheep entity = (Sheep) event.getEntity();
-            Location l = entity.getLocation();
+            List<ItemStack> drops = new ArrayList<>(event.getDrops());
 
-            // Minecraft drops 1 - 3 wool. Mutiply by BUFF_SHEAR_DROPS, minus
-            // the drops dropped by the event.
-            int count = (1 + (int) (3 * Math.random())) * (plugin.config.BUFF_SHEAR_DROPS - 1);
+            for(ItemStack item : drops) {
+                if(item.getType().name().toLowerCase().endsWith("wool")) {
+                    // Minecraft drops 1 - 3 wool. Mutiply by BUFF_SHEAR_DROPS, minus
+                    // the drops dropped by the event.
+                    int count = (1 + (int) (3 * Math.random())) * (plugin.config.BUFF_SHEAR_DROPS - 1);
 
-            // this isn't working for some reason
-            // l.getWorld().dropItemNaturally(l, new ItemStack(new
-            // Wool(entity.getColor()).getItemType(), count));
-
-            Material wool;
-            switch (entity.getColor()) {
-            case BLACK:
-                wool = Material.BLACK_WOOL;
-                break;
-            case BLUE:
-                wool = Material.BLUE_WOOL;
-                break;
-            case BROWN:
-                wool = Material.BROWN_WOOL;
-                break;
-            case CYAN:
-                wool = Material.CYAN_WOOL;
-                break;
-            case GRAY:
-                wool = Material.GRAY_WOOL;
-                break;
-            case GREEN:
-                wool = Material.GREEN_WOOL;
-                break;
-            case LIGHT_BLUE:
-                wool = Material.LIGHT_BLUE_WOOL;
-                break;
-            case LIGHT_GRAY:
-                wool = Material.LIGHT_GRAY_WOOL;
-                break;
-            case LIME:
-                wool = Material.LIME_WOOL;
-                break;
-            case MAGENTA:
-                wool = Material.MAGENTA_WOOL;
-                break;
-            case ORANGE:
-                wool = Material.ORANGE_WOOL;
-                break;
-            case PINK:
-                wool = Material.PINK_WOOL;
-                break;
-            case PURPLE:
-                wool = Material.PURPLE_WOOL;
-                break;
-            case RED:
-                wool = Material.RED_WOOL;
-                break;
-            case WHITE:
-                wool = Material.WHITE_WOOL;
-                break;
-            case YELLOW:
-                wool = Material.YELLOW_WOOL;
-                break;
-            default:
-                wool = Material.WHITE_WOOL;
-                break;
+                    item.setAmount(count);
+                }
             }
-            l.getWorld().dropItemNaturally(l, new ItemStack(wool, count));
 
+            event.setDrops(drops);
         }
     }
 
@@ -967,24 +912,6 @@ class KitchenSinkListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onEnchantItem(PrepareItemEnchantEvent event) {
-        if (!plugin.config.ALLOW_ENCH_ITEMS.isEmpty()) {
-            if (!plugin.config.ALLOW_ENCH_ITEMS.contains(event.getItem().getType())) {
-                event.setCancelled(true);
-            }
-        }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onBrew(BrewEvent event) {
-        if (!plugin.config.BLOCK_BREW.isEmpty()) {
-            if (plugin.config.BLOCK_BREW.contains(event.getContents().getIngredient().getType())) {
-                event.setCancelled(true);
-            }
-        }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityRegainHealth(EntityRegainHealthEvent event) {
         if (event.getEntity() instanceof Player) {
             if (event.getRegainReason() == RegainReason.MAGIC) {
@@ -997,49 +924,6 @@ class KitchenSinkListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
-        if (plugin.config.DISABLE_INVISIBILITY_ON_COMBAT && !event.isCancelled() && event.getEntity() instanceof Player) {
-            if (event.getDamager() instanceof Player) {
-                Player damagerPlayer = (Player) event.getDamager();
-                if (damagerPlayer.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
-                    damagerPlayer.removePotionEffect(PotionEffectType.INVISIBILITY);
-                }
-
-                if (((Player) event.getEntity()).hasPotionEffect(PotionEffectType.INVISIBILITY)) {
-                    ((Player) event.getEntity()).removePotionEffect(PotionEffectType.INVISIBILITY);
-                }
-            } else if (event.getDamager() instanceof Projectile) {
-                Projectile damageProjectile = (Projectile) event.getDamager();
-
-                if (damageProjectile.getShooter() instanceof Player) {
-                    Player damagerPlayer = (Player) damageProjectile.getShooter();
-                    if (damagerPlayer.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
-                        damagerPlayer.removePotionEffect(PotionEffectType.INVISIBILITY);
-                    }
-
-                    if (((Player) event.getEntity()).hasPotionEffect(PotionEffectType.INVISIBILITY)) {
-                        ((Player) event.getEntity()).removePotionEffect(PotionEffectType.INVISIBILITY);
-                    }
-                }
-            }
-        } // config.DISABLE_INVISIBILITY_ON_COMBAT
-        if (plugin.config.LOWER_STRENGTH_POTION_DAMAGE && event.getEntity() instanceof Player && event.getDamager() instanceof Player) {
-            Player damager = (Player) event.getDamager();
-            if (damager.hasPotionEffect(PotionEffectType.INCREASE_DAMAGE)) {
-                for (PotionEffect pe : damager.getActivePotionEffects()) {
-                    if (pe.getType().equals(PotionEffectType.INCREASE_DAMAGE)) {
-                        double newDamage = event.getDamage();
-                        if (pe.getAmplifier() == 1) { // str2
-                            newDamage = newDamage / 2.6;
-                            newDamage = newDamage + 6;
-                        } else if (pe.getAmplifier() == 0) { // str1
-                            newDamage = newDamage / 1.3;
-                            newDamage = newDamage + 3;
-                        }
-                        event.setDamage(newDamage);
-                    }
-                }
-            }
-        } // config.LOWER_STRENGTH_POTION_DAMAGE
           // if configured, disable damage to villagers from players
         if (plugin.config.DISABLE_PLAYER_DAMAGE_TO_VILLAGERS && event.getEntityType() == EntityType.VILLAGER) {
             if (event.getDamager() instanceof Player) {
@@ -1048,7 +932,8 @@ class KitchenSinkListener implements Listener {
 
                 // tell the attacker
                 Player player = (Player) event.getDamager();
-                player.sendMessage(ChatColor.DARK_RED + "Villagers are protected against damage from players.");
+                player.sendMessage(Component.text("Villagers are protected against damage from players.",
+                        NamedTextColor.DARK_RED));
             } else if (event.getDamager() instanceof Projectile) {
                 Projectile damageProjectile = (Projectile) event.getDamager();
                 if (damageProjectile.getShooter() instanceof Player) {
@@ -1057,7 +942,8 @@ class KitchenSinkListener implements Listener {
 
                     // tell the attacker
                     Player player = (Player) damageProjectile.getShooter();
-                    player.sendMessage(ChatColor.DARK_RED + "Villagers are protected against damage from players.");
+                    player.sendMessage(Component.text("Villagers are protected against damage from players.",
+                            NamedTextColor.DARK_RED));
                 }
             }
         } // config.DISABLE_PLAYER_DAMAGE_TO_VILLAGERS
@@ -1082,18 +968,14 @@ class KitchenSinkListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onPlayerToggleSprint(PlayerToggleSprintEvent event) {
-        if (event.isSprinting() && plugin.config.SPRINT_MAX_TICKS > 0) {
-            plugin.getServer().getScheduler().runTaskLater(plugin, new SprintTask(event.getPlayer()), plugin.config.SPRINT_MAX_TICKS);
-        }
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent event) {
         if (plugin.config.WARN_RESTART_ON_JOIN) {
             int time = (int) ((plugin.nextRestart - System.currentTimeMillis()) / 1000L);
             if (time < 90 && time > 0) {
-                event.getPlayer().sendMessage(ChatColor.LIGHT_PURPLE + "Warning: There will be a restart in about " + time + " seconds!");
+                Player player = event.getPlayer();
+                player.sendMessage(Component.text("Warning: There will be a restart in about "
+                        + time + " seconds!", NamedTextColor.LIGHT_PURPLE));
+                player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
             }
         }
     }
@@ -1108,8 +990,10 @@ class KitchenSinkListener implements Listener {
                 }
 
                 Player player = (Player) event.getPlayer();
-                player.sendMessage(ChatColor.RED + "WARNING: There will be a restart in about " + time + " seconds!");
-                player.sendMessage(ChatColor.RED + "Having an inventory open when a restart occurs may result in loss of items.");
+                player.sendMessage(Component.text("WARNING: There will be a restart in about " +
+                        time + " seconds!", NamedTextColor.RED));
+                player.sendMessage(Component.text("Having an inventory open when a restart occurs may" +
+                        " result in loss of items.", NamedTextColor.RED));
                 player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_LAND, 2f, 1f);
             }
         }
@@ -1244,20 +1128,6 @@ class KitchenSinkListener implements Listener {
         }
 
         return descriptors;
-    }
-
-    /**
-     * Return the string description of a potion effect.
-     *
-     * @param effect the effect.
-     * @return the description.
-     */
-    public String potionToString(PotionEffect effect) {
-        StringBuilder description = new StringBuilder();
-        description.append(effect.getType().getName()).append("/");
-        description.append(effect.getAmplifier() + 1).append("/");
-        description.append(effect.getDuration() / 20.0).append('s');
-        return description.toString();
     }
 
     /**
