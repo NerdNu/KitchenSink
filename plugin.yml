@@ -2,7 +2,7 @@ name: KitchenSink
 version: ${project.version}
 author: [Travis Watkins, PPGOME]
 main: nu.nerd.kitchensink.KitchenSink
-softdepend: [WorldGuard, LuckPerms, LogBlock, ProtocolLib]
+softdepend: [WorldGuard, LuckPerms, CoreProtect, ProtocolLib]
 description: Miscellaneous tweaks and fixes for Spigot servers.
 api-version: 1.13
 

@@ -31,29 +31,4 @@ Configuration
 * `countdown-msg-color` Color code used by the message displayed when the countdown is complete.
 * `countdown-msg-style` The text formatting used by the message at countdown completion.
 * `disable-player-damage-to-villagers` Disables player damage to villagers.
-
-Being removed:
-* Bungee restart
-* Host keys perm drop
-* Host keys check
-* Ping-server
-* Lag
-* List
-* `animal-count` Print number of each mob every 10 minutes.
-* `log-animals` Log passive animal kills to console.
-* `log-player-drops` Log player drop sums to console.
-* `block-craft` Block specified crafting recipes.
-* `block-brew` Block specified brewing ingredients.
-* `lock-horses` Allow players to prevent other players from riding horses they own using `/lock-horse`.  To unlock: `/unlock-horse`.
-* `health-potion-multiplier` The multiplicative factor applied to health from instant health potions (splashed and drunk).
-* `regen-potion-multiplier` The multiplicative factor applied to health from regeneration potions (splashed and drunk).
-* `allow-enchant-items` If list is not empty, allow only specified items to be enchanted.
-* `leatherless-books` Allow books to be crafted using only sugar cane.
-* `pearl-damage` Damage players when throwing an ender pearl.
-* `invulnerable-tame-horses` Make *riderless* tame horses invulnerable. Ridden horses can always be damaged.
-* `lower-strength-potion-damage` Reduce damage dealt with strength potions to Minecraft 1.5 levels.
-* `disable-lingering-potion-pvp` If true, disable harmful lingering potion effects.
-* `disable-entity-block-damage` A list of [EntityType](https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/entity/EntityType.html) names for which block damage is disabled if they explode.
-* `disable-invisibility-on-combat` Remove invisibility potion effects when a player PvPs.
-* `sprint-max-time` Timeout to force player to stop sprinting after the specified amount of ticks. Set to zero or less to disable.
-* `untame-pets` Allow players to untame a pet by typing /untame and right clicking on a pet they own.
+* `use-coreprotect` Enables the `/trace [playername]` and `/xray-top` commands.

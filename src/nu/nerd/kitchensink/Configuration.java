@@ -81,7 +81,7 @@ public class Configuration {
         BLOCK_JOHNNY = plugin.getConfig().getBoolean("block-johnny", false);
         BLOCK_SLIME_MOVING_RAILS_AND_CARPETS = plugin.getConfig().getBoolean("block-slime-moving-rails-and-carpets");
 
-        HOOK_COREPROTECT = plugin.getConfig().getBoolean("use-logblock", false);
+        HOOK_COREPROTECT = plugin.getConfig().getBoolean("use-coreprotect", false);
 
         SAFE_ICE = plugin.getConfig().getBoolean("safe-ice");
         SAFE_DISPENSERS = plugin.getConfig().getBoolean("safe-dispensers");
